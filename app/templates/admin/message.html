@@ -1,0 +1,29 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Message from {{ m.name }}{% endblock %}
+{% block heading %}<h1>Message from {{ m.name }}</h1><p><a href="{{ url_for('admin.messages') }}" class="link">{{ icon('arrow-left') }} All messages</a></p>{% endblock %}
+{% block actions %}
+<a href="mailto:{{ m.email }}?subject={{ ('Re: ' ~ m.service) | urlencode }}" class="btn btn-primary">{{ icon('send') }}<span class="hide-sm">Reply</span></a>
+{% endblock %}
+{% block content %}
+<article class="panel msg">
+  <dl class="meta">
+    <div><dt>From</dt><dd>{{ m.name }}</dd></div>
+    <div><dt>Email</dt><dd><a href="mailto:{{ m.email }}" class="link">{{ m.email }}</a></dd></div>
+    <div><dt>Service</dt><dd><span class="chip">{{ m.service }}</span></dd></div>
+    <div><dt>Received</dt><dd>{{ m.created_at | dt }}</dd></div>
+    <div><dt>Email notification</dt><dd>{{ 'Sent' if m.emailed else 'Not sent' }}</dd></div>
+  </dl>
+  <div class="msg-body">{{ m.body }}</div>
+  <div class="form-foot">
+    <form method="post" action="{{ url_for('admin.message_unread', msg_id=m.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-ghost">{{ icon('eye-off') }} Mark as unread</button>
+    </form>
+    <form method="post" action="{{ url_for('admin.message_delete', msg_id=m.id) }}" data-confirm="Delete this message?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-danger">{{ icon('trash') }} Delete</button>
+    </form>
+  </div>
+</article>
+{% endblock %}

@@ -1,0 +1,65 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% from "_macros.html" import logo with context %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Dashboard{% endblock %} · AMXME Admin</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/jakarta-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+<body>
+{% block shell %}
+<div class="shell">
+  <aside class="side" id="side">
+    <a href="{{ url_for('admin.dashboard') }}" class="side-brand">{{ logo(light=True) }}</a>
+    <nav class="side-nav">
+      {% set ep = request.endpoint %}
+      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'on' if ep == 'admin.dashboard' }}">{{ icon('grid') }}Dashboard</a>
+      <a href="{{ url_for('admin.messages') }}" class="{{ 'on' if ep in ('admin.messages', 'admin.message') }}">{{ icon('inbox') }}Messages{% if unread %}<span class="badge">{{ unread }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin.visitors') }}" class="{{ 'on' if ep in ('admin.visitors', 'admin.visitor_ip') }}">{{ icon('activity') }}Visitors</a>
+
+      <span class="side-label">Page content</span>
+      {% for s in sections %}
+      <a href="{{ url_for('admin.content', slug=s.slug) }}" class="{{ 'on' if ep == 'admin.content' and request.view_args.slug == s.slug }}">{{ icon(s.icon) }}{{ s.title }}</a>
+      {% endfor %}
+
+      <span class="side-label">Collections</span>
+      {% for kind, col in collections.items() %}
+      <a href="{{ url_for('admin.collection', kind=kind) }}" class="{{ 'on' if ep and ep.startswith('admin.collection') and request.view_args.kind == kind }}">{{ icon(col.icon) }}{{ col.title }}</a>
+      {% endfor %}
+
+      <span class="side-label">Account</span>
+      <a href="{{ url_for('admin.account') }}" class="{{ 'on' if ep == 'admin.account' }}">{{ icon('user') }}My Account</a>
+      <a href="/" target="_blank" rel="noopener">{{ icon('external') }}View Website</a>
+    </nav>
+    <form action="{{ url_for('admin.logout') }}" method="post" class="side-foot">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <span class="who"><span class="avatar">{{ g.user.username[:1] | upper }}</span>{{ g.user.username }}</span>
+      <button class="icon-btn" title="Sign out" aria-label="Sign out">{{ icon('logout') }}</button>
+    </form>
+  </aside>
+  <div class="side-scrim" id="sideScrim"></div>
+
+  <div class="main">
+    <header class="top">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu">{{ icon('menu') }}</button>
+      <div class="top-title">{% block heading %}{% endblock %}</div>
+      <div class="top-actions">{% block actions %}{% endblock %}</div>
+    </header>
+    <div class="content">
+      {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, m in msgs %}<div class="flash flash-{{ cat }}">{{ icon('check' if cat == 'success' else 'alert') }}<span>{{ m }}</span><button class="flash-x" aria-label="Dismiss">{{ icon('x') }}</button></div>{% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+<script src="{{ asset('js/admin.js') }}" defer></script>
+</body>
+</html>

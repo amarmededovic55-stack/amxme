@@ -1,0 +1,55 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Visitors{% endblock %}
+{% block heading %}<h1>Visitors</h1><p>Homepage visits grouped by IP address. Your own visits while signed in are not counted.</p>{% endblock %}
+{% block content %}
+<div class="tabs">
+  {% for key, (label, _) in periods.items() %}
+  <a href="{{ url_for('admin.visitors', period=key, bots='1' if show_bots else None) }}" class="tab{{ ' on' if key == period }}">{{ label }}</a>
+  {% endfor %}
+  <a href="{{ url_for('admin.visitors', period=period, bots=None if show_bots else '1') }}" class="tab tab-toggle{{ ' on' if show_bots }}">{{ icon('cpu') }} {{ 'Hide bots' if show_bots else 'Show bots' }}</a>
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="stat-ic">{{ icon('eye') }}</span><span class="stat-num">{{ total_views }}</span><span class="stat-lbl">Page views <small>· {{ periods[period][0] | lower }}</small></span></div>
+  <div class="stat"><span class="stat-ic">{{ icon('users') }}</span><span class="stat-num">{{ unique_ips }}</span><span class="stat-lbl">Unique IP addresses</span></div>
+  <div class="stat"><span class="stat-ic">{{ icon('clock') }}</span><span class="stat-num">{{ today_views }}</span><span class="stat-lbl">Page views today</span></div>
+  <div class="stat"><span class="stat-ic">{{ icon('cpu') }}</span><span class="stat-num">{{ bot_views }}</span><span class="stat-lbl">Bot / crawler hits <small>· not counted</small></span></div>
+</div>
+
+<div class="panel p0 mt">
+  {% if rows %}
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>IP address</th><th class="num">Visits</th><th>Last visit</th><th class="hide-md">First visit</th><th class="hide-md">Browser / device</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        {% set lv = last_visits.get(r.last_id) %}
+        <tr>
+          <td><a href="{{ url_for('admin.visitor_ip', ip=r.ip) }}" class="ip">{{ r.ip }}</a>{% if r.bot %} <span class="chip chip-bot">bot</span>{% endif %}</td>
+          <td class="num"><span class="count">{{ r.views }}</span></td>
+          <td>{{ r.last | dt('%d %b, %H:%M') }}</td>
+          <td class="hide-md">{{ r.first | dt('%d %b, %H:%M') }}</td>
+          <td class="hide-md ua" title="{{ lv.user_agent if lv }}">{{ (lv.user_agent if lv else '') | ua_short }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span class="q-ic">{{ icon('users') }}</span>
+    <h2>No visits in this period</h2>
+    <p>Visits to the homepage will appear here.</p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="vis-foot">
+  <p class="hint">{{ icon('info') }} Times are in UTC. Data older than 90 days is deleted automatically.{% if rows | length >= 300 %} Showing the top 300 IP addresses.{% endif %}</p>
+  <form method="post" action="{{ url_for('admin.visitors_clear') }}" data-confirm="Delete all visitor statistics? This cannot be undone.">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-danger">{{ icon('trash') }} Clear statistics</button>
+  </form>
+</div>
+{% endblock %}

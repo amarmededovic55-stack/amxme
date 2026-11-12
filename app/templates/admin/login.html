@@ -1,0 +1,21 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block shell %}
+<main class="login">
+  <div class="login-art" aria-hidden="true"><div class="la-orb a"></div><div class="la-orb b"></div></div>
+  <form class="login-card" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="login-logo">{{ logo() }}</div>
+    <h1>Admin sign in</h1>
+    <p class="muted">Manage the content of your website.</p>
+    {% if error %}<div class="flash flash-error">{{ icon('alert') }}<span>{{ error }}</span></div>{% endif %}
+    <label class="lbl" for="u">Username</label>
+    <input class="inp" id="u" name="username" autocomplete="username" required autofocus value="{{ request.form.username or '' }}">
+    <label class="lbl" for="p">Password</label>
+    <input class="inp" id="p" name="password" type="password" autocomplete="current-password" required>
+    <button class="btn btn-primary btn-block">Sign in {{ icon('arrow-right') }}</button>
+    <a href="/" class="back">{{ icon('arrow-left') }} Back to website</a>
+  </form>
+</main>
+{% endblock %}

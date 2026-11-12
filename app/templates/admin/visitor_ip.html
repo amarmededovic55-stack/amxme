@@ -1,0 +1,24 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}{{ ip }} · Visitors{% endblock %}
+{% block heading %}<h1 class="ip-h">{{ ip }}</h1><p><a href="{{ url_for('admin.visitors') }}" class="link">{{ icon('arrow-left') }} All visitors</a> · {{ total }} visit{{ 's' if total != 1 }} in the last 90 days</p>{% endblock %}
+{% block content %}
+<div class="panel p0">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Time (UTC)</th><th>Page</th><th class="hide-md">Came from</th><th>Browser / device</th></tr></thead>
+      <tbody>
+        {% for v in visits %}
+        <tr>
+          <td class="nowrap">{{ v.created_at | dt('%d %b %Y, %H:%M:%S') }}{% if v.is_bot %} <span class="chip chip-bot">bot</span>{% endif %}</td>
+          <td class="mono">{{ v.path or '/' }}</td>
+          <td class="hide-md ua">{{ v.referrer or '—' }}</td>
+          <td class="ua" title="{{ v.user_agent }}">{{ v.user_agent | ua_short }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if total > visits | length %}<p class="hint">{{ icon('info') }} Showing the latest {{ visits | length }} visits.</p>{% endif %}
+{% endblock %}

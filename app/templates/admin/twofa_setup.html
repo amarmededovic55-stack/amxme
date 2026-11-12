@@ -1,0 +1,32 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Set up 2FA{% endblock %}
+{% block heading %}<h1>Set up two-factor authentication</h1><p>Scan the code with your authenticator app.</p>{% endblock %}
+{% block content %}
+<div class="grid-narrow">
+  <section class="panel form-panel">
+    <h2 class="h2 mt0">1. Scan this QR code</h2>
+    <p class="help">Use Google Authenticator, Microsoft Authenticator, Authy or any TOTP app.</p>
+    <div style="text-align:center;margin:18px 0">
+      <img src="{{ qr }}" alt="QR code for two-factor setup" width="200" height="200"
+           style="border-radius:12px;background:#fff;padding:10px">
+    </div>
+    <p class="help">Can't scan? Enter this key manually:</p>
+    <p style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:16px;letter-spacing:2px;
+              background:var(--bg-soft,#f3f1fb);padding:12px 14px;border-radius:10px;word-break:break-all">{{ secret }}</p>
+    <form method="post" action="{{ url_for('admin.twofa_enable') }}" class="mt0">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h2 class="h2">2. Enter the code from the app</h2>
+      <div class="fgroup">
+        <label class="lbl" for="code">6-digit code</label>
+        <input class="inp" id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+               pattern="[0-9]*" maxlength="6" required placeholder="123456">
+      </div>
+      <div class="form-foot">
+        <a href="{{ url_for('admin.account') }}" class="btn btn-ghost">Cancel</a>
+        <button class="btn btn-primary">{{ icon('shield-check') }} Turn on 2FA</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

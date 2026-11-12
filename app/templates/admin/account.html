@@ -1,0 +1,47 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}My Account{% endblock %}
+{% block heading %}<h1>My Account</h1><p>Signed in as <b>{{ g.user.username }}</b>{% if g.user.last_login %} · last sign-in {{ g.user.last_login | dt }}{% endif %}</p>{% endblock %}
+{% block content %}
+<div class="cols">
+  <form method="post" class="panel form-panel">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h2 class="h2 mt0">Change password</h2>
+    <div class="fgroup"><label class="lbl" for="cur">Current password</label><input class="inp" id="cur" name="current" type="password" autocomplete="current-password" required></div>
+    <div class="fgroup"><label class="lbl" for="new">New password</label><input class="inp" id="new" name="new" type="password" autocomplete="new-password" minlength="12" required><small class="help">At least 12 characters.</small></div>
+    <div class="fgroup"><label class="lbl" for="conf">Confirm new password</label><input class="inp" id="conf" name="confirm" type="password" autocomplete="new-password" minlength="12" required></div>
+    <div class="form-foot"><button class="btn btn-primary">{{ icon('lock') }} Update password</button></div>
+  </form>
+  <section class="panel form-panel">
+    <h2 class="h2 mt0">{{ icon('shield') }} Two-factor authentication</h2>
+    {% if twofa %}
+    <p class="help">Status: <b style="color:#16a34a">On</b>. You'll be asked for a code from your app at every sign-in.</p>
+    <form method="post" action="{{ url_for('admin.twofa_disable') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="fgroup">
+        <label class="lbl" for="tfpw">Confirm your password to turn it off</label>
+        <input class="inp" id="tfpw" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <div class="form-foot"><button class="btn btn-ghost">{{ icon('x') }} Turn off 2FA</button></div>
+    </form>
+    {% else %}
+    <p class="help">Status: <b style="color:#b45309">Off</b>. Add a second step at sign-in using an app like Google Authenticator. Strongly recommended.</p>
+    <form method="post" action="{{ url_for('admin.twofa_setup') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-foot"><button class="btn btn-primary">{{ icon('shield-check') }} Set up 2FA</button></div>
+    </form>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Sign-in activity</h2></div>
+    {% if activity %}
+    <ul class="feed">
+      {% for a in activity %}
+      <li><span class="dot {{ a.kind }}"></span><div><b>{{ a.action }}</b><small>{{ a.user or '—' }} · {{ a.ip }} · {{ a.created_at | dt }}</small></div></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No activity yet.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

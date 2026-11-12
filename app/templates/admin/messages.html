@@ -1,0 +1,28 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Messages{% endblock %}
+{% block heading %}<h1>Messages</h1><p>Inquiries sent through the contact form.</p>{% endblock %}
+{% block content %}
+{% if not smtp %}
+<div class="note">{{ icon('info') }}<div>Email notifications are off (SMTP not configured). All messages are still saved here.</div></div>
+{% endif %}
+{% if items %}
+<div class="panel p0">
+  <ul class="mlist big">
+    {% for m in items %}
+    <li><a href="{{ url_for('admin.message', msg_id=m.id) }}" class="{{ 'unread' if not m.is_read }}">
+      <span class="avatar">{{ m.name[:1] | upper }}</span>
+      <span class="m-main"><b>{{ m.name }} <em>&lt;{{ m.email }}&gt;</em></b><small><span class="chip">{{ m.service }}</span> {{ m.body | truncate(90) }}</small></span>
+      <span class="m-date">{{ m.created_at | dt('%d %b %Y') }}</span>
+    </a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<div class="panel empty-state">
+  <span class="q-ic">{{ icon('inbox') }}</span>
+  <h2>No messages yet</h2>
+  <p>When someone fills in the contact form, the message will appear here.</p>
+</div>
+{% endif %}
+{% endblock %}

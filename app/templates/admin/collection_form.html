@@ -1,0 +1,45 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% set editing = obj is not none %}
+{% block title %}{{ 'Edit' if editing else 'New' }} {{ cfg.singular | lower }}{% endblock %}
+{% block heading %}<h1>{{ ('Edit ' ~ cfg.singular | lower) if editing else ('New ' ~ cfg.singular | lower) }}</h1><p><a href="{{ url_for('admin.collection', kind=kind) }}" class="link">{{ icon('arrow-left') }} Back to {{ cfg.title | lower }}</a></p>{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel form-panel" data-dirty-guard>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for f in cfg.fields %}
+  {% set val = form[f.key] if form else (obj[f.key] if editing else '') %}
+  <div class="fgroup{{ ' has-err' if errors[f.key] }}">
+    <label class="lbl" for="{{ f.key }}">{{ f.label }}{% if f.required %} <span class="req">*</span>{% endif %}</label>
+    {% if f.type in ('textarea', 'lines') %}
+      <textarea class="inp" id="{{ f.key }}" name="{{ f.key }}" rows="{{ 6 if f.type == 'lines' else 3 }}" data-autosize>{{ val or '' }}</textarea>
+    {% elif f.type == 'icon' %}
+      {% set cur = val or 'check' %}
+      <div class="icon-picker" role="radiogroup" aria-label="{{ f.label }}">
+        {% for name in icons %}
+        <label class="ip" title="{{ name }}"><input type="radio" name="{{ f.key }}" value="{{ name }}" {{ 'checked' if name == cur }}><span>{{ icon(name) }}</span></label>
+        {% endfor %}
+      </div>
+    {% elif f.type == 'image' %}
+      {% set img = obj.image if editing else '' %}
+      <div class="imgfield">
+        <div class="img-prev wide" data-preview>{% if img %}<img src="{{ img }}" alt="">{% else %}{{ icon('image') }}<small>No image</small>{% endif %}</div>
+        <div class="img-actions">
+          <label class="btn btn-ghost">{{ icon('upload-cloud') }} Choose image<input type="file" name="{{ f.key }}" accept="image/*" hidden data-image-input></label>
+          {% if img %}<label class="check"><input type="checkbox" name="{{ f.key }}__remove" value="1"> Remove image</label>{% endif %}
+        </div>
+      </div>
+    {% else %}
+      <input class="inp" id="{{ f.key }}" name="{{ f.key }}" type="text" value="{{ val or '' }}" {{ 'required' if f.required }} {% if f.type == 'url' %}inputmode="url" placeholder="https://"{% endif %}>
+    {% endif %}
+    {% if errors[f.key] %}<small class="ferr">{{ errors[f.key] }}</small>{% endif %}
+    {% if f.help or f.type == 'lines' %}<small class="help">{{ f.help or 'One item per line.' }}</small>{% endif %}
+  </div>
+  {% endfor %}
+  {% set is_on = (form.get('enabled') if form else (obj.enabled if editing else True)) %}
+  <label class="check big"><input type="checkbox" name="enabled" value="1" {{ 'checked' if is_on }}> Visible on the website</label>
+  <div class="form-foot">
+    <a href="{{ url_for('admin.collection', kind=kind) }}" class="btn btn-ghost">Cancel</a>
+    <button class="btn btn-primary">{{ icon('check') }} {{ 'Save changes' if editing else 'Add ' ~ cfg.singular | lower }}</button>
+  </div>
+</form>
+{% endblock %}

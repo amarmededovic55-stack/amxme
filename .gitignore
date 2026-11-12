@@ -1,0 +1,11 @@
+# Signed: ASDHEM | AMXME Web Solutions
+.env
+.venv/
+data/
+backups/
+__pycache__/
+*.pyc
+*.bak*
+*.db
+.gunicorn/
+.cache/

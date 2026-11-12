@@ -1,0 +1,26 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ c.site_title }}{% endblock %}</title>
+  <meta name="description" content="{{ c.meta_description }}">
+  <meta name="theme-color" content="#5b21b6">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ c.site_title }}">
+  <meta property="og:description" content="{{ c.meta_description }}">
+  <meta property="og:url" content="{{ config.SITE_URL }}/">
+  <link rel="canonical" href="{{ config.SITE_URL }}/">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/jakarta-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
+  <noscript><style>.reveal { opacity: 1 !important; transform: none !important; }</style></noscript>
+  <link rel="stylesheet" href="{{ asset('css/site.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
+<script src="{{ asset('js/site.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "base.html" %}
+{% from "_macros.html" import logo, mini_site, rack with context %}
+{% block body %}
+{% if preview_left %}
+<div class="preview-bar">👀 Preview access – this website is not public yet. Your access expires in {% if preview_left >= 5400 %}{{ (preview_left + 1799) // 3600 }} h{% else %}{{ (preview_left + 59) // 60 }} min{% endif %}.</div>
+{% elif c.maintenance_enabled == '1' %}
+<div class="preview-bar">🔧 Under construction mode is ON – visitors only see the “under construction” page. You see the full site because you are signed in. <a href="/admin/content/maintenance">Change</a></div>
+{% endif %}
+
+<header class="nav" id="top">
+  <div class="wrap nav-in">
+    <a href="#top" class="nav-brand" aria-label="{{ c.company_name }} – home">{{ logo() }}</a>
+    <nav class="nav-links" id="navLinks" aria-label="Main">
+      <a href="#services">Services</a>
+      <a href="#why">Why Us</a>
+      <a href="#hosting">Hosting</a>
+      {% if projects %}<a href="#portfolio">Our Work</a>{% endif %}
+      <a href="#about">About</a>
+      <a href="#contact" class="btn btn-sm btn-primary nav-cta">Contact Us</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+<!-- ============================== HERO ============================== -->
+<section class="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-swoosh"></div><div class="hero-swoosh s2"></div>
+    <div class="hero-orb o1"></div><div class="hero-orb o2"></div>
+    <div class="hero-grid"></div>
+  </div>
+  <div class="wrap hero-in">
+    <div class="hero-copy">
+      {% if c.hero_promo %}<span class="pill reveal"><span class="pill-dot"></span>{{ c.hero_promo }}</span>{% endif %}
+      {% if c.hero_tagline %}<p class="script reveal">{{ c.hero_tagline }}</p>{% endif %}
+      <h1 class="reveal">{{ c.hero_title | highlight(c.hero_highlight) }}</h1>
+      {% if c.hero_motto %}<p class="motto reveal">{{ c.hero_motto }}</p>{% endif %}
+      <p class="lead reveal">{{ c.hero_subtitle }}</p>
+      <div class="hero-btns reveal">
+        {% if c.hero_btn1_text %}<a href="{{ c.hero_btn1_link | safe_url('#services') }}" class="btn btn-primary btn-lg">{{ c.hero_btn1_text }} {{ icon('arrow-right') }}</a>{% endif %}
+        {% if c.hero_btn2_text %}<a href="{{ c.hero_btn2_link | safe_url('#contact') }}" class="btn btn-ghost btn-lg">{{ icon('mail') }} {{ c.hero_btn2_text }}</a>{% endif %}
+      </div>
+      {% set checks = c.hero_checks | lines %}
+      {% if checks %}
+      <ul class="hero-checks reveal">
+        {% for item in checks %}<li><span class="chk">{{ icon('check') }}</span>{{ item }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hv">
+        <div class="hv-glow"></div>
+        <div class="hv-floor"></div>
+
+        <!-- server racks -->
+        <div class="hv-rack hv-rack--back">{{ rack(7) }}</div>
+        <div class="hv-rack hv-rack--front">{{ rack(10) }}</div>
+
+        <!-- cloud -->
+        <div class="hv-cloud">
+          <svg viewBox="0 0 220 150">
+            <defs>
+              <linearGradient id="cloudFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f3eeff"/><stop offset="1" stop-color="#d8c8ff"/>
+              </linearGradient>
+              <linearGradient id="arrowFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#5b21b6"/>
+              </linearGradient>
+            </defs>
+            <path d="M58 128h112a40 40 0 0 0 6-79.5A54 54 0 0 0 72 40a44 44 0 0 0-14 88z" fill="url(#cloudFill)" stroke="#c4b5fd" stroke-width="2"/>
+            <g class="cl-up"><path d="M96 104V62m0 0-13 13m13-13 13 13" fill="none" stroke="url(#arrowFill)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <g class="cl-down"><path d="M126 60v42m0 0-13-13m13 13 13-13" fill="none" stroke="url(#arrowFill)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g>
+          </svg>
+          <span class="hv-beam b1"></span><span class="hv-beam b2"></span><span class="hv-beam b3"></span>
+        </div>
+
+        <!-- desktop monitor -->
+        <div class="hv-monitor">
+          <div class="mon-screen">{{ mini_site('d') }}</div>
+          <div class="mon-chin"></div>
+          <div class="mon-neck"></div>
+          <div class="mon-foot"></div>
+        </div>
+
+        <!-- laptop with dev interface -->
+        <div class="hv-laptop">
+          <div class="lap-lid">
+            <div class="lap-screen">
+              <div class="ide">
+                <div class="ide-bar"><i></i><i></i><i></i><span>index.html — amxme</span></div>
+                <div class="ide-body">
+                  <div class="ide-side">
+                    <span class="f open">src</span><span class="f">components</span><span class="f act">index.html</span><span class="f">styles.css</span><span class="f">app.js</span><span class="f">server.conf</span>
+                  </div>
+                  <div class="ide-code">
+<pre><span class="ln">1</span><span class="t">&lt;section</span> <span class="a">class</span>=<span class="s">"hero"</span><span class="t">&gt;</span>
+<span class="ln">2</span>  <span class="t">&lt;h1&gt;</span>Your Business Online<span class="t">&lt;/h1&gt;</span>
+<span class="ln">3</span>  <span class="t">&lt;p&gt;</span>Fast. Secure. Reliable.<span class="t">&lt;/p&gt;</span>
+<span class="ln">4</span>  <span class="t">&lt;a</span> <span class="a">href</span>=<span class="s">"#start"</span><span class="t">&gt;</span>Get Started<span class="t">&lt;/a&gt;</span>
+<span class="ln">5</span><span class="t">&lt;/section&gt;</span>
+<span class="ln">6</span>
+<span class="ln">7</span><span class="k">const</span> <span class="v">site</span> = <span class="f">deploy</span>({
+<span class="ln">8</span>  <span class="a">ssl</span>: <span class="k">true</span>, <span class="a">cache</span>: <span class="s">'edge'</span>,
+<span class="ln">9</span>  <span class="a">backups</span>: <span class="s">'daily'</span>
+<span class="ln">10</span>});<span class="cursor"></span></pre>
+                  </div>
+                  <div class="ide-preview">{{ mini_site('l', True) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lap-base"><span></span></div>
+        </div>
+
+        <!-- smartphone -->
+        <div class="hv-phone">
+          <div class="ph-frame"><div class="ph-notch"></div><div class="ph-screen">{{ mini_site('p', True) }}</div></div>
+        </div>
+
+        <!-- floating chips -->
+        <div class="hv-chip chip-ssl">{{ icon('lock') }}<span>SSL Secured</span></div>
+        <div class="hv-chip chip-speed">{{ icon('zap') }}<span>Optimized</span></div>
+      </div>
+    </div>
+  </div>
+
+  {% if badges %}
+  <div class="wrap">
+    <div class="trust reveal">
+      {% for b in badges %}
+      <div class="trust-item"><span class="trust-ic">{{ icon(b.icon) }}</span><span>{{ b.title }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<!-- ============================== SERVICES ============================== -->
+{% if services %}
+<section class="section" id="services">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{{ c.services_eyebrow }}</span>
+      <h2>{{ c.services_title }}</h2>
+      <p>{{ c.services_intro }}</p>
+    </div>
+    <div class="svc-grid">
+      {% for s in services %}
+      <article class="svc reveal" style="--i:{{ loop.index0 }}">
+        <div class="svc-ic">{{ icon(s.icon) }}</div>
+        <h3>{{ s.title }}</h3>
+        {% if s.description %}<p>{{ s.description }}</p>{% endif %}
+        {% if s.item_list %}
+        <ul class="ticks">{% for it in s.item_list %}<li>{{ icon('check') }}{{ it }}</li>{% endfor %}</ul>
+        {% endif %}
+        <a href="#contact" class="svc-link" data-service="{{ s.title }}">Ask about this {{ icon('arrow-right') }}</a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================== WHY ============================== -->
+{% if why %}
+<section class="section section--dark" id="why">
+  <div class="dark-bg" aria-hidden="true"><div class="dk-orb a"></div><div class="dk-orb b"></div><div class="dk-grid"></div></div>
+  <div class="wrap">
+    <div class="sec-head sec-head--light reveal">
+      <span class="eyebrow">{{ c.why_eyebrow }}</span>
+      <h2>{{ c.why_title }}</h2>
+      <p>{{ c.why_intro }}</p>
+    </div>
+    <div class="why-grid">
+      {% for w in why %}
+      <div class="why reveal" style="--i:{{ loop.index0 }}">
+        <div class="why-ic">{{ icon(w.icon) }}</div>
+        <div>
+          <h3>{{ w.title }}</h3>
+          {% if w.text %}<p>{{ w.text }}</p>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================== HOSTING ============================== -->
+<section class="section" id="hosting">
+  <div class="wrap host">
+    <div class="host-copy">
+      <span class="eyebrow reveal">{{ c.hosting_eyebrow }}</span>
+      <h2 class="reveal">{{ c.hosting_title }}</h2>
+      <p class="lead reveal">{{ c.hosting_text }}</p>
+      {% if hosting %}
+      <ul class="host-list">
+        {% for h in hosting %}
+        <li class="reveal" style="--i:{{ loop.index0 }}">
+          <span class="host-ic">{{ icon(h.icon) }}</span>
+          <div><b>{{ h.title }}</b>{% if h.text %}<span>{{ h.text }}</span>{% endif %}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if c.hosting_btn_text %}<a href="{{ c.hosting_btn_link | safe_url('#contact') }}" class="btn btn-primary reveal">{{ c.hosting_btn_text }} {{ icon('arrow-right') }}</a>{% endif %}
+    </div>
+
+    <div class="host-visual reveal" aria-hidden="true">
+      <div class="hp">
+        <div class="hp-head">
+          <span class="hp-dot"></span><b>Server Control Panel</b><span class="hp-status">Online</span>
+        </div>
+        <div class="hp-servers">
+          {% for name in ['web-01', 'web-02', 'db-01'] %}
+          <div class="hp-srv">
+            <span class="hp-srv-ic">{{ icon('server') }}</span>
+            <div class="hp-srv-name"><b>{{ name }}</b><small>Healthy</small></div>
+            <div class="hp-bars"><i style="--h:.55"></i><i style="--h:.8"></i><i style="--h:.45"></i><i style="--h:.7"></i><i style="--h:.6"></i><i style="--h:.9"></i><i style="--h:.5"></i></div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="hp-grid">
+          <div class="hp-tile">{{ icon('lock') }}<b>SSL</b><small>Active &amp; auto-renewing</small></div>
+          <div class="hp-tile">{{ icon('refresh') }}<b>Backups</b><small>Scheduled regularly</small></div>
+          <div class="hp-tile">{{ icon('shield-check') }}<b>Security</b><small>Updates applied</small></div>
+          <div class="hp-tile">{{ icon('gauge') }}<b>Performance</b><small>Caching enabled</small></div>
+        </div>
+      </div>
+      <div class="host-cloud">{{ icon('cloud') }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== PORTFOLIO ============================== -->
+{% if projects %}
+<section class="section section--soft" id="portfolio">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{{ c.portfolio_eyebrow }}</span>
+      <h2>{{ c.portfolio_title }}</h2>
+      <p>{{ c.portfolio_intro }}</p>
+    </div>
+    {% if categories | length > 1 %}
+    <div class="filters reveal" role="tablist" aria-label="Filter projects">
+      <button class="filter is-active" data-filter="*" role="tab" aria-selected="true">All</button>
+      {% for cat in categories %}<button class="filter" data-filter="{{ cat }}" role="tab" aria-selected="false">{{ cat }}</button>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="pf-grid">
+      {% for p in projects %}
+      <article class="pf reveal" data-category="{{ p.category }}" style="--i:{{ loop.index0 }}">
+        <div class="pf-shot">
+          <div class="pf-bar"><i></i><i></i><i></i></div>
+          {% if p.image %}<img src="{{ p.image }}" alt="Screenshot of {{ p.title }}" loading="lazy">
+          {% else %}<div class="pf-empty">{{ icon('image') }}</div>{% endif %}
+        </div>
+        <div class="pf-body">
+          {% if p.category %}<span class="pf-cat">{{ p.category }}</span>{% endif %}
+          <h3>{{ p.title }}</h3>
+          {% if p.description %}<p>{{ p.description }}</p>{% endif %}
+          {% if p.tech_list %}<div class="tags">{% for t in p.tech_list %}<span>{{ t }}</span>{% endfor %}</div>{% endif %}
+          {% if p.url %}<a href="{{ p.url | safe_url }}" class="btn btn-sm btn-outline" target="_blank" rel="noopener">View Project {{ icon('external') }}</a>{% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================== ABOUT ============================== -->
+<section class="section" id="about">
+  <div class="wrap about">
+    <div class="about-visual reveal">
+      {% if c.about_image %}
+      <img src="{{ c.about_image }}" alt="{{ c.company_name }}" class="about-img" loading="lazy">
+      {% else %}
+      <div class="about-card" aria-hidden="true">
+        <div class="ac-ring r1"></div><div class="ac-ring r2"></div>
+        {{ logo(light=True) }}
+        <div class="ac-icons">
+          <span>{{ icon('code') }}</span><span>{{ icon('messages') }}</span><span>{{ icon('server') }}</span><span>{{ icon('globe') }}</span><span>{{ icon('wrench') }}</span>
+        </div>
+        <p class="ac-line">Build. Host. Grow.</p>
+      </div>
+      {% endif %}
+    </div>
+    <div class="about-copy">
+      <span class="eyebrow reveal">{{ c.about_eyebrow }}</span>
+      <h2 class="reveal">{{ c.about_title }}</h2>
+      {% for para in c.about_text | paragraphs %}<p class="reveal">{{ para }}</p>{% endfor %}
+      {% set pts = c.about_points | lines %}
+      {% if pts %}<ul class="ticks ticks--lg reveal">{% for pt in pts %}<li>{{ icon('check') }}{{ pt }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CTA ============================== -->
+{% if c.cta_title %}
+<section class="wrap">
+  <div class="cta reveal">
+    <div class="cta-glow" aria-hidden="true"></div>
+    <div>
+      <h2>{{ c.cta_title }}</h2>
+      {% if c.cta_text %}<p>{{ c.cta_text }}</p>{% endif %}
+    </div>
+    {% if c.cta_btn_text %}<a href="{{ c.cta_btn_link | safe_url('#contact') }}" class="btn btn-white btn-lg">{{ c.cta_btn_text }} {{ icon('arrow-right') }}</a>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================== CONTACT ============================== -->
+<section class="section" id="contact">
+  <div class="wrap contact">
+    <div class="contact-info">
+      <span class="eyebrow reveal">{{ c.contact_eyebrow }}</span>
+      <h2 class="reveal">{{ c.contact_title }}</h2>
+      <p class="lead reveal">{{ c.contact_intro }}</p>
+      <a class="mail-card reveal" href="mailto:{{ c.contact_email }}">
+        <span class="mail-ic">{{ icon('mail') }}</span>
+        <span><small>Email us</small><b>{{ c.contact_email }}</b>{% if c.contact_note %}<em>{{ c.contact_note }}</em>{% endif %}</span>
+      </a>
+    </div>
+
+    <form class="form reveal" id="contactForm" action="{{ url_for('public.contact') }}" method="post" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+      {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, m in msgs %}<div class="alert alert-{{ cat }}">{{ m }}</div>{% endfor %}
+      {% endwith %}
+      <div class="alert alert-success" id="formSuccess" hidden></div>
+      <div class="alert alert-error" id="formError" hidden></div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="f-name">Full Name</label>
+          <input id="f-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" placeholder="John Smith">
+          <small class="err" data-for="name"></small>
+        </div>
+        <div class="field">
+          <label for="f-email">Email Address</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="200" placeholder="you@company.com">
+          <small class="err" data-for="email"></small>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-service">Service Interested In</label>
+        <div class="select">
+          <select id="f-service" name="service" required>
+            <option value="" disabled selected>Select a service…</option>
+            {% for s in services %}<option>{{ s.title }}</option>{% endfor %}
+            <option>Other / Not sure yet</option>
+          </select>
+        </div>
+        <small class="err" data-for="service"></small>
+      </div>
+      <div class="field">
+        <label for="f-message">Message</label>
+        <textarea id="f-message" name="message" rows="5" required minlength="10" maxlength="5000" placeholder="Tell us about your project, goals and timeline…"></textarea>
+        <small class="err" data-for="message"></small>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg btn-block" id="contactBtn">
+        <span class="btn-label">Contact Us</span> {{ icon('send') }}
+      </button>
+      <p class="form-note">{{ icon('lock') }} Your details are only used to reply to your inquiry.</p>
+    </form>
+  </div>
+</section>
+</main>
+
+<!-- ============================== FOOTER ============================== -->
+<footer class="footer">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      {{ logo(light=True) }}
+      <p>{{ c.footer_text }}</p>
+      <a href="mailto:{{ c.contact_email }}" class="foot-mail">{{ icon('mail') }} {{ c.contact_email }}</a>
+    </div>
+    <div>
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#top">Home</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#hosting">Hosting</a></li>
+        {% if projects %}<li><a href="#portfolio">Our Work</a></li>{% endif %}
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Services</h4>
+      <ul>{% for s in services %}<li><a href="#services">{{ s.title }}</a></li>{% endfor %}</ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:{{ c.contact_email }}">{{ c.contact_email }}</a></li>
+        <li><a href="#contact">Send us a message</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap foot-bottom">
+    <span>© {{ year }} {{ c.copyright }}</span>
+    <a href="#top" class="to-top" aria-label="Back to top">↑</a>
+  </div>
+</footer>
+{% endblock %}

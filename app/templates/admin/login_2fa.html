@@ -1,0 +1,21 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Two-factor{% endblock %}
+{% block shell %}
+<main class="login">
+  <div class="login-art" aria-hidden="true"><div class="la-orb a"></div><div class="la-orb b"></div></div>
+  <form class="login-card" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="login-logo">{{ logo() }}</div>
+    <h1>Two-factor check</h1>
+    <p class="muted">Enter the 6-digit code from your authenticator app.</p>
+    {% if error %}<div class="flash flash-error">{{ icon('alert') }}<span>{{ error }}</span></div>{% endif %}
+    <label class="lbl" for="code">Authentication code</label>
+    <input class="inp" id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+           pattern="[0-9A-Za-z-]*" maxlength="19" required autofocus placeholder="123456">
+    <small class="help">Lost your phone? Enter one of your backup codes instead.</small>
+    <button class="btn btn-primary btn-block">Verify {{ icon('arrow-right') }}</button>
+    <a href="{{ url_for('admin.login') }}" class="back">{{ icon('arrow-left') }} Start over</a>
+  </form>
+</main>
+{% endblock %}

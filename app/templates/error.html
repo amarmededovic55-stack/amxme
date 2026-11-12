@@ -1,0 +1,12 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "base.html" %}
+{% from "_macros.html" import logo with context %}
+{% block title %}{{ code }} – {{ c.company_name }}{% endblock %}
+{% block body %}
+<main class="error-page">
+  <a href="/">{{ logo() }}</a>
+  <h1 class="grad-text">{{ code }}</h1>
+  <p>{{ message }}</p>
+  <a href="/" class="btn btn-primary">Back to homepage</a>
+</main>
+{% endblock %}

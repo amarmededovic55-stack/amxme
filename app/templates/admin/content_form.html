@@ -1,0 +1,90 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}{{ section.title }}{% endblock %}
+{% block heading %}<h1>{{ section.title }}</h1><p>{{ section.intro }}</p>{% endblock %}
+{% block actions %}<a href="/" target="_blank" rel="noopener" class="btn btn-ghost">{{ icon('eye') }}<span class="hide-sm">Preview</span></a>{% endblock %}
+{% block content %}
+{% if section.slug == 'maintenance' %}
+{# ASDHEM | preview links #}
+<div class="panel form-panel preview-panel" id="preview-links">
+  <div class="panel-head"><h2>{{ icon('eye') }} Preview links</h2></div>
+  <p class="help pv-intro">Let someone see the full website while it is under construction. Choose how long the link works – you can delete it any time and it stops working immediately.</p>
+  <form method="post" action="{{ url_for('admin.preview_link') }}" class="pv-new">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="pv-field pv-grow">
+      <label class="lbl" for="pvLabel">For whom <small class="muted">(optional)</small></label>
+      <input class="inp" id="pvLabel" name="label" maxlength="60" placeholder="e.g. Client – Marko">
+    </div>
+    <div class="pv-field">
+      <label class="lbl" for="pvMinutes">Valid for</label>
+      <select class="inp" id="pvMinutes" name="minutes">
+        {% for m, txt in preview_durations %}<option value="{{ m }}" {{ 'selected' if m == preview_default }}>{{ txt }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-primary">{{ icon('plus') }} Generate link</button>
+  </form>
+
+  {% if preview_links %}
+  <div class="pv-list">
+    {% for l in preview_links %}
+    {% set left = l.e - now %}
+    <div class="pv-item{{ ' pv-new-item' if l.i == new_link }}">
+      <div class="pv-meta">
+        <b>{{ l.l or 'Preview link' }}</b>
+        <span class="muted">{{ icon('clock') }} expires in
+          {% if left >= 86400 %}{{ left // 86400 }} d {{ (left % 86400) // 3600 }} h
+          {% elif left >= 3600 %}{{ left // 3600 }} h {{ (left % 3600) // 60 }} min
+          {% else %}{{ (left + 59) // 60 }} min{% endif %}</span>
+      </div>
+      <div class="preview-link-row">
+        <input class="inp" id="pv-{{ loop.index }}" type="text" value="{{ preview_base }}{{ l.t }}" readonly data-select-all aria-label="Preview link">
+        <button type="button" class="btn btn-ghost" data-copy="#pv-{{ loop.index }}">Copy</button>
+        <form method="post" action="{{ url_for('admin.preview_link_delete', link_id=l.i) }}" data-confirm="Delete this preview link? Anyone using it loses access immediately.">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-danger" aria-label="Delete link">{{ icon('trash') }}<span class="hide-sm">Delete</span></button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if preview_links|length > 1 %}
+  <form method="post" action="{{ url_for('admin.preview_link_delete_all') }}" class="pv-all" data-confirm="Delete ALL {{ preview_links|length }} preview links?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-danger">{{ icon('trash') }} Delete all links</button>
+  </form>
+  {% endif %}
+  {% else %}
+  <p class="empty pv-empty">No active preview links.</p>
+  {% endif %}
+</div>
+{% endif %}
+<form method="post" enctype="multipart/form-data" class="panel form-panel" data-dirty-guard>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for f in section.fields %}
+  {% set val = c[f.key] %}
+  <div class="fgroup">
+    <label class="lbl" for="{{ f.key }}">{{ f.label }}</label>
+    {% if f.type == 'bool' %}
+      <input type="hidden" name="{{ f.key }}" value="0">
+      <label class="check big"><input type="checkbox" id="{{ f.key }}" name="{{ f.key }}" value="1" {{ 'checked' if val == '1' }}> Enabled</label>
+    {% elif f.type in ('textarea', 'lines') %}
+      <textarea class="inp" id="{{ f.key }}" name="{{ f.key }}" rows="{{ 10 if f.key == 'autoreply_body' else (7 if f.key == 'about_text' else (5 if f.type == 'lines' else 3)) }}" data-autosize>{{ val }}</textarea>
+    {% elif f.type == 'image' %}
+      <div class="imgfield">
+        <div class="img-prev" data-preview>{% if val %}<img src="{{ val }}" alt="">{% else %}{{ icon('image') }}<small>No image</small>{% endif %}</div>
+        <div class="img-actions">
+          <label class="btn btn-ghost">{{ icon('upload-cloud') }} Choose image<input type="file" name="{{ f.key }}" accept="image/*" hidden data-image-input></label>
+          {% if val %}<label class="check"><input type="checkbox" name="{{ f.key }}__remove" value="1"> Remove image</label>{% endif %}
+        </div>
+      </div>
+    {% else %}
+      <input class="inp" id="{{ f.key }}" name="{{ f.key }}" type="{{ 'email' if f.type == 'email' else 'text' }}" value="{{ val }}">
+    {% endif %}
+    {% if f.help or f.type == 'lines' %}<small class="help">{{ f.help or 'One item per line.' }}</small>{% endif %}
+  </div>
+  {% endfor %}
+  <div class="form-foot">
+    <button class="btn btn-primary">{{ icon('check') }} Save changes</button>
+  </div>
+</form>
+{% endblock %}

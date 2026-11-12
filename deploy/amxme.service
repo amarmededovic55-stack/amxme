@@ -1,0 +1,23 @@
+# Signed: ASDHEM | AMXME Web Solutions
+[Unit]
+Description=AMXME Web Solutions website (Gunicorn, port 8002)
+After=network.target
+
+[Service]
+Type=simple
+User=amxme
+Group=amxme
+WorkingDirectory=/opt/amxme
+EnvironmentFile=/opt/amxme/.env
+ExecStart=/opt/amxme/.venv/bin/gunicorn -c /opt/amxme/deploy/gunicorn.conf.py wsgi:app
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/amxme/data
+
+[Install]
+WantedBy=multi-user.target

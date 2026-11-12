@@ -1,0 +1,68 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}<h1>Welcome back, {{ g.user.username }}</h1><p>Here's an overview of your website.</p>{% endblock %}
+{% block actions %}<a href="/" target="_blank" rel="noopener" class="btn btn-ghost">{{ icon('eye') }}<span class="hide-sm">View website</span></a>{% endblock %}
+{% block content %}
+{% if c.maintenance_enabled == '1' %}
+<div class="note note-warn">{{ icon('wrench') }}<div><b>Under construction mode is ON.</b> Visitors only see the “under construction” page. <a href="{{ url_for('admin.content', slug='maintenance') }}">Turn it off</a> when the website is ready.</div></div>
+{% endif %}
+{% if not smtp %}
+<div class="note">
+  {{ icon('info') }}
+  <div><b>Email sending is not configured yet.</b> Contact form messages are saved under <a href="{{ url_for('admin.messages') }}">Messages</a>, but no notification email is sent until SMTP settings are added to the server's <code>.env</code> file.</div>
+</div>
+{% endif %}
+
+<div class="stats">
+  {% for label, active, total, ic, link in stats %}
+  <a href="{{ link }}" class="stat">
+    <span class="stat-ic">{{ icon(ic) }}</span>
+    <span class="stat-num">{{ active }}</span>
+    <span class="stat-lbl">{% if label == 'Messages' %}Unread messages <small>· {{ total }} total</small>{% else %}{{ label }} <small>· {{ active }} of {{ total }} visible</small>{% endif %}</span>
+  </a>
+  {% endfor %}
+</div>
+
+<h2 class="h2">Quick edit</h2>
+<div class="quick">
+  {% for s in sections %}
+  <a href="{{ url_for('admin.content', slug=s.slug) }}" class="qcard">
+    <span class="q-ic">{{ icon(s.icon) }}</span>
+    <span><b>{{ s.title }}</b><small>{{ s.intro }}</small></span>
+  </a>
+  {% endfor %}
+  {% for kind, col in collections.items() %}
+  <a href="{{ url_for('admin.collection', kind=kind) }}" class="qcard">
+    <span class="q-ic">{{ icon(col.icon) }}</span>
+    <span><b>{{ col.title }}</b><small>{{ col.intro }}</small></span>
+  </a>
+  {% endfor %}
+</div>
+
+<div class="cols">
+  <section class="panel">
+    <div class="panel-head"><h2>Recent changes</h2></div>
+    {% if recent %}
+    <ul class="feed">
+      {% for a in recent %}
+      <li><span class="dot {{ a.kind }}"></span><div><b>{{ a.action }}</b><small>{{ a.user or 'system' }} · {{ a.created_at | dt }}</small></div></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No changes yet.</p>{% endif %}
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>Latest messages</h2><a href="{{ url_for('admin.messages') }}" class="link">View all</a></div>
+    {% if latest %}
+    <ul class="mlist">
+      {% for m in latest %}
+      <li><a href="{{ url_for('admin.message', msg_id=m.id) }}" class="{{ 'unread' if not m.is_read }}">
+        <span class="avatar">{{ m.name[:1] | upper }}</span>
+        <span class="m-main"><b>{{ m.name }}</b><small>{{ m.service }} · {{ m.created_at | dt('%d %b, %H:%M') }}</small></span>
+      </a></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No messages yet. Submissions from the contact form will appear here.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}{{ cfg.title }}{% endblock %}
+{% block heading %}<h1>{{ cfg.title }}</h1><p>{{ cfg.intro }}</p>{% endblock %}
+{% block actions %}<a href="{{ url_for('admin.collection_edit', kind=kind) }}" class="btn btn-primary">{{ icon('plus') }}<span class="hide-sm">Add {{ cfg.singular | lower }}</span></a>{% endblock %}
+{% block content %}
+{% if items %}
+<ul class="sortable" data-reorder="{{ url_for('admin.collection_reorder', kind=kind) }}">
+  {% for o in items %}
+  <li class="row{{ ' off' if not o.enabled }}" draggable="true" data-id="{{ o.id }}">
+    <span class="grip" title="Drag to reorder">{{ icon('grip') }}</span>
+    <span class="mv"><button type="button" class="mv-btn" data-move="-1" aria-label="Move up">▲</button><button type="button" class="mv-btn" data-move="1" aria-label="Move down">▼</button></span>
+    {% if kind == 'portfolio' %}
+      <span class="thumb">{% if o.image %}<img src="{{ o.image }}" alt="">{% else %}{{ icon('image') }}{% endif %}</span>
+    {% else %}
+      <span class="row-ic">{{ icon(o.icon) }}</span>
+    {% endif %}
+    <a href="{{ url_for('admin.collection_edit', kind=kind, item_id=o.id) }}" class="row-main">
+      <b>{{ o.title }}</b>
+      {% set sub = cfg.subtitle(o) %}{% if sub %}<small>{{ sub | truncate(110) }}</small>{% endif %}
+    </a>
+    <form method="post" action="{{ url_for('admin.collection_toggle', kind=kind, item_id=o.id) }}" class="toggle-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="switch{{ ' on' if o.enabled }}" role="switch" aria-checked="{{ 'true' if o.enabled else 'false' }}" title="{{ 'Visible – click to hide' if o.enabled else 'Hidden – click to show' }}"><span></span></button>
+    </form>
+    <a href="{{ url_for('admin.collection_edit', kind=kind, item_id=o.id) }}" class="icon-btn" title="Edit" aria-label="Edit">{{ icon('edit') }}</a>
+    <form method="post" action="{{ url_for('admin.collection_delete', kind=kind, item_id=o.id) }}" data-confirm="Delete “{{ o.title }}”? This cannot be undone.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="icon-btn danger" title="Delete" aria-label="Delete">{{ icon('trash') }}</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+<p class="hint">{{ icon('info') }} Drag rows (or use the arrows on touch screens) to change the order on the website. Use the switch to show or hide an item without deleting it.</p>
+{% else %}
+<div class="panel empty-state">
+  <span class="q-ic">{{ icon(cfg.icon) }}</span>
+  <h2>No {{ cfg.title | lower }} yet</h2>
+  <p>Add your first {{ cfg.singular | lower }} to show it on the website.</p>
+  <a href="{{ url_for('admin.collection_edit', kind=kind) }}" class="btn btn-primary">{{ icon('plus') }} Add {{ cfg.singular | lower }}</a>
+</div>
+{% endif %}
+{% endblock %}
