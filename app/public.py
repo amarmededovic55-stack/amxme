@@ -342,14 +342,8 @@ def blog_post(slug):
 @bp.route("/process", defaults={"lang": DEFAULT_LANG})
 @bp.route(f"/{LANG_RULE}/process")
 def process():
-    if not _site_open():
-        return redirect(url_for("public.index"))
-    from .templating import steps
-    proc = steps(get_content().process_steps)
-    if not proc:
-        abort(404)
-    record_visit()
-    return render_template("process.html", proc=proc, canonical_path=url_for("public.process"))
+    """Old address: "How we work" now lives at the top of the homepage."""
+    return redirect(url_for("public.index", lang=current_lang()) + "#process", code=301)
 
 
 # ====================================================================== ASDHEM | FAQ page
@@ -559,8 +553,6 @@ def sitemap():
         pages.append(("public.blog", {}))
     if enabled(Faq):
         pages.append(("public.faq", {}))
-    if (get_content().process_steps or "").strip():
-        pages.append(("public.process", {}))
     pages += [("public.blog_post", {"slug": p.slug}) for p in latest_posts()]
     pages += [("public.service_page", {"slug": x.slug}) for x in enabled(Service) if x.slug and (x.body or "").strip()]
     urls = []

@@ -13,7 +13,7 @@
     <a href="#top" class="nav-brand" aria-label="{{ c.company_name }} – {{ t('home') }}">{{ logo() }}</a>
     <nav class="nav-links" id="navLinks" aria-label="Main">
       <a href="#services">{{ t('nav_services') }}</a>
-      {% if c.process_steps %}<a href="{{ url_for('public.process') }}">{{ t('nav_process') }}</a>{% endif %}
+      {% if c.process_steps %}<a href="#process">{{ t('nav_process') }}</a>{% endif %}
       <a href="#hosting">{{ t('nav_hosting') }}</a>
       {% if projects %}<a href="#portfolio">{{ t('nav_work') }}</a>{% endif %}
       <a href="#about">{{ t('nav_about') }}</a>
@@ -142,6 +142,28 @@
   </div>
   {% endif %}
 </section>
+
+<!-- ============================== PROCESS – compact strip under the hero (ASDHEM) ============================== -->
+{% set proc = c.process_steps | steps %}
+{% if proc %}
+<section class="pstrip" id="process">
+  <div class="wrap pstrip-in">
+    <div class="pstrip-head reveal">
+      <span class="eyebrow">{{ c.process_eyebrow }}</span>
+      <h2>{{ c.process_title }}</h2>
+    </div>
+    <ol class="pstrip-steps" style="--n: {{ proc | length }}">
+      {% for title, text in proc %}
+      <li class="reveal" style="--i:{{ loop.index0 }}">
+        <span class="pstrip-num" aria-hidden="true">{{ loop.index }}</span>
+        <b>{{ title }}</b>
+        {% if text %}<span>{{ text }}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+{% endif %}
 
 <!-- ============================== SERVICES ============================== -->
 {% if services %}
@@ -486,7 +508,7 @@
         <li><a href="#top">{{ t('home') }}</a></li>
         <li><a href="#services">{{ t('nav_services') }}</a></li>
         <li><a href="#hosting">{{ t('nav_hosting') }}</a></li>
-        {% if c.process_steps %}<li><a href="{{ url_for('public.process') }}">{{ t('nav_process') }}</a></li>{% endif %}
+        {% if c.process_steps %}<li><a href="#process">{{ t('nav_process') }}</a></li>{% endif %}
         {% if projects %}<li><a href="#portfolio">{{ t('nav_work') }}</a></li>{% endif %}
         <li><a href="#about">{{ t('about_us') }}</a></li>
         {% if has_faq %}<li><a href="{{ url_for('public.faq') }}">{{ t('nav_faq') }}</a></li>{% endif %}
