@@ -528,6 +528,12 @@ def collection_reorder(kind):
 @bp.route("/messages")
 @login_required
 def messages():
+    from .public import privacy_cleanup  # ASDHEM | GDPR retention runs before the inbox is shown
+    try:
+        privacy_cleanup()
+        db.session.commit()
+    except Exception:  # noqa: BLE001
+        db.session.rollback()
     items = db.session.execute(db.select(Message).order_by(Message.created_at.desc())).scalars().all()
     return render_template("admin/messages.html", items=items, smtp=smtp_configured())
 

@@ -10,8 +10,8 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="{{ c.site_title }}">
   <meta property="og:description" content="{{ c.meta_description }}">
-  <meta property="og:url" content="{{ config.SITE_URL }}/">
-  <link rel="canonical" href="{{ config.SITE_URL }}/">
+  <meta property="og:url" content="{{ config.SITE_URL }}{{ canonical_path | default('/') }}">
+  <link rel="canonical" href="{{ config.SITE_URL }}{{ canonical_path | default('/') }}">
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
   <link rel="preload" href="{{ url_for('static', filename='fonts/jakarta-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">

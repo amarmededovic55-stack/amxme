@@ -56,6 +56,6 @@
     </div>
   </section>
 
-  <footer class="mt-foot wrap">© {{ year }} {{ c.copyright }}</footer>
+  <footer class="mt-foot wrap">© {{ year }} {{ c.copyright }}<nav class="mt-legal" aria-label="Legal"><a href="{{ url_for('public.imprint') }}">Imprint</a><a href="{{ url_for('public.privacy') }}">Privacy Policy</a></nav></footer>
 </main>
 {% endblock %}

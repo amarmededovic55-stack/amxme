@@ -1,7 +1,7 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
 {% extends "admin/base.html" %}
 {% block title %}Messages{% endblock %}
-{% block heading %}<h1>Messages</h1><p>Inquiries sent through the contact form.</p>{% endblock %}
+{% block heading %}<h1>Messages</h1><p>Inquiries sent through the contact form. GDPR: sender IPs are erased after 7 days, messages are {% set m = (c.message_retention_months or '12') | trim %}{% if m == '0' %}kept until you delete them{% else %}deleted after {{ m }} months{% endif %} (<a href="{{ url_for('admin.content', slug='legal') }}">change</a>).</p>{% endblock %}
 {% block content %}
 {% if not smtp %}
 <div class="note">{{ icon('info') }}<div>Email notifications are off (SMTP not configured). All messages are still saved here.</div></div>

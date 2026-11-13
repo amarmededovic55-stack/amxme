@@ -100,6 +100,43 @@ SECTIONS = [
         ],
     },
     {
+        # ASDHEM | GDPR / German law: Imprint (§ 5 DDG) + Privacy Policy (Art. 13 GDPR)
+        "slug": "legal", "title": "Imprint & Privacy (GDPR)", "icon": "shield",
+        "intro": "Legal details for the Imprint (required in Germany, § 5 DDG) and the Privacy Policy. "
+                 "Both pages are linked in the footer and stay reachable even in “under construction” mode. "
+                 "This is a template, not legal advice – have it checked if you are unsure.",
+        "fields": [
+            F("legal_name", "Full name of the owner", default="",
+              help="Required. Your real first and last name (a company name alone is not enough for sole traders)."),
+            F("legal_company", "Business name", default="AMXME Web Solutions",
+              help="Optional. Trading name / company. For a GmbH/UG also add the legal form, e.g. “AMXME UG (haftungsbeschränkt)”."),
+            F("legal_street", "Street and house number", default="", help="Required. A real postal address – no P.O. box."),
+            F("legal_city", "Postal code and city", default="", help="Required. e.g. 10115 Berlin"),
+            F("legal_country", "Country", default="Germany"),
+            F("legal_email", "Email (legal contact)", "email", default="support@amxme.info"),
+            F("legal_phone", "Phone", default="", help="Strongly recommended – the law asks for a fast, direct way to contact you."),
+            F("legal_vat", "VAT ID (USt-IdNr.)", default="",
+              help="Only if you have one. Leave empty if you are a small business (Kleinunternehmer) without VAT ID."),
+            F("legal_register", "Commercial register", default="",
+              help="Only for registered companies, e.g. “Amtsgericht Berlin, HRB 123456”. Otherwise leave empty."),
+            F("legal_responsible", "Responsible for content (§ 18 (2) MStV)", default="",
+              help="Name and address of the person responsible for editorial content. Leave empty to use the owner above."),
+            F("legal_authority", "Data protection supervisory authority", "textarea", default="",
+              help="Optional. The authority of your German federal state, e.g. “Berliner Beauftragte für Datenschutz und Informationsfreiheit, Alt-Moabit 59-61, 10555 Berlin”."),
+            F("legal_host", "Hosting provider", "textarea",
+              default="Hostnet B.V., De Ruyterkade 6, 1013 AA Amsterdam, The Netherlands",
+              help="The company whose server runs this website. Check it matches your contract (Auftragsverarbeitungsvertrag / DPA)."),
+            F("legal_mail_provider", "Email provider", "textarea",
+              default="IONOS SE, Elgendorfer Str. 57, 56410 Montabaur, Germany",
+              help="The company that sends and stores your emails (contact form notifications and replies)."),
+            F("message_retention_months", "Delete contact messages after (months)", default="12",
+              help="Messages older than this are deleted automatically. 0 = never delete (not recommended under GDPR)."),
+            F("privacy_updated", "Privacy Policy – last updated", default="November 2026"),
+            F("privacy_extra", "Privacy Policy – additional section", "textarea", default="",
+              help="Optional extra text shown at the end of the Privacy Policy (e.g. if you add new services later). Separate paragraphs with an empty line."),
+        ],
+    },
+    {
         "slug": "maintenance", "title": "Under Construction", "icon": "wrench",
         "intro": "Hide the website from visitors and show an “under construction” page instead. You still see the full site while signed in.",
         "fields": [

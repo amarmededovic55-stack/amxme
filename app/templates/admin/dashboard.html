@@ -7,6 +7,9 @@
 {% if c.maintenance_enabled == '1' %}
 <div class="note note-warn">{{ icon('wrench') }}<div><b>Under construction mode is ON.</b> Visitors only see the “under construction” page. <a href="{{ url_for('admin.content', slug='maintenance') }}">Turn it off</a> when the website is ready.</div></div>
 {% endif %}
+{% if not (c.legal_name and c.legal_street and c.legal_city) %}
+<div class="note note-warn">{{ icon('shield') }}<div><b>Imprint is incomplete.</b> German law (§ 5 DDG) requires your full name and postal address on the website. <a href="{{ url_for('admin.content', slug='legal') }}">Add them under Imprint &amp; Privacy</a>.</div></div>
+{% endif %}
 {% if not smtp %}
 <div class="note">
   {{ icon('info') }}

@@ -1,4 +1,5 @@
 # Signed: ASDHEM | AMXME Web Solutions
+import ipaddress
 import re
 from datetime import timedelta
 
@@ -6,7 +7,7 @@ from flask import Blueprint, Response, current_app, flash, jsonify, redirect, re
 
 from .extensions import db
 from .mailer import send_mail
-from .models import Feature, Message, Project, Service, Visit, utcnow
+from .models import Activity, Feature, Message, Project, Service, Visit, utcnow
 from .templating import get_content
 from flask import session
 import random
@@ -90,6 +91,44 @@ VISIT_RETENTION_DAYS = 90
 VISIT_MAX_ROWS = 200_000         # ASDHEM | hard cap, oldest rows are dropped
 
 
+MESSAGE_IP_DAYS = 7              # ASDHEM | GDPR: sender IP of contact messages kept only for spam/rate-limit checks
+ACTIVITY_RETENTION_DAYS = 365    # admin activity / login log
+
+
+def anonymize_ip(ip):
+    """ASDHEM | GDPR: drop the host part – IPv4 keeps /24 (1.2.3.0), IPv6 keeps /48."""
+    try:
+        addr = ipaddress.ip_address((ip or "").strip())
+    except ValueError:
+        return ""
+    if addr.version == 6 and addr.ipv4_mapped:
+        addr = addr.ipv4_mapped
+    prefix = 24 if addr.version == 4 else 48
+    return str(ipaddress.ip_network(f"{addr}/{prefix}", strict=False).network_address)
+
+
+def privacy_cleanup():
+    """ASDHEM | GDPR storage limitation: delete / minimise personal data that is no longer needed."""
+    now = utcnow()
+    db.session.query(Visit).filter(Visit.created_at < now - timedelta(days=VISIT_RETENTION_DAYS)).delete()
+    over = db.session.query(Visit).count() - VISIT_MAX_ROWS
+    if over > 0:
+        oldest = db.session.query(Visit.id).order_by(Visit.id).limit(over).subquery()
+        db.session.query(Visit).filter(Visit.id.in_(db.select(oldest.c.id))).delete(synchronize_session=False)
+    db.session.query(Message).filter(
+        Message.ip != "", Message.created_at < now - timedelta(days=MESSAGE_IP_DAYS)
+    ).update({Message.ip: ""}, synchronize_session=False)
+    try:
+        months = int((get_content().message_retention_months or "12").strip())
+    except ValueError:
+        months = 12
+    if months > 0:
+        db.session.query(Message).filter(
+            Message.created_at < now - timedelta(days=months * 31)).delete(synchronize_session=False)
+    db.session.query(Activity).filter(
+        Activity.created_at < now - timedelta(days=ACTIVITY_RETENTION_DAYS)).delete(synchronize_session=False)
+
+
 def record_visit():
     """Log a page view (skipped for the logged-in admin). Never breaks the page."""
     if session.get("admin_id"):
@@ -97,19 +136,14 @@ def record_visit():
     try:
         ua = (request.headers.get("User-Agent") or "")[:300]
         db.session.add(Visit(
-            ip=(request.remote_addr or "")[:64],
+            ip=anonymize_ip(request.remote_addr)[:64],  # ASDHEM | GDPR: never store the full IP
             path=request.full_path.rstrip("?")[:200],
             user_agent=ua,
             referrer=(request.referrer or "")[:300],
             is_bot=not ua or bool(BOT_RE.search(ua)),
         ))
         if random.random() < 0.02:  # occasional cleanup of old data
-            db.session.query(Visit).filter(
-                Visit.created_at < utcnow() - timedelta(days=VISIT_RETENTION_DAYS)).delete()
-            over = db.session.query(Visit).count() - VISIT_MAX_ROWS
-            if over > 0:
-                oldest = db.session.query(Visit.id).order_by(Visit.id).limit(over).subquery()
-                db.session.query(Visit).filter(Visit.id.in_(db.select(oldest.c.id))).delete(synchronize_session=False)
+            privacy_cleanup()
         db.session.commit()
     except Exception:  # noqa: BLE001
         db.session.rollback()
@@ -255,6 +289,30 @@ def contact():
     return respond(True)
 
 
+# ASDHEM | GDPR / German law: Imprint + Privacy Policy, always reachable (also in "under construction" mode)
+@bp.route("/imprint")
+def imprint():
+    record_visit()
+    return render_template("legal.html", page="imprint", canonical_path="/imprint")
+
+
+@bp.route("/privacy")
+def privacy():
+    record_visit()
+    return render_template("legal.html", page="privacy", canonical_path="/privacy", visit_days=VISIT_RETENTION_DAYS,
+                           message_ip_days=MESSAGE_IP_DAYS)
+
+
+@bp.route("/impressum")
+def impressum_alias():
+    return redirect(url_for("public.imprint"), 301)
+
+
+@bp.route("/datenschutz")
+def datenschutz_alias():
+    return redirect(url_for("public.privacy"), 301)
+
+
 @bp.route("/robots.txt")
 def robots():
     site = current_app.config["SITE_URL"]
@@ -266,5 +324,6 @@ def sitemap():
     site = current_app.config["SITE_URL"]
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-           f"<url><loc>{site}/</loc></url></urlset>\n")
+           f"<url><loc>{site}/</loc></url><url><loc>{site}/imprint</loc></url>"
+           f"<url><loc>{site}/privacy</loc></url></urlset>\n")
     return Response(xml, mimetype="application/xml")

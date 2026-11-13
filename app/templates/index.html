@@ -369,7 +369,7 @@
       <button type="submit" class="btn btn-primary btn-lg btn-block" id="contactBtn">
         <span class="btn-label">Contact Us</span> {{ icon('send') }}
       </button>
-      <p class="form-note">{{ icon('lock') }} Your details are only used to reply to your inquiry.</p>
+      <p class="form-note">{{ icon('lock') }}<span>Your details are only used to reply to your inquiry. See our <a href="{{ url_for('public.privacy') }}">Privacy Policy</a>.</span></p>
     </form>
   </div>
 </section>
@@ -408,6 +408,7 @@
   </div>
   <div class="wrap foot-bottom">
     <span>© {{ year }} {{ c.copyright }}</span>
+    <nav class="foot-legal" aria-label="Legal"><a href="{{ url_for('public.imprint') }}">Imprint</a><a href="{{ url_for('public.privacy') }}">Privacy Policy</a></nav>
     <a href="#top" class="to-top" aria-label="Back to top">↑</a>
   </div>
 </footer>
