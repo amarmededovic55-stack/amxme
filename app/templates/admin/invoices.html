@@ -1,0 +1,31 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Invoices{% endblock %}
+{% block heading %}<h1>Invoices</h1><p>All invoices of all clients. Open (generated): <b>{{ open_sum }}</b>. Create a new invoice from a client's page.</p>{% endblock %}
+{% block actions %}<a href="{{ url_for('admin.content', slug='invoicing') }}" class="btn btn-ghost">{{ icon('sliders') }}<span class="hide-sm">Invoice settings</span></a>{% endblock %}
+{% block content %}
+<div class="tabs">{% for s, l in [('all', 'All'), ('open', 'Open'), ('paid', 'Paid')] %}<a href="{{ url_for('admin.invoices', status=s) }}" class="tab{{ ' on' if status == s }}">{{ l }}</a>{% endfor %}</div>
+<div class="panel">
+  {% if items %}
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Number</th><th>Client</th><th class="hide-md">Date</th><th class="num">Amount</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for i in items %}
+    <tr>
+      <td><b>{{ i.number or '—' }}</b><br><small class="muted">{{ i.title[:50] }}</small></td>
+      <td><a href="{{ url_for('admin.client', client_id=i.client_id) }}" class="link">{{ names.get(i.client_id, '—') }}</a></td>
+      <td class="hide-md">{{ i.issued_at.strftime('%d.%m.%Y') }}</td>
+      <td class="num">{{ i.amount }}</td>
+      <td><span class="chip {{ 'ok' if i.status == 'paid' else 'warn' }}">{{ i.status }}</span>{% if i.sent_at %} <span class="chip">sent</span>{% endif %}</td>
+      <td class="right nowrap">
+        <a href="{{ url_for('admin.invoice_pdf', inv_id=i.id) }}" target="_blank" class="btn btn-ghost btn-sm">PDF</a>
+        {% if i.kind == 'generated' %}<a href="{{ url_for('admin.invoice_edit', inv_id=i.id) }}" class="btn btn-ghost btn-sm">Edit</a>{% endif %}
+        <form method="post" action="{{ url_for('admin.invoice_send', inv_id=i.id) }}" class="inline" data-confirm="Email invoice {{ i.number }} to the client?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-ghost btn-sm">{{ icon('send') }} Send</button></form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<p class="empty">No invoices yet.</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Invoice ' ~ inv.number if inv else 'New invoice' }}{% endblock %}
+{% block heading %}<h1>{{ 'Invoice ' ~ inv.number if inv else 'New invoice' }}</h1><p><a href="{{ url_for('admin.client', client_id=client.id) }}" class="link">{{ icon('arrow-left') }} {{ client.name }}</a>{% if inv and inv.sent_at %} · <span class="chip ok">sent {{ inv.sent_at | dt('%d %b %Y') }}</span>{% endif %}</p>{% endblock %}
+{% block actions %}{% if inv %}<a href="{{ url_for('admin.invoice_pdf', inv_id=inv.id) }}" target="_blank" class="btn btn-ghost">{{ icon('eye') }}<span class="hide-sm">View PDF</span></a>{% endif %}{% endblock %}
+{% block content %}
+{% if not settings_ok %}<div class="note note-warn">{{ icon('alert') }}<div>Add your <b>tax number</b> and <b>IBAN</b> under <a href="{{ url_for('admin.content', slug='invoicing') }}" class="link">Invoice Settings</a> and your name/address under <a href="{{ url_for('admin.content', slug='legal') }}" class="link">Imprint &amp; Privacy</a> – German invoices need them.</div></div>{% endif %}
+{% if not (client.street and client.city) %}<div class="note">{{ icon('info') }}<div>The client has no billing address yet. The client can add it in the portal under “Profile”, or you add it when you edit the client.</div></div>{% endif %}
+<form method="post" class="panel form-panel" id="invForm" data-dirty-guard>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="grid3">
+    <div class="fgroup"><label class="lbl">Invoice number</label><input class="inp" name="number" value="{{ inv.number if inv else suggested }}" required maxlength="60"></div>
+    <div class="fgroup"><label class="lbl">Invoice date</label><input class="inp" type="date" name="date" value="{{ d.date }}" required></div>
+    <div class="fgroup"><label class="lbl">Due date</label><input class="inp" type="date" name="due" value="{{ d.due }}" required></div>
+    <div class="fgroup"><label class="lbl">Service period <small class="muted">(required by law)</small></label><input class="inp" name="period" value="{{ d.period }}" placeholder="e.g. 01.01.2027 – 31.12.2027 or 11/2026" maxlength="80"></div>
+    <div class="fgroup"><label class="lbl">Language of the invoice</label><select class="inp" name="lang">{% for code, n in [('de', 'Deutsch'), ('en', 'English'), ('hr', 'Hrvatski')] %}<option value="{{ code }}" {{ 'selected' if d.lang == code }}>{{ n }}</option>{% endfor %}</select></div>
+    <div class="fgroup"><label class="lbl">VAT</label>
+      <label class="check"><input type="checkbox" name="small_business" value="1" id="invSmall" {{ 'checked' if d.small_business }}> Small business – no VAT (§ 19 UStG)</label>
+      <div class="inline-field"><input class="inp inp-sm" name="vat_rate" id="invVat" value="{{ d.vat_rate }}" size="4"> %</div></div>
+  </div>
+  <div class="fgroup"><label class="lbl">Intro text <small class="muted">(optional)</small></label><textarea class="inp" name="intro" rows="2" data-autosize placeholder="e.g. Thank you for your order. We invoice the following services:">{{ d.intro }}</textarea></div>
+
+  <div class="inv-items" id="invItems">
+    <div class="inv-head"><span>Description</span><span>Qty</span><span>Unit</span><span>Price (net, €)</span><span>Total</span><span></span></div>
+    {% for it in d['items'] %}
+    <div class="inv-item">
+      <textarea class="inp" name="desc" rows="1" data-autosize placeholder="e.g. Web hosting incl. SSL – 12 months">{{ it.desc }}</textarea>
+      <input class="inp" name="qty" value="{{ it.qty }}" inputmode="decimal">
+      <input class="inp" name="unit" value="{{ it.unit }}" placeholder="pcs / h / month">
+      <input class="inp" name="price" value="{{ it.price }}" inputmode="decimal" placeholder="0,00">
+      <b class="inv-line">–</b>
+      <button type="button" class="icon-btn danger" data-del-row aria-label="Remove line">{{ icon('trash') }}</button>
+    </div>
+    {% endfor %}
+  </div>
+  <button type="button" class="btn btn-ghost btn-sm" id="invAdd">{{ icon('plus') }} Add line</button>
+  <div class="inv-totals"><span>Net <b id="tNet">–</b></span><span id="tVatWrap">VAT <b id="tVat">–</b></span><span class="big">Total <b id="tGross">–</b></span></div>
+
+  <div class="fgroup"><label class="lbl">Notes at the bottom <small class="muted">(optional)</small></label><textarea class="inp" name="notes" rows="2" data-autosize>{{ d.notes }}</textarea></div>
+  <div class="form-foot">
+    <button class="btn btn-ghost" name="action" value="save">{{ icon('check') }} Save (client sees it in the portal)</button>
+    <button class="btn btn-primary" name="action" value="send" data-confirm-click="Save and email this invoice to {{ client.email }}?">{{ icon('send') }} Save &amp; send to {{ client.email }}</button>
+  </div>
+</form>
+{% endblock %}

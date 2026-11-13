@@ -817,4 +817,4 @@ def visitors_clear():
 
 
 # ASDHEM | extra admin pages (history, media, backups, users, GDPR, monitoring, clients, tickets)
-from . import admin_portal, admin_tools  # noqa: E402,F401
+from . import admin_portal, admin_tools, invoices  # noqa: E402,F401

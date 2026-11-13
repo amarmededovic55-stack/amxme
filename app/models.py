@@ -232,6 +232,16 @@ class Client(db.Model):
     notes = db.Column(db.Text, default="")
     created_at = db.Column(db.DateTime, default=utcnow)
     last_login = db.Column(db.DateTime)
+    # ASDHEM | profile & security (client portal)
+    phone = db.Column(db.String(60), default="")
+    street = db.Column(db.String(160), default="")
+    city = db.Column(db.String(120), default="")
+    country = db.Column(db.String(80), default="")
+    vat_id = db.Column(db.String(40), default="")
+    notify = db.Column(db.Boolean, default=True)              # email on ticket answers & announcements
+    totp_secret = db.Column(db.String(64), default="")
+    totp_enabled = db.Column(db.Boolean, default=False)
+    totp_last = db.Column(db.Integer, default=0)
 
 
 class Monitor(db.Model):
@@ -268,6 +278,9 @@ class Invoice(db.Model):
     status = db.Column(db.String(10), default="open")        # open | paid
     file = db.Column(db.String(120), default="")             # stored in DATA_DIR/private, never public
     issued_at = db.Column(db.DateTime, default=utcnow)
+    kind = db.Column(db.String(12), default="upload")        # ASDHEM | upload | generated
+    data = db.Column(db.Text, default="")                   # generated invoices: items, dates, VAT … (JSON)
+    sent_at = db.Column(db.DateTime)
 
 
 class Ticket(db.Model):
@@ -275,6 +288,8 @@ class Ticket(db.Model):
     client_id = db.Column(db.Integer, db.ForeignKey("client.id", ondelete="CASCADE"), index=True, nullable=False)
     subject = db.Column(db.String(200), nullable=False)
     status = db.Column(db.String(12), default="open")        # open | answered | closed
+    category = db.Column(db.String(20), default="question")  # question | change | problem | billing
+    priority = db.Column(db.String(10), default="normal")    # normal | urgent
     created_at = db.Column(db.DateTime, default=utcnow)
     updated_at = db.Column(db.DateTime, default=utcnow, index=True)
 
@@ -292,3 +307,35 @@ class SiteCheck(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     who = db.Column(db.String(64), index=True)
     created_at = db.Column(db.DateTime, default=utcnow, index=True)
+
+
+class Contract(db.Model):
+    """ASDHEM | a booked service of a client (hosting, maintenance, domain …) with renewal date."""
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey("client.id", ondelete="CASCADE"), index=True, nullable=False)
+    kind = db.Column(db.String(20), default="hosting")       # hosting | maintenance | domain | design | other
+    title = db.Column(db.String(200), nullable=False)
+    domain = db.Column(db.String(200), default="")
+    start_date = db.Column(db.Date)
+    renewal_date = db.Column(db.Date)
+    status = db.Column(db.String(12), default="active")      # active | ended
+    note = db.Column(db.String(300), default="")
+
+
+class Announcement(db.Model):
+    """ASDHEM | news / maintenance notices shown in the client portal."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    body = db.Column(db.Text, default="")
+    level = db.Column(db.String(12), default="info")         # info | maintenance | important
+    active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+
+class TicketFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey("ticket_message.id", ondelete="CASCADE"), index=True, nullable=False)
+    ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id", ondelete="CASCADE"), index=True, nullable=False)
+    name = db.Column(db.String(160), default="")
+    file = db.Column(db.String(80), nullable=False)          # stored in DATA_DIR/private
+    size = db.Column(db.Integer, default=0)

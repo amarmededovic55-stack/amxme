@@ -4,15 +4,17 @@
 {% block page %}
 <a href="{{ url_for('portal.home') }}#tickets" class="link-back">{{ t('p_back') }}</a>
 <h1 class="portal-h">{{ tk.subject }}</h1>
+<p class="muted">{{ t('cat_' ~ tk.category) }}{% if tk.priority == 'urgent' %} · <b>{{ t('pr_urgent') }}</b>{% endif %}</p>
 <div class="thread">
   {% for m in msgs %}
-  <div class="bubble {{ m.author }}"><small>{{ t('p_you') if m.author == 'client' else t('p_team') }} · {{ m.created_at.strftime('%d.%m.%Y %H:%M') }}</small><p>{{ m.body }}</p></div>
+  <div class="bubble {{ m.author }}"><small>{{ t('p_you') if m.author == 'client' else t('p_team') }} · {{ m.created_at.strftime('%d.%m.%Y %H:%M') }}</small><p>{{ m.body }}</p>{% for f in files.get(m.id, []) %}<a href="{{ url_for('portal.ticket_file', file_id=f.id) }}" target="_blank" class="file-chip">{{ icon('file-text') }} {{ f.name }}</a>{% endfor %}</div>
   {% endfor %}
 </div>
 {% if tk.status != 'closed' %}
-<form method="post" class="form-stack p-card">
+<form method="post" class="form-stack p-card" enctype="multipart/form-data">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <label>{{ t('p_message') }}<textarea name="body" rows="4" required maxlength="5000"></textarea></label>
+  <label>{{ t('p_attach') }}<input type="file" name="files" multiple accept="image/png,image/jpeg,image/webp,application/pdf"></label>
   <button class="btn btn-primary">{{ t('p_send') }}</button>
 </form>
 {% else %}<p class="muted">{{ t('p_closed') }}</p>{% endif %}

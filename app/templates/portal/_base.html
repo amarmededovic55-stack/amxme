@@ -6,10 +6,12 @@
 <header class="sub-top">
   <div class="wrap sub-top-in">
     <a href="{{ url_for('portal.home') if g.client else url_for('public.index') }}">{{ logo() }}</a>
-    <nav class="sub-nav">
+    <nav class="sub-nav portal-nav">
       <span class="portal-tag">{{ icon('user') }} {{ t('p_title') }}</span>
       {% if g.client %}
-      <a href="{{ url_for('portal.password') }}">{{ t('p_change_pw') }}</a>
+      <a href="{{ url_for('portal.home') }}">{{ t('p_overview') }}</a>
+      <a href="{{ url_for('portal.profile') }}">{{ t('p_profile').split(' ')[0] }}</a>
+      <a href="{{ url_for('portal.security') }}">{{ t('p_security') }}</a>
       <form method="post" action="{{ url_for('portal.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-ghost">{{ t('p_logout') }}</button></form>
       {% endif %}
     </nav>

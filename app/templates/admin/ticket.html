@@ -1,12 +1,13 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
 {% extends "admin/base.html" %}
 {% block title %}{{ tk.subject }}{% endblock %}
-{% block heading %}<h1>{{ tk.subject }}</h1><p><a href="{{ url_for('admin.tickets') }}" class="link">{{ icon('arrow-left') }} All tickets</a> · {{ c.name if c else '—' }} · <span class="chip">{{ tk.status }}</span></p>{% endblock %}
+{% block heading %}<h1>{{ tk.subject }}</h1><p><a href="{{ url_for('admin.tickets') }}" class="link">{{ icon('arrow-left') }} All tickets</a> · {{ c.name if c else '—' }} · <span class="chip">{{ tk.status }}</span> <span class="chip">{{ tk.category }}</span>{% if tk.priority == 'urgent' %} <span class="chip warn">URGENT</span>{% endif %}</p>{% endblock %}
 {% block content %}
-<div class="thread">{% for m in msgs %}<div class="bubble {{ m.author }}"><small>{{ (c.name if c else 'Client') if m.author == 'client' else 'You' }} · {{ m.created_at | dt('%d %b %Y, %H:%M') }}</small><p>{{ m.body }}</p></div>{% endfor %}</div>
-<form method="post" class="panel form-panel">
+<div class="thread">{% for m in msgs %}<div class="bubble {{ m.author }}"><small>{{ (c.name if c else 'Client') if m.author == 'client' else 'You' }} · {{ m.created_at | dt('%d %b %Y, %H:%M') }}</small><p>{{ m.body }}</p>{% for f in files.get(m.id, []) %}<a href="{{ url_for('admin.ticket_file_admin', file_id=f.id) }}" target="_blank" class="file-chip">{{ icon('file-text') }} {{ f.name }}</a>{% endfor %}</div>{% endfor %}</div>
+<form method="post" class="panel form-panel" enctype="multipart/form-data">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="fgroup"><label class="lbl" for="tb">Your answer</label><textarea class="inp" id="tb" name="body" rows="5" data-autosize></textarea></div>
+  <div class="fgroup"><label class="lbl">Attachments (images or PDF, max. 3 × 5 MB)</label><input class="inp" type="file" name="files" multiple accept="image/png,image/jpeg,image/webp,application/pdf"></div>
   <div class="form-foot">
     {% if tk.status != 'closed' %}<button class="btn btn-ghost" name="action" value="close">Close ticket</button>{% endif %}
     <button class="btn btn-primary" name="action" value="reply">{{ icon('send') }} Send answer</button>

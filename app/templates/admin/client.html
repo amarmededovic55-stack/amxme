@@ -13,6 +13,13 @@
     <div class="fgroup"><label class="lbl">Name</label><input class="inp" name="name" value="{{ c.name }}" required></div>
     <div class="fgroup"><label class="lbl">Company</label><input class="inp" name="company" value="{{ c.company }}"></div>
     <div class="fgroup"><label class="lbl">Email</label><input class="inp" value="{{ c.email }}" disabled></div>
+    <div class="fgroup"><label class="lbl">Billing address</label>
+      <input class="inp" name="street" value="{{ c.street }}" placeholder="Street and number" maxlength="160">
+      <input class="inp mt-xs" name="city" value="{{ c.city }}" placeholder="Postal code and city" maxlength="120">
+      <input class="inp mt-xs" name="country" value="{{ c.country }}" placeholder="Country" maxlength="80"></div>
+    <div class="fgroup"><label class="lbl">Phone · VAT ID</label>
+      <input class="inp" name="phone" value="{{ c.phone }}" placeholder="Phone" maxlength="60">
+      <input class="inp mt-xs" name="vat_id" value="{{ c.vat_id }}" placeholder="VAT ID (optional)" maxlength="40"></div>
     <div class="fgroup"><label class="lbl">Portal language</label><select class="inp" name="lang">{% for code, n in langs.items() %}<option value="{{ code }}" {{ 'selected' if code == c.lang }}>{{ n }}</option>{% endfor %}</select></div>
     <div class="fgroup"><label class="lbl">Internal notes (client cannot see)</label><textarea class="inp" name="notes" rows="3" data-autosize>{{ c.notes }}</textarea></div>
     <label class="check big"><input type="checkbox" name="active" value="1" {{ 'checked' if c.active }}> Portal access active</label>
@@ -30,11 +37,33 @@
   </div>
 </div>
 <section class="panel">
-  <div class="panel-head"><h2>Invoices</h2></div>
+  <div class="panel-head"><h2>Services & contracts</h2></div>
+  {% for ct in contracts %}
+  <div class="inv-row"><span class="chip {{ 'ok' if ct.status == 'active' else '' }}">{{ ct.kind }}</span><b>{{ ct.title }}</b><span class="muted">{{ ct.domain }}</span>
+    <span>{{ ('renews ' ~ ct.renewal_date.strftime('%d.%m.%Y')) if ct.renewal_date else '' }}</span>
+    <form method="post" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="contract_id" value="{{ ct.id }}"><button class="btn btn-ghost btn-sm" name="action" value="contract_end">{{ 'Mark ended' if ct.status == 'active' else 'Reactivate' }}</button></form>
+    <form method="post" class="inline" data-confirm="Delete this service?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="contract_id" value="{{ ct.id }}"><button class="icon-btn danger" name="action" value="contract_delete" aria-label="Delete">{{ icon('trash') }}</button></form>
+  </div>
+  {% else %}<p class="empty">No services yet.</p>{% endfor %}
+  <form method="post" class="search-row mt">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="contract_add">
+    <select class="inp" name="kind">{% for k in ['hosting', 'maintenance', 'domain', 'design', 'other'] %}<option>{{ k }}</option>{% endfor %}</select>
+    <input class="inp" name="title" placeholder="e.g. Web hosting Business" required maxlength="200">
+    <input class="inp" name="domain" placeholder="domain.de" maxlength="200">
+    <label class="mini-lbl">Start<input class="inp" type="date" name="start"></label>
+    <label class="mini-lbl">Renews<input class="inp" type="date" name="renewal"></label>
+    <button class="btn btn-primary">{{ icon('plus') }} Add service</button>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><h2>Invoices</h2><a href="{{ url_for('admin.invoice_edit', client_id=c.id) }}" class="btn btn-primary btn-sm">{{ icon('plus') }} Create invoice</a></div>
   {% for i in invoices %}
   <div class="inv-row">
     <b>{{ i.number or '—' }}</b><span>{{ i.title }}</span><span>{{ i.amount }}</span><span>{{ i.issued_at.strftime('%d.%m.%Y') }}</span>
     <a href="{{ url_for('admin.invoice_file', inv_id=i.id) }}" class="btn btn-ghost btn-sm" target="_blank">PDF</a>
+    {% if i.kind == 'generated' %}<a href="{{ url_for('admin.invoice_edit', inv_id=i.id) }}" class="btn btn-ghost btn-sm">Edit</a>{% endif %}
+    <form method="post" action="{{ url_for('admin.invoice_send', inv_id=i.id) }}" class="inline" data-confirm="Email this invoice to {{ c.email }}?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-ghost btn-sm">{{ icon('send') }} {{ 'Resend' if i.sent_at else 'Send' }}</button></form>
     <form method="post" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="invoice_id" value="{{ i.id }}"><button class="btn btn-sm {{ 'btn-ghost' if i.status == 'paid' else 'btn-primary' }}" name="action" value="inv_paid">{{ '✓ Paid' if i.status == 'paid' else 'Mark paid' }}</button></form>
     <form method="post" class="inline" data-confirm="Delete this invoice?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="invoice_id" value="{{ i.id }}"><button class="icon-btn danger" name="action" value="inv_delete" aria-label="Delete">{{ icon('trash') }}</button></form>
   </div>
@@ -45,7 +74,7 @@
     <input class="inp" name="title" placeholder="Title, e.g. Hosting 2027" maxlength="200">
     <input class="inp" name="amount" placeholder="Amount, e.g. 120,00 €" maxlength="40">
     <input class="inp" type="file" name="file" accept="application/pdf" required>
-    <button class="btn btn-primary">{{ icon('upload-cloud') }} Upload PDF</button>
+    <button class="btn btn-ghost">{{ icon('upload-cloud') }} Upload existing PDF</button>
   </form>
 </section>
 <form method="post" data-confirm="Delete this client with all invoices and tickets? This cannot be undone." class="right">

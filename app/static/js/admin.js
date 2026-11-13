@@ -197,4 +197,36 @@
     });
     form.addEventListener("input", () => { if (lpPane.hidden) return; clearTimeout(timer); timer = setTimeout(render, 500); });
   }
+
+  /* ASDHEM | invoice form: add/remove lines, live totals, confirm on send */
+  const inv = $("#invForm");
+  if (inv) {
+    const box = $("#invItems"), small = $("#invSmall"), vatIn = $("#invVat");
+    const num = (v) => parseFloat(String(v || "").replace(/\s|€/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".")) || 0;
+    const fmt = (v) => v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+    const calc = () => {
+      let net = 0;
+      $$(".inv-item", box).forEach((row) => {
+        const q = num(row.querySelector('[name="qty"]').value || "1"), p = num(row.querySelector('[name="price"]').value);
+        const tot = Math.round(q * p * 100) / 100; net += tot;
+        row.querySelector(".inv-line").textContent = p ? fmt(tot) : "–";
+      });
+      const vat = small.checked ? 0 : Math.round(net * num(vatIn.value) / 100 * 100) / 100;
+      $("#tNet").textContent = fmt(net); $("#tVat").textContent = fmt(vat); $("#tGross").textContent = fmt(net + vat);
+      $("#tVatWrap").style.display = small.checked ? "none" : ""; vatIn.disabled = small.checked;
+    };
+    $("#invAdd").addEventListener("click", () => {
+      const rows = $$(".inv-item", box), copy = rows[rows.length - 1].cloneNode(true);
+      copy.querySelectorAll("input, textarea").forEach((el) => { el.value = el.name === "qty" ? "1" : ""; });
+      box.appendChild(copy); copy.querySelector("textarea").focus(); calc();
+    });
+    box.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-del-row]"); if (!b) return;
+      if ($$(".inv-item", box).length > 1) { b.closest(".inv-item").remove(); calc(); }
+    });
+    inv.addEventListener("input", calc); small.addEventListener("change", calc); calc();
+    inv.querySelectorAll("[data-confirm-click]").forEach((b) => b.addEventListener("click", (e) => {
+      if (!confirm(b.dataset.confirmClick)) e.preventDefault();
+    }));
+  }
 })();

@@ -13,7 +13,8 @@ def smtp_configured():
     return bool(os.environ.get("SMTP_HOST"))
 
 
-def send_mail(to, subject, body, reply_to=None, from_name="AMXME Website"):
+def send_mail(to, subject, body, reply_to=None, from_name="AMXME Website", attachments=None):
+    """attachments: list of (filename, bytes, mime_type) – ASDHEM | used for invoices."""
     host = os.environ.get("SMTP_HOST")
     if not host:
         return False, "SMTP is not configured"
@@ -31,6 +32,9 @@ def send_mail(to, subject, body, reply_to=None, from_name="AMXME Website"):
     if reply_to:
         msg["Reply-To"] = reply_to
     msg.set_content(body)
+    for name, data, mime in attachments or ():
+        maintype, _, subtype = mime.partition("/")
+        msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=name)
 
     try:
         if security == "ssl":

@@ -1,0 +1,39 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "portal/_base.html" %}
+{% block title %}{{ t('p_security') }} – {{ t('p_title') }}{% endblock %}
+{% block page %}
+<a href="{{ url_for('portal.home') }}" class="link-back">{{ t('p_back') }}</a>
+<h1 class="portal-h">{{ t('p_security') }}</h1>
+<section class="p-card">
+  <h2>{{ icon('shield-check') }} {{ t('p_2fa') }}</h2>
+  {% if g.client.totp_enabled %}
+  <p class="p-ok">✓ {{ t('p_2fa_on') }}</p>
+  <form method="post" class="form-stack narrow">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="disable">
+    <label>{{ t('p_password') }}<input type="password" name="password" required autocomplete="current-password"></label>
+    <label>{{ t('p_code') }}<input name="code" inputmode="numeric" autocomplete="one-time-code" required maxlength="8"></label>
+    <button class="btn btn-ghost">{{ t('p_2fa_disable') }}</button>
+  </form>
+  {% else %}
+  <p class="muted">{{ t('p_2fa_off') }}</p>
+  <div class="p-2fa">
+    <div class="qr">{{ qr | safe }}</div>
+    <form method="post" class="form-stack narrow">
+      <p>{{ t('p_2fa_scan') }}</p>
+      <code class="secret">{{ secret }}</code>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="enable">
+      <label>{{ t('p_code') }}<input name="code" inputmode="numeric" autocomplete="one-time-code" required maxlength="8"></label>
+      <button class="btn btn-primary">{{ t('p_2fa_enable') }}</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+<section class="p-card">
+  <h2>{{ icon('lock') }} {{ t('p_change_pw') }}</h2>
+  <a href="{{ url_for('portal.password') }}" class="btn btn-ghost btn-sm">{{ t('p_change_pw') }}</a>
+</section>
+<section class="p-card">
+  <h2>{{ icon('clock') }} {{ t('p_logins') }}</h2>
+  {% for a in logins %}<div class="p-row"><div><b>{{ a.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</b></div><span class="muted">{{ a.ip_short }}</span></div>{% else %}<p class="muted">—</p>{% endfor %}
+</section>
+{% endblock %}

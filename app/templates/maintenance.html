@@ -23,6 +23,12 @@
         {{ icon('arrow-right') }}
       </a>
 
+      <div class="mt-links">
+        <a href="{{ url_for('public.website_check') }}" class="mt-link">{{ icon('search') }} {{ t('nav_check') }}</a>
+        <a href="{{ url_for('portal.login') }}" class="mt-link">{{ icon('user') }} {{ t('nav_portal') }}</a>
+        <a href="{{ url_for('public.status') }}" class="mt-link">{{ icon('activity') }} {{ t('nav_status') }}</a>
+      </div>
+
       {% set tags = c.maintenance_tags | lines %}
       {% if tags %}
       <ul class="mt-tags">

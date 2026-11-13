@@ -3,6 +3,7 @@
 import os
 import re
 import uuid
+from datetime import date
 
 from flask import abort, current_app, flash, g, redirect, render_template, request, send_file, url_for
 
@@ -11,9 +12,9 @@ from .admin_tools import owner_required
 from .extensions import db
 from .i18n import LANGS
 from .mailer import send_mail
-from .models import Client, Invoice, Monitor, MonitorCheck, Ticket, TicketMessage, utcnow
+from .models import Announcement, Client, Contract, Invoice, Monitor, MonitorCheck, Ticket, TicketFile, TicketMessage, utcnow
 from .monitor import check_monitor, daily_bars, uptime
-from .portal import password_link
+from .portal import files_by_message, password_link, save_ticket_files, send_ticket_file
 
 EMAIL_RE = re.compile(r"^[^@\s<>]+@[^@\s<>]+\.[A-Za-z]{2,}$")
 
@@ -108,6 +109,8 @@ def client(client_id):
             c.company = (request.form.get("company") or "").strip()[:160]
             c.lang = request.form.get("lang") if request.form.get("lang") in LANGS else c.lang
             c.notes = (request.form.get("notes") or "").strip()[:4000]
+            for fld, n in (("street", 160), ("city", 120), ("country", 80), ("phone", 60), ("vat_id", 40)):
+                setattr(c, fld, (request.form.get(fld) or "").strip()[:n])
             c.active = bool(request.form.get("active"))
             flash("Client saved.", "success")
         elif action == "invite":
@@ -152,6 +155,27 @@ def client(client_id):
                     except OSError:
                         pass
                     db.session.delete(inv)
+        elif action == "contract_add":
+            def d(v):
+                try:
+                    return date.fromisoformat(v) if v else None
+                except ValueError:
+                    return None
+            title = (request.form.get("title") or "").strip()[:200]
+            if title:
+                db.session.add(Contract(client_id=c.id, title=title, kind=request.form.get("kind") or "hosting",
+                                        domain=(request.form.get("domain") or "").strip()[:200],
+                                        start_date=d(request.form.get("start")), renewal_date=d(request.form.get("renewal")),
+                                        note=(request.form.get("note") or "").strip()[:300]))
+                log(f"Added service “{title}” for {c.name}")
+                flash("Service added – the client sees it in the portal.", "success")
+        elif action in ("contract_end", "contract_delete"):
+            ct = db.session.get(Contract, int(request.form.get("contract_id") or 0))
+            if ct and ct.client_id == c.id:
+                if action == "contract_end":
+                    ct.status = "active" if ct.status == "ended" else "ended"
+                else:
+                    db.session.delete(ct)
         elif action == "delete":
             for inv in db.session.query(Invoice).filter_by(client_id=c.id):
                 try:
@@ -167,8 +191,10 @@ def client(client_id):
         return redirect(url_for("admin.client", client_id=c.id))
     sites = db.session.query(Monitor).filter_by(client_id=c.id).all()
     invoices = db.session.query(Invoice).filter_by(client_id=c.id).order_by(Invoice.issued_at.desc()).all()
+    contracts = db.session.query(Contract).filter_by(client_id=c.id).order_by(Contract.status, Contract.renewal_date).all()
     tickets = db.session.query(Ticket).filter_by(client_id=c.id).order_by(Ticket.updated_at.desc()).all()
-    return render_template("admin/client.html", c=c, sites=sites, invoices=invoices, tickets=tickets, langs=LANGS)
+    return render_template("admin/client.html", c=c, sites=sites, invoices=invoices, tickets=tickets, langs=LANGS,
+                           contracts=contracts)
 
 
 @bp.route("/invoices/<int:inv_id>")
@@ -204,13 +230,57 @@ def ticket_admin(ticket_id):
         if request.form.get("action") == "close":
             tk.status = "closed"
         elif len(body) >= 2:
-            db.session.add(TicketMessage(ticket_id=tk.id, author="admin", body=body))
+            msg = TicketMessage(ticket_id=tk.id, author="admin", body=body)
+            db.session.add(msg)
+            db.session.flush()
+            save_ticket_files(tk, msg)
             tk.status, tk.updated_at = "answered", utcnow()
-            if c:
+            if c and c.notify:
                 portal = current_app.config["SITE_URL"] + url_for("portal.ticket", ticket_id=tk.id)
                 send_mail(c.email, f"Re: {tk.subject}", f"{body}\n\n—\n{portal}\n", from_name="AMXME Web Solutions")
             log(f"Answered ticket “{tk.subject}”")
         db.session.commit()
         return redirect(url_for("admin.ticket_admin", ticket_id=tk.id))
     msgs = db.session.query(TicketMessage).filter_by(ticket_id=tk.id).order_by(TicketMessage.id).all()
-    return render_template("admin/ticket.html", tk=tk, c=c, msgs=msgs)
+    return render_template("admin/ticket.html", tk=tk, c=c, msgs=msgs, files=files_by_message(tk.id))
+
+
+@bp.route("/ticket-file/<int:file_id>")
+@login_required
+def ticket_file_admin(file_id):
+    f = db.session.get(TicketFile, file_id) or abort(404)
+    return send_ticket_file(f)
+
+
+# ====================================================================== announcements for the client portal
+@bp.route("/announcements", methods=["GET", "POST"])
+@owner_required
+def announcements():
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "add":
+            title = (request.form.get("title") or "").strip()[:200]
+            if title:
+                level = request.form.get("level") if request.form.get("level") in ("info", "maintenance", "important") else "info"
+                a = Announcement(title=title, body=(request.form.get("body") or "").strip()[:4000], level=level)
+                db.session.add(a)
+                log(f"Posted announcement “{title}”")
+                if request.form.get("email"):
+                    sent = 0
+                    for cl in db.session.query(Client).filter_by(active=True, notify=True):
+                        ok, _ = send_mail(cl.email, title, f"{a.body}\n\n—\n{current_app.config['SITE_URL']}/portal/",
+                                          from_name="AMXME Web Solutions")
+                        sent += 1 if ok else 0
+                    flash(f"Announcement posted and emailed to {sent} client(s).", "success")
+                else:
+                    flash("Announcement posted in the client portal.", "success")
+        else:
+            a = db.session.get(Announcement, int(request.form.get("id") or 0)) or abort(404)
+            if action == "toggle":
+                a.active = not a.active
+            elif action == "delete":
+                db.session.delete(a)
+        db.session.commit()
+        return redirect(url_for("admin.announcements"))
+    items = db.session.query(Announcement).order_by(Announcement.created_at.desc()).all()
+    return render_template("admin/announcements.html", items=items)

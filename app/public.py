@@ -362,9 +362,7 @@ def _who():
 @bp.route("/check", defaults={"lang": DEFAULT_LANG}, methods=["GET", "POST"])
 @bp.route(f"/{LANG_RULE}/check", methods=["GET", "POST"])
 def website_check():
-    from .checker import CheckError, run
-    if not _site_open():
-        return redirect(url_for("public.index"))
+    from .checker import CheckError, run   # ASDHEM | available even in "under construction" mode
     result = error = None
     url = (request.values.get("url") or "").strip()[:300]
     if request.method == "POST" and url:

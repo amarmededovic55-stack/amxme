@@ -90,6 +90,30 @@ SECTIONS = [
         ],
     },
     {
+        # ASDHEM | homepage sections: client portal + free website check
+        "slug": "extras", "title": "Client Portal & Website Check", "icon": "briefcase",
+        "intro": "Homepage sections that present the client portal and the free website check.",
+        "fields": [
+            F("portal_eyebrow", "Portal – label", default="Client service"),
+            F("portal_title", "Portal – heading", default="Your Own Client Portal – Everything in One Place"),
+            F("portal_intro", "Portal – intro", "textarea",
+              default="Every client gets a personal login. See how your website is doing, download invoices and get help – any time, without searching through emails."),
+            F("portal_points", "Portal – features (one per line: Title | Text)", "lines",
+              default="Live website status | Uptime, response time and SSL validity of your website – checked every 5 minutes.\n"
+                      "Your services at a glance | Hosting, maintenance and domains with renewal dates.\n"
+                      "Invoices as PDF | All invoices in one place, ready to download.\n"
+                      "Support tickets | Report a problem or request a change – with screenshots, answered personally.\n"
+                      "News & maintenance notices | You know in advance when something is planned.\n"
+                      "Secure login | Encrypted, with optional two-factor authentication (2FA)."),
+            F("portal_btn", "Portal – button", default="Client login"),
+            F("check_eyebrow", "Website check – label", default="Free tool"),
+            F("check_title", "Website check – heading", default="How Good Is Your Website?"),
+            F("check_intro", "Website check – intro", "textarea",
+              default="Enter your address and get a free report on security, speed and Google basics in seconds – no registration."),
+            F("check_btn", "Website check – button", default="Check my website"),
+        ],
+    },
+    {
         "slug": "hosting", "title": "Hosting Section", "icon": "server",
         "intro": "Text of the dedicated hosting section. Highlights are managed under “Hosting Highlights”.",
         "fields": [
@@ -170,6 +194,26 @@ SECTIONS = [
             F("privacy_updated", "Privacy Policy – last updated", default="November 2026"),
             F("privacy_extra", "Privacy Policy – additional section", "textarea", default="",
               help="Optional extra text shown at the end of the Privacy Policy (e.g. if you add new services later). Separate paragraphs with an empty line."),
+        ],
+    },
+    {
+        # ASDHEM | invoice generator settings (German § 14 UStG requirements)
+        "slug": "invoicing", "title": "Invoice Settings", "icon": "file-text",
+        "intro": "Details printed on every generated invoice. Your name and address come from “Imprint & Privacy”. "
+                 "German invoices must show your tax number (Steuernummer) or VAT ID.",
+        "fields": [
+            F("inv_tax_number", "Tax number (Steuernummer)", default="", i18n=False,
+              help="From your Finanzamt, e.g. 12/345/67890. Required on invoices (or your VAT ID)."),
+            F("inv_small_business", "Small business – no VAT (§ 19 UStG)", "bool", default="1",
+              help="On = Kleinunternehmer: no VAT is added and the legal note is printed. Off = VAT is added."),
+            F("inv_vat_rate", "VAT rate in % (when VAT applies)", default="19", i18n=False),
+            F("inv_payment_days", "Payment term (days)", default="14", i18n=False),
+            F("inv_prefix", "Invoice number prefix", default="RE-", i18n=False,
+              help="Numbers are created automatically: RE-2026-001, RE-2026-002 …"),
+            F("inv_account_holder", "Account holder", default="", i18n=False, help="Leave empty to use your business name."),
+            F("inv_iban", "IBAN", default="", i18n=False),
+            F("inv_bic", "BIC", default="", i18n=False),
+            F("inv_bank", "Bank name", default="", i18n=False),
         ],
     },
     {
@@ -259,6 +303,20 @@ DEFAULTS_I18N = {
                          "Design & Entwicklung | Wir gestalten und bauen Ihre Website und zeigen Ihnen unterwegs Zwischenstände.\n"
                          "Go-live | Wir bringen Ihre Website mit SSL auf unser Hosting – oder ziehen Ihre bestehende Seite für Sie um.\n"
                          "Betreuung & Updates | Wir halten alles aktuell, gesichert und sicher und helfen, wann immer Sie Änderungen brauchen.",
+        "portal_eyebrow": "Kundenservice",
+        "portal_title": "Ihr eigenes Kundenportal – alles an einem Ort",
+        "portal_intro": "Jeder Kunde erhält einen persönlichen Zugang. Sehen Sie, wie es Ihrer Website geht, laden Sie Rechnungen herunter und erhalten Sie Hilfe – jederzeit, ohne in E-Mails zu suchen.",
+        "portal_points": "Live-Status Ihrer Website | Verfügbarkeit, Antwortzeit und SSL-Laufzeit – alle 5 Minuten geprüft.\n"
+                         "Ihre Leistungen im Blick | Hosting, Wartung und Domains mit Verlängerungsdatum.\n"
+                         "Rechnungen als PDF | Alle Rechnungen an einem Ort, jederzeit zum Download.\n"
+                         "Support-Tickets | Problem melden oder Änderung anfragen – mit Screenshots, persönlich beantwortet.\n"
+                         "Neuigkeiten & Wartungshinweise | Sie wissen vorher, wenn etwas geplant ist.\n"
+                         "Sicherer Login | Verschlüsselt, mit optionaler Zwei-Faktor-Authentifizierung (2FA).",
+        "portal_btn": "Zum Kundenlogin",
+        "check_eyebrow": "Kostenloses Tool",
+        "check_title": "Wie gut ist Ihre Website?",
+        "check_intro": "Adresse eingeben und in Sekunden einen kostenlosen Bericht zu Sicherheit, Geschwindigkeit und Google-Grundlagen erhalten – ohne Anmeldung.",
+        "check_btn": "Website prüfen",
         "hosting_eyebrow": "Webhosting",
         "hosting_title": "Hosting, das Ihre Website schnell & sicher hält",
         "hosting_text": "Ihre Website verdient ein solides Zuhause. Wir betreiben sorgfältig gewartete Server in der EU mit SSL, regelmäßigen Backups und Sicherheitsupdates – damit Sie sich auf Ihr Geschäft konzentrieren können, während wir uns um die Technik kümmern.",
@@ -322,6 +380,20 @@ DEFAULTS_I18N = {
                          "Dizajn i izrada | Dizajniramo i izrađujemo vašu stranicu te vam usput pokazujemo kako napreduje.\n"
                          "Pokretanje | Stavljamo stranicu online na naš hosting sa SSL-om – ili za vas premještamo postojeću.\n"
                          "Održavanje i ažuriranja | Brinemo da sve bude ažurno, sigurno i redovito kopirano te pomažemo kad god trebate izmjene.",
+        "portal_eyebrow": "Korisnička podrška",
+        "portal_title": "Vaš vlastiti portal za klijente – sve na jednom mjestu",
+        "portal_intro": "Svaki klijent dobiva osobnu prijavu. Pogledajte kako radi vaša stranica, preuzmite račune i dobijte pomoć – bilo kada, bez traženja po e-mailovima.",
+        "portal_points": "Status stranice uživo | Dostupnost, vrijeme odziva i trajanje SSL-a – provjera svakih 5 minuta.\n"
+                         "Vaše usluge na jednom mjestu | Hosting, održavanje i domene s datumom obnove.\n"
+                         "Računi u PDF-u | Svi računi na jednom mjestu, spremni za preuzimanje.\n"
+                         "Zahtjevi za podršku | Prijavite problem ili zatražite izmjenu – sa snimkama zaslona, uz osobni odgovor.\n"
+                         "Novosti i obavijesti o održavanju | Unaprijed znate kad je nešto planirano.\n"
+                         "Sigurna prijava | Šifrirano, uz mogućnost dvofaktorske autentifikacije (2FA).",
+        "portal_btn": "Prijava za klijente",
+        "check_eyebrow": "Besplatan alat",
+        "check_title": "Koliko je dobra vaša web stranica?",
+        "check_intro": "Upišite adresu i za nekoliko sekundi dobijte besplatan izvještaj o sigurnosti, brzini i osnovama za Google – bez registracije.",
+        "check_btn": "Provjeri moju stranicu",
         "hosting_eyebrow": "Web hosting",
         "hosting_title": "Hosting koji vašu stranicu drži brzom i sigurnom",
         "hosting_text": "Vaša web stranica zaslužuje čvrst dom. Održavamo pažljivo konfigurirane poslužitelje u EU sa SSL-om, redovitim sigurnosnim kopijama i sigurnosnim ažuriranjima – vi se posvetite poslu, a mi brinemo o tehnici.",

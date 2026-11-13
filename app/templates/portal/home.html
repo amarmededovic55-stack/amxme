@@ -3,6 +3,17 @@
 {% block title %}{{ t('p_title') }} – {{ c.company_name }}{% endblock %}
 {% block page %}
 <h1 class="portal-h">{{ t('p_hello') }} {{ g.client.name }} 👋</h1>
+
+{% for n in news %}
+<div class="p-news {{ n.level }}">{{ icon('alert' if n.level != 'info' else 'info') }}<div><b>{{ n.title }}</b>{% if n.body %}<p>{{ n.body }}</p>{% endif %}<small>{{ n.created_at.strftime('%d.%m.%Y') }}</small></div></div>
+{% endfor %}
+
+<div class="p-quick">
+  {% for cat, ic, key in [('change', 'edit', 'qa_change'), ('problem', 'alert', 'qa_problem'), ('billing', 'file-text', 'qa_billing'), ('question', 'help-circle', 'qa_question')] %}
+  <a href="{{ url_for('portal.home', new=cat) }}#tickets" class="p-qa">{{ icon(ic) }}<span>{{ t(key) }}</span></a>
+  {% endfor %}
+</div>
+
 <section class="p-card">
   <h2>{{ icon('globe') }} {{ t('p_sites') }}</h2>
   {% for m in sites %}
@@ -14,9 +25,23 @@
       {% if m.ssl_expires %}<span>{{ t('p_ssl_until') }}: <b>{{ m.ssl_expires.strftime('%d.%m.%Y') }}</b></span>{% endif %}
       {% if m.last_ms %}<span>{{ m.last_ms }} ms</span>{% endif %}
     </div>
+    <div class="st-bars p-bars">{% for d, pct in m.bars %}<i class="{{ 'none' if pct is none else ('ok' if pct >= 99 else ('warn' if pct >= 95 else 'bad')) }}" title="{{ d.strftime('%d.%m.') }}: {{ '–' if pct is none else pct ~ ' %' }}"></i>{% endfor %}</div>
   </div>
   {% else %}<p class="muted">{{ t('p_no_sites') }}</p>{% endfor %}
 </section>
+
+<section class="p-card">
+  <h2>{{ icon('layers') }} {{ t('p_services') }}</h2>
+  {% for ct in contracts %}
+  {% set left = (ct.renewal_date - today).days if ct.renewal_date else none %}
+  <div class="p-row">
+    <div><b>{{ ct.title }}</b><small class="muted">{{ t('k_' ~ ct.kind) if ('k_' ~ ct.kind) else ct.kind }}{% if ct.domain %} · {{ ct.domain }}{% endif %}{% if ct.start_date %} · {{ t('p_since') }} {{ ct.start_date.strftime('%d.%m.%Y') }}{% endif %}</small></div>
+    {% if ct.status == 'active' and ct.renewal_date %}<span class="p-renew {{ 'soon' if left is not none and left <= 30 }}">{{ t('p_renews') }} {{ ct.renewal_date.strftime('%d.%m.%Y') }}<small>{{ t('p_days_left', n=left) if left is not none and left >= 0 else '' }}</small></span>{% endif %}
+    <span class="chip {{ 'ok' if ct.status == 'active' else '' }}">{{ t('p_active') if ct.status == 'active' else t('p_ended') }}</span>
+  </div>
+  {% else %}<p class="muted">{{ t('p_no_services') }}</p>{% endfor %}
+</section>
+
 <div class="p-cols">
   <section class="p-card">
     <h2>{{ icon('file-text') }} {{ t('p_invoices') }}</h2>
@@ -25,7 +50,7 @@
       <div><b>{{ i.number or i.title }}</b><small class="muted">{{ i.title if i.number else '' }} · {{ i.issued_at.strftime('%d.%m.%Y') }}</small></div>
       <span>{{ i.amount }}</span>
       <span class="chip {{ 'ok' if i.status == 'paid' else 'warn' }}">{{ t('p_paid') if i.status == 'paid' else t('p_open') }}</span>
-      <a href="{{ url_for('portal.invoice', inv_id=i.id) }}" class="btn btn-sm btn-ghost">{{ icon('upload-cloud') }} PDF</a>
+      <a href="{{ url_for('portal.invoice', inv_id=i.id) }}" class="btn btn-sm btn-ghost">PDF</a>
     </div>
     {% else %}<p class="muted">{{ t('p_no_invoices') }}</p>{% endfor %}
   </section>
@@ -33,19 +58,32 @@
     <h2>{{ icon('messages') }} {{ t('p_tickets') }}</h2>
     {% for tk in tickets %}
     <a class="p-row p-link" href="{{ url_for('portal.ticket', ticket_id=tk.id) }}">
-      <div><b>{{ tk.subject }}</b><small class="muted">{{ tk.updated_at.strftime('%d.%m.%Y %H:%M') }}</small></div>
+      <div><b>{{ tk.subject }}</b><small class="muted">{{ t('cat_' ~ tk.category) }} · {{ tk.updated_at.strftime('%d.%m.%Y %H:%M') }}</small></div>
       <span class="chip {{ {'open': 'warn', 'answered': 'ok', 'closed': ''}[tk.status] }}">{{ {'open': t('p_open'), 'answered': t('p_answered'), 'closed': t('p_closed')}[tk.status] }}</span>
     </a>
     {% else %}<p class="muted">{{ t('p_no_tickets') }}</p>{% endfor %}
-    <details class="p-new"><summary class="btn btn-sm btn-primary">{{ icon('plus') }} {{ t('p_new_ticket') }}</summary>
-      <form method="post" action="{{ url_for('portal.ticket_new') }}" class="form-stack">
+    <details class="p-new" {{ 'open' if new_cat }}><summary class="btn btn-sm btn-primary">{{ icon('plus') }} {{ t('p_new_ticket') }}</summary>
+      <form method="post" action="{{ url_for('portal.ticket_new') }}" class="form-stack" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>{{ t('p_category') }}<select name="category">{% for cat in ['question', 'change', 'problem', 'billing'] %}<option value="{{ cat }}" {{ 'selected' if new_cat == cat }}>{{ t('cat_' ~ cat) }}</option>{% endfor %}</select></label>
+        <label>{{ t('p_priority') }}<select name="priority"><option value="normal">{{ t('pr_normal') }}</option><option value="urgent" {{ 'selected' if new_cat == 'problem' }}>{{ t('pr_urgent') }}</option></select></label>
         <label>{{ t('p_subject') }}<input name="subject" required maxlength="200"></label>
         <label>{{ t('p_message') }}<textarea name="body" rows="5" required maxlength="5000"></textarea></label>
+        <label>{{ t('p_attach') }}<input type="file" name="files" multiple accept="image/png,image/jpeg,image/webp,application/pdf"></label>
         <button class="btn btn-primary">{{ t('p_send') }}</button>
       </form>
     </details>
   </section>
 </div>
+
+<section class="p-card">
+  <h2>{{ icon('help-circle') }} {{ t('p_help') }}</h2>
+  <div class="p-help">
+    <a href="{{ url_for('public.index') }}#faq">{{ icon('help-circle') }} {{ t('p_help_faq') }}</a>
+    <a href="{{ url_for('public.blog') }}">{{ icon('file-text') }} {{ t('p_help_blog') }}</a>
+    <a href="{{ url_for('public.status') }}">{{ icon('activity') }} {{ t('p_help_status') }}</a>
+    <a href="mailto:{{ c.contact_email }}">{{ icon('mail') }} {{ c.contact_email }}</a>
+  </div>
+</section>
 <p class="muted small-note">{{ icon('lock') }} {{ t('p_privacy') }}</p>
 {% endblock %}

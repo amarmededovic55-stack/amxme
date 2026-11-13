@@ -2,8 +2,10 @@
 """ASDHEM | Client portal (/portal): website status & SSL, invoices (PDF), support tickets."""
 import hashlib
 import hmac
+import io
 import os
 import time
+import uuid
 from datetime import timedelta
 from functools import wraps
 
@@ -15,8 +17,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .extensions import db
 from .i18n import LANGS, t
 from .mailer import send_mail
-from .models import Activity, Client, Invoice, Monitor, Ticket, TicketMessage, utcnow
-from .monitor import uptime
+from .models import Activity, Announcement, Client, Contract, Invoice, Monitor, Ticket, TicketFile, TicketMessage, utcnow
+from .monitor import daily_bars, uptime
 
 bp = Blueprint("portal", __name__)
 IDLE = 4 * 60 * 60
@@ -98,13 +100,53 @@ def login():
             db.session.commit()
             flash(t("p_bad_login"), "error")
             return render_template("portal/login.html"), 401
-        session.clear()
-        session.update(client_id=c.id, client_fp=_fp(c), client_seen=int(time.time()), lang=c.lang)
-        c.last_login = utcnow()
-        _log(f"Client {c.email} signed in")
-        db.session.commit()
-        return redirect(url_for("portal.home"))
+        if c.totp_enabled:
+            session.clear()
+            session.update(p2fa_id=c.id, p2fa_exp=int(time.time()) + 300, lang=c.lang)
+            return redirect(url_for("portal.login_2fa"))
+        return _sign_in(c)
     return render_template("portal/login.html")
+
+
+def _sign_in(c):
+    session.clear()
+    session.update(client_id=c.id, client_fp=_fp(c), client_seen=int(time.time()), lang=c.lang)
+    c.last_login = utcnow()
+    _log(f"Client {c.email} signed in")
+    db.session.commit()
+    return redirect(url_for("portal.home"))
+
+
+def _totp_ok(c, code):
+    import pyotp
+    code = "".join(ch for ch in (code or "") if ch.isdigit())
+    if len(code) != 6 or not c.totp_secret:
+        return False
+    totp = pyotp.TOTP(c.totp_secret)
+    now = int(time.time()) // 30
+    for step in (now - 1, now, now + 1):
+        if step > (c.totp_last or 0) and hmac.compare_digest(totp.at(step * 30), code):
+            c.totp_last = step
+            return True
+    return False
+
+
+@bp.route("/login/2fa", methods=["GET", "POST"])
+def login_2fa():
+    cid = session.get("p2fa_id")
+    c = db.session.get(Client, cid) if cid and int(session.get("p2fa_exp", 0)) > time.time() else None
+    if not c or not c.active:
+        return redirect(url_for("portal.login"))
+    if request.method == "POST":
+        ip = request.remote_addr or ""
+        fails = db.session.query(Activity).filter(Activity.kind == "portal_fail", Activity.ip == ip,
+                                                  Activity.created_at > utcnow() - LOCKOUT).count()
+        if fails < MAX_FAILS and _totp_ok(c, request.form.get("code")):
+            return _sign_in(c)
+        _log(f"Portal 2FA failed for {c.email}", "portal_fail")
+        db.session.commit()
+        flash(t("p_locked") if fails >= MAX_FAILS else t("p_code_bad"), "error")
+    return render_template("portal/login_2fa.html")
 
 
 @bp.post("/logout")
@@ -164,9 +206,14 @@ def home():
     sites = db.session.query(Monitor).filter_by(client_id=c.id).order_by(Monitor.position, Monitor.id).all()
     for m in sites:
         m.uptime30 = uptime(m.id, 30)
+        m.bars = daily_bars(m.id, 30)
     invoices = db.session.query(Invoice).filter_by(client_id=c.id).order_by(Invoice.issued_at.desc()).all()
     tickets = db.session.query(Ticket).filter_by(client_id=c.id).order_by(Ticket.updated_at.desc()).all()
-    return render_template("portal/home.html", sites=sites, invoices=invoices, tickets=tickets)
+    contracts = db.session.query(Contract).filter_by(client_id=c.id).order_by(Contract.status, Contract.renewal_date).all()
+    news = db.session.query(Announcement).filter_by(active=True).order_by(Announcement.created_at.desc()).limit(5).all()
+    from datetime import date
+    return render_template("portal/home.html", sites=sites, invoices=invoices, tickets=tickets, contracts=contracts,
+                           news=news, today=date.today(), new_cat=request.args.get("new"))
 
 
 @bp.route("/invoice/<int:inv_id>")
@@ -198,12 +245,18 @@ def ticket_new():
     if len(subject) < 3 or len(body) < 5:
         flash(t("err_message"), "error")
         return redirect(url_for("portal.home") + "#tickets")
-    tk = Ticket(client_id=g.client.id, subject=subject)
+    cat = request.form.get("category") if request.form.get("category") in CATEGORIES else "question"
+    prio = "urgent" if request.form.get("priority") == "urgent" else "normal"
+    tk = Ticket(client_id=g.client.id, subject=subject, category=cat, priority=prio)
     db.session.add(tk)
     db.session.flush()
-    db.session.add(TicketMessage(ticket_id=tk.id, author="client", body=body))
+    msg = TicketMessage(ticket_id=tk.id, author="client", body=body)
+    db.session.add(msg)
+    db.session.flush()
+    if not save_ticket_files(tk, msg):
+        flash(t("p_attach_bad"), "error")
     db.session.commit()
-    _notify_admin(f"New support request: {subject}",
+    _notify_admin(f"{'[URGENT] ' if prio == 'urgent' else ''}New support request: {subject}",
                   f"{g.client.name} ({g.client.email}) wrote:\n\n{body}\n\n{current_app.config['SITE_URL']}/admin/tickets/{tk.id}\n")
     flash(t("p_ticket_sent"), "success")
     return redirect(url_for("portal.ticket", ticket_id=tk.id))
@@ -218,14 +271,18 @@ def ticket(ticket_id):
     if request.method == "POST":
         body = (request.form.get("body") or "").strip()[:5000]
         if len(body) >= 2:
-            db.session.add(TicketMessage(ticket_id=tk.id, author="client", body=body))
+            msg = TicketMessage(ticket_id=tk.id, author="client", body=body)
+            db.session.add(msg)
+            db.session.flush()
+            if not save_ticket_files(tk, msg):
+                flash(t("p_attach_bad"), "error")
             tk.status, tk.updated_at = "open", utcnow()
             db.session.commit()
             _notify_admin(f"Reply on: {tk.subject}", f"{g.client.name} wrote:\n\n{body}\n\n"
                                                       f"{current_app.config['SITE_URL']}/admin/tickets/{tk.id}\n")
         return redirect(url_for("portal.ticket", ticket_id=tk.id))
     msgs = db.session.query(TicketMessage).filter_by(ticket_id=tk.id).order_by(TicketMessage.id).all()
-    return render_template("portal/ticket.html", tk=tk, msgs=msgs)
+    return render_template("portal/ticket.html", tk=tk, msgs=msgs, files=files_by_message(tk.id))
 
 
 @bp.route("/password", methods=["GET", "POST"])
@@ -245,3 +302,136 @@ def password():
             flash(t("p_pw_set"), "success")
             return redirect(url_for("portal.home"))
     return render_template("portal/password.html")
+
+
+# ====================================================================== ASDHEM | ticket attachments
+CATEGORIES = ("question", "change", "problem", "billing")
+MAX_FILE = 5 * 1024 * 1024
+MAGIC = ((b"%PDF-", "pdf"), (b"\x89PNG\r\n\x1a\n", "png"), (b"\xff\xd8\xff", "jpg"))
+
+
+def _kind(data):
+    for sig, ext in MAGIC:
+        if data.startswith(sig):
+            return ext
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "webp"
+    return None
+
+
+def save_ticket_files(tk, msg):
+    """Store up to 3 images/PDFs privately. Returns False if a file was rejected."""
+    ok = True
+    for up in request.files.getlist("files")[:3]:
+        if not up or not up.filename:
+            continue
+        data = up.read(MAX_FILE + 1)
+        ext = _kind(data)
+        if len(data) > MAX_FILE or not ext:
+            ok = False
+            continue
+        name = f"{uuid.uuid4().hex}.{ext}"
+        path = os.path.join(current_app.config["PRIVATE_DIR"], name)
+        with open(path, "wb") as f:
+            f.write(data)
+        os.chmod(path, 0o600)
+        db.session.add(TicketFile(message_id=msg.id, ticket_id=tk.id, file=name, size=len(data),
+                                  name=os.path.basename(up.filename)[:160]))
+    return ok
+
+
+def files_by_message(ticket_id):
+    out = {}
+    for f in db.session.query(TicketFile).filter_by(ticket_id=ticket_id):
+        out.setdefault(f.message_id, []).append(f)
+    return out
+
+
+def send_ticket_file(f):
+    path = os.path.join(current_app.config["PRIVATE_DIR"], os.path.basename(f.file))
+    if not os.path.exists(path):
+        abort(404)
+    mime = {"pdf": "application/pdf", "png": "image/png", "jpg": "image/jpeg", "webp": "image/webp"}[f.file.rsplit(".", 1)[1]]
+    return send_file(path, mimetype=mime, download_name=f.name or f.file, as_attachment=mime == "application/pdf")
+
+
+@bp.route("/file/<int:file_id>")
+@client_required
+def ticket_file(file_id):
+    f = db.session.get(TicketFile, file_id)
+    tk = db.session.get(Ticket, f.ticket_id) if f else None
+    if not tk or tk.client_id != g.client.id:
+        abort(404)
+    return send_ticket_file(f)
+
+
+# ====================================================================== ASDHEM | profile, 2FA, sign-in history
+@bp.route("/profile", methods=["GET", "POST"])
+@client_required
+def profile():
+    c = g.client
+    if request.method == "POST":
+        f = request.form
+        c.name = (f.get("name") or c.name).strip()[:120] or c.name
+        c.company = (f.get("company") or "").strip()[:160]
+        c.phone = (f.get("phone") or "").strip()[:60]
+        c.street = (f.get("street") or "").strip()[:160]
+        c.city = (f.get("city") or "").strip()[:120]
+        c.country = (f.get("country") or "").strip()[:80]
+        c.vat_id = (f.get("vat_id") or "").strip()[:40]
+        c.notify = bool(f.get("notify"))
+        if f.get("lang") in LANGS:
+            c.lang = f["lang"]
+            session["lang"] = c.lang
+        _log(f"Client {c.email} updated the profile")
+        db.session.commit()
+        flash(t("p_saved"), "success")
+        return redirect(url_for("portal.profile"))
+    return render_template("portal/profile.html", langs=LANGS)
+
+
+@bp.route("/security", methods=["GET", "POST"])
+@client_required
+def security():
+    import pyotp
+    import qrcode
+    import qrcode.image.svg
+    c = g.client
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "enable" and not c.totp_enabled:
+            secret = session.get("p_totp_pending")
+            if secret:
+                c.totp_secret = secret
+                if _totp_ok(c, request.form.get("code")):
+                    c.totp_enabled = True
+                    session.pop("p_totp_pending", None)
+                    _log(f"Client {c.email} enabled 2FA")
+                    db.session.commit()
+                    flash(t("p_saved"), "success")
+                    return redirect(url_for("portal.security"))
+                c.totp_secret = ""
+            flash(t("p_code_bad"), "error")
+        elif action == "disable" and c.totp_enabled:
+            if check_password_hash(c.password_hash, request.form.get("password") or "") and _totp_ok(c, request.form.get("code")):
+                c.totp_enabled, c.totp_secret = False, ""
+                _log(f"Client {c.email} disabled 2FA")
+                db.session.commit()
+                flash(t("p_saved"), "success")
+                return redirect(url_for("portal.security"))
+            flash(t("p_code_bad"), "error")
+    qr = None
+    if not c.totp_enabled:
+        secret = session.get("p_totp_pending") or pyotp.random_base32()
+        session["p_totp_pending"] = secret
+        uri = pyotp.TOTP(secret).provisioning_uri(name=c.email, issuer_name="AMXME Kundenportal")
+        buf = io.BytesIO()
+        qrcode.make(uri, image_factory=qrcode.image.svg.SvgPathImage, box_size=8).save(buf)
+        qr = buf.getvalue().decode()
+        qr = qr[qr.find("<svg"):]
+    from .public import anonymize_ip
+    logins = db.session.query(Activity).filter(Activity.kind == "portal", Activity.action == f"Client {c.email} signed in") \
+        .order_by(Activity.id.desc()).limit(8).all()
+    for a in logins:
+        a.ip_short = anonymize_ip(a.ip)
+    return render_template("portal/security.html", qr=qr, secret=session.get("p_totp_pending"), logins=logins)

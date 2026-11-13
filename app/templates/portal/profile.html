@@ -1,0 +1,21 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "portal/_base.html" %}
+{% block title %}{{ t('p_profile') }} – {{ t('p_title') }}{% endblock %}
+{% block page %}
+<a href="{{ url_for('portal.home') }}" class="link-back">{{ t('p_back') }}</a>
+<h1 class="portal-h">{{ t('p_profile') }}</h1>
+<form method="post" class="p-card form-stack form-grid">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>{{ t('p_name') }}<input name="name" value="{{ g.client.name }}" required maxlength="120"></label>
+  <label>{{ t('p_company') }}<input name="company" value="{{ g.client.company }}" maxlength="160"></label>
+  <label>{{ t('p_street') }}<input name="street" value="{{ g.client.street }}" maxlength="160" autocomplete="street-address"></label>
+  <label>{{ t('p_city') }}<input name="city" value="{{ g.client.city }}" maxlength="120"></label>
+  <label>{{ t('p_country') }}<input name="country" value="{{ g.client.country }}" maxlength="80" autocomplete="country-name"></label>
+  <label>{{ t('p_phone') }}<input name="phone" value="{{ g.client.phone }}" maxlength="60" autocomplete="tel"></label>
+  <label>{{ t('p_vat') }}<input name="vat_id" value="{{ g.client.vat_id }}" maxlength="40"></label>
+  <label>{{ t('p_lang') }}<select name="lang">{% for code, n in langs.items() %}<option value="{{ code }}" {{ 'selected' if code == g.client.lang }}>{{ n }}</option>{% endfor %}</select></label>
+  <label class="check-line"><input type="checkbox" name="notify" value="1" {{ 'checked' if g.client.notify }}> {{ t('p_notify') }}</label>
+  <label>{{ t('p_email') }}<input value="{{ g.client.email }}" disabled></label>
+  <button class="btn btn-primary">{{ t('p_save') }}</button>
+</form>
+{% endblock %}

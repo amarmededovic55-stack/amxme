@@ -13,11 +13,12 @@
     <a href="#top" class="nav-brand" aria-label="{{ c.company_name }} – {{ t('home') }}">{{ logo() }}</a>
     <nav class="nav-links" id="navLinks" aria-label="Main">
       <a href="#services">{{ t('nav_services') }}</a>
-      <a href="#why">{{ t('nav_why') }}</a>
       <a href="#hosting">{{ t('nav_hosting') }}</a>
       {% if projects %}<a href="#portfolio">{{ t('nav_work') }}</a>{% endif %}
       <a href="#about">{{ t('nav_about') }}</a>
+      <a href="#check">{{ t('nav_check_short') }}</a>
       {% if faqs %}<a href="#faq">{{ t('nav_faq') }}</a>{% endif %}
+      <a href="{{ url_for('portal.login') }}" class="nav-login" title="{{ t('nav_portal') }}">{{ icon('user') }}<span class="nav-login-txt">{{ t('nav_portal') }}</span></a>
       <a href="#contact" class="btn btn-sm btn-primary nav-cta">{{ t('nav_contact') }}</a>
     </nav>
     <button class="nav-toggle" id="navToggle" aria-label="{{ t('menu_open') }}" aria-expanded="false" aria-controls="navLinks">
@@ -241,6 +242,25 @@
   </div>
 </section>
 
+<!-- ============================== WEBSITE CHECK (ASDHEM) ============================== -->
+<section class="wrap" id="check">
+  <div class="chk-band reveal">
+    <div class="chk-band-copy">
+      <span class="eyebrow">{{ c.check_eyebrow }}</span>
+      <h2>{{ c.check_title }}</h2>
+      {% if c.check_intro %}<p>{{ c.check_intro }}</p>{% endif %}
+      <ul class="chk-mini">{% for k in ['chk_https', 'chk_speed', 'chk_hsts', 'chk_viewport'] %}<li>{{ icon('check') }}{{ t(k) }}</li>{% endfor %}</ul>
+    </div>
+    <form method="post" action="{{ url_for('public.website_check') }}" class="check-form chk-band-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="sr-only" for="chkHome">URL</label>
+      <input id="chkHome" name="url" type="text" inputmode="url" required maxlength="300" placeholder="{{ t('chk_ph') }}">
+      <button class="btn btn-primary btn-lg">{{ icon('search') }} {{ c.check_btn }}</button>
+    </form>
+    <div class="chk-gauge" aria-hidden="true"><div class="score-ring" style="--p: 100"><b>100</b><small>/100</small></div><small>amxme.info</small></div>
+  </div>
+</section>
+
 <!-- ============================== PORTFOLIO ============================== -->
 {% if projects %}
 <section class="section section--soft" id="portfolio">
@@ -304,6 +324,39 @@
     </div>
   </div>
 </section>
+
+<!-- ============================== CLIENT PORTAL (ASDHEM) ============================== -->
+{% set pts = c.portal_points | steps %}
+{% if pts %}
+<section class="section section--dark" id="portal">
+  <div class="dark-bg" aria-hidden="true"><div class="dk-orb a"></div><div class="dk-orb b"></div><div class="dk-grid"></div></div>
+  <div class="wrap portal-sec">
+    <div class="portal-copy">
+      <span class="eyebrow reveal">{{ c.portal_eyebrow }}</span>
+      <h2 class="reveal">{{ c.portal_title }}</h2>
+      {% if c.portal_intro %}<p class="lead reveal">{{ c.portal_intro }}</p>{% endif %}
+      <ul class="portal-feats">
+        {% set pf_icons = ['activity', 'layers', 'file-text', 'messages', 'send', 'shield-check'] %}
+        {% for title, text in pts %}
+        <li class="reveal" style="--i:{{ loop.index0 }}"><span class="pf-ic">{{ icon(pf_icons[loop.index0 % 6]) }}</span><div><b>{{ title }}</b>{% if text %}<span>{{ text }}</span>{% endif %}</div></li>
+        {% endfor %}
+      </ul>
+      <a href="{{ url_for('portal.login') }}" class="btn btn-white btn-lg reveal">{{ icon('user') }} {{ c.portal_btn }}</a>
+    </div>
+    <div class="portal-mock reveal" aria-hidden="true">
+      <div class="pm-bar"><i></i><i></i><i></i><span>amxme.info/portal</span></div>
+      <div class="pm-body">
+        <b class="pm-hi">{{ t('p_hello') }} 👋</b>
+        <div class="pm-site"><span class="st-badge up">{{ t('up') }}</span><b>{{ t('hp_sites').split('|')[0] }}</b><small>99,98 % · SSL ✓ · 142 ms</small>
+          <div class="st-bars">{% for i in range(30) %}<i class="{{ 'warn' if i == 11 else 'ok' }}"></i>{% endfor %}</div></div>
+        <div class="pm-row"><span>{{ icon('file-text') }} {{ t('p_invoices') }}</span><span class="chip ok">{{ t('p_paid') }}</span></div>
+        <div class="pm-row"><span>{{ icon('messages') }} {{ t('p_tickets') }}</span><span class="chip ok">{{ t('p_answered') }}</span></div>
+        <div class="pm-row"><span>{{ icon('shield-check') }} 2FA</span><span class="chip ok">✓</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
 
 <!-- ============================== TESTIMONIALS (ASDHEM, real reviews only) ============================== -->
 {% if testimonials %}

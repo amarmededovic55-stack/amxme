@@ -41,6 +41,8 @@
       {% if g.user and g.user.is_owner %}
       <a href="{{ url_for('admin.monitors') }}" class="{{ 'on' if ep == 'admin.monitors' }}">{{ icon('activity') }}Monitoring</a>
       <a href="{{ url_for('admin.clients') }}" class="{{ 'on' if ep in ('admin.clients', 'admin.client') }}">{{ icon('briefcase') }}Clients & Portal</a>
+      <a href="{{ url_for('admin.invoices') }}" class="{{ 'on' if ep in ('admin.invoices', 'admin.invoice_edit') }}">{{ icon('file-text') }}Invoices</a>
+      <a href="{{ url_for('admin.announcements') }}" class="{{ 'on' if ep == 'admin.announcements' }}">{{ icon('send') }}Announcements</a>
       <a href="{{ url_for('admin.backups') }}" class="{{ 'on' if ep == 'admin.backups' }}">{{ icon('hard-drive') }}Backups</a>
       <a href="{{ url_for('admin.privacy_tools') }}" class="{{ 'on' if ep == 'admin.privacy_tools' }}">{{ icon('shield') }}GDPR Requests</a>
       <a href="{{ url_for('admin.users') }}" class="{{ 'on' if ep == 'admin.users' }}">{{ icon('users') }}Users & Roles</a>
