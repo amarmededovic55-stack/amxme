@@ -184,7 +184,8 @@ def structured_data(faqs=None):
                                                                  "description": s.description}} for s in services]
     graph = [org, {"@type": "WebSite", "@id": f"{site}/#website", "url": f"{site}/",
                    "name": c.company_name or "AMXME Web Solutions", "publisher": {"@id": f"{site}/#organization"},
-                   "inLanguage": "en"}]
+                   "inLanguage": "en",
+                   "creator": {"@type": "Organization", "name": "ASDHEM"}}]  # ASDHEM | signature, visible in schema validators
     if faqs:
         graph.append({"@type": "FAQPage", "@id": f"{site}/#faq", "mainEntity": [
             {"@type": "Question", "name": f.title,
