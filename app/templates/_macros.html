@@ -57,9 +57,34 @@
 </div>
 {%- endmacro %}
 
-{# ASDHEM | language switcher: EN · DE · HR #}
-{% macro lang_switch(light=False) -%}
-<div class="lang-switch{{ ' lang-switch--light' if light }}" role="group" aria-label="{{ t('language') }}">
-  {% for code, name in LANGS.items() %}<a href="{{ lang_url(code) }}{{ '?hl=' ~ code if code == 'en' else '' }}" hreflang="{{ code }}" lang="{{ code }}" title="{{ name }}"{% if code == lang %} class="is-on" aria-current="true"{% endif %}>{{ code | upper }}</a>{% endfor %}
+{# ASDHEM | country flags as inline SVG (emoji flags do not show on Windows) #}
+{% macro flag(code, uid='') -%}
+{% if code == 'de' -%}
+<svg class="flag" viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="3" fill="#FFCE00"/><rect width="5" height="2" fill="#DD0000"/><rect width="5" height="1" fill="#000"/></svg>
+{%- elif code == 'hr' -%}
+<svg class="flag" viewBox="0 0 30 18" aria-hidden="true"><rect width="30" height="18" fill="#171796"/><rect width="30" height="12" fill="#fff"/><rect width="30" height="6" fill="#FF0000"/><clipPath id="hrs{{ uid }}"><path d="M11 4.2h8v6.3a4 4 0 0 1-8 0z"/></clipPath><g clip-path="url(#hrs{{ uid }})"><rect x="11" y="4.2" width="8" height="10.4" fill="#fff"/>{% for r in range(6) %}{% for col in range(5) %}{% if (r + col) % 2 == 0 %}<rect x="{{ 11 + col * 1.6 }}" y="{{ 4.2 + r * 1.6 }}" width="1.6" height="1.6" fill="#FF0000"/>{% endif %}{% endfor %}{% endfor %}</g><path d="M11 4.2h8v6.3a4 4 0 0 1-8 0z" fill="none" stroke="#FF0000" stroke-width=".4"/></svg>
+{%- else -%}
+<svg class="flag" viewBox="0 0 60 30" aria-hidden="true"><clipPath id="ukt{{ uid }}"><path d="M30 15h30v15zv15h-30zh-30v-15zv-15h30z"/></clipPath><rect width="60" height="30" fill="#012169"/><path d="M0 0l60 30M60 0L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30M60 0L0 30" clip-path="url(#ukt{{ uid }})" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg>
+{%- endif %}
+{%- endmacro %}
+
+{# ASDHEM | floating language switcher – always visible, pops open on hover / tap #}
+{% macro lang_float() -%}
+<div class="lf" id="langFloat" data-signature="ASDHEM">
+  <div class="lf-menu" id="langMenu" role="menu" aria-label="{{ t('choose_lang') }}">
+    {% for code in LANG_ORDER %}
+    <a href="{{ lang_url(code) }}{{ '?hl=en' if code == 'en' and request.endpoint == 'public.index' else '' }}" role="menuitem" hreflang="{{ code }}" lang="{{ code }}"
+       class="lf-item{{ ' is-on' if code == lang }}" style="--d: {{ loop.revindex0 }}"{% if code == lang %} aria-current="true"{% endif %}>
+      <span class="lf-flag">{{ flag(code, 'm' ~ code) }}</span>
+      <b>{{ LANG_SHORT[code] }}</b><span class="lf-name">{{ LANGS[code] }}</span>
+      {% if code == lang %}<span class="lf-check" aria-hidden="true">✓</span>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  <button type="button" class="lf-btn" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu" aria-label="{{ t('choose_lang') }}: {{ LANGS[lang] }}">
+    <span class="lf-flag">{{ flag(lang, 'b') }}</span>
+    <b>{{ LANG_SHORT[lang] }}</b>
+    <svg class="lf-globe" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+  </button>
 </div>
 {%- endmacro %}

@@ -2,7 +2,7 @@
 {# ASDHEM | GDPR / German law: Imprint (§ 5 DDG) and Privacy Policy (Art. 13 GDPR) in EN / DE / HR.
    Texts: templates/legal/<page>_<lang>.html, details from Admin → Imprint & Privacy. #}
 {% extends "base.html" %}
-{% from "_macros.html" import logo, lang_switch with context %}
+{% from "_macros.html" import logo with context %}
 {% block title %}{{ t('imprint') if page == 'imprint' else t('privacy') }} – {{ c.company_name }}{% endblock %}
 {% block head %}<meta name="robots" content="noindex, follow">{% endblock %}
 
@@ -11,7 +11,6 @@
   <div class="wrap legal-top-in">
     <a href="{{ url_for('public.index') }}" aria-label="{{ c.company_name }} – {{ t('home') }}">{{ logo() }}</a>
     <div class="legal-top-r">
-      {{ lang_switch() }}
       <a href="{{ url_for('public.index') }}" class="btn btn-sm btn-ghost">{{ t('back_site') }}</a>
     </div>
   </div>

@@ -1,6 +1,6 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
 {% extends "base.html" %}
-{% from "_macros.html" import logo, mini_site, rack, lang_switch with context %}
+{% from "_macros.html" import logo, mini_site, rack with context %}
 {% block body %}
 {% if preview_left %}
 <div class="preview-bar">👀 Preview access – this website is not public yet. Your access expires in {% if preview_left >= 5400 %}{{ (preview_left + 1799) // 3600 }} h{% else %}{{ (preview_left + 59) // 60 }} min{% endif %}.</div>
@@ -19,7 +19,6 @@
       <a href="#about">{{ t('nav_about') }}</a>
       {% if faqs %}<a href="#faq">{{ t('nav_faq') }}</a>{% endif %}
       <a href="#contact" class="btn btn-sm btn-primary nav-cta">{{ t('nav_contact') }}</a>
-      {{ lang_switch() }}
     </nav>
     <button class="nav-toggle" id="navToggle" aria-label="{{ t('menu_open') }}" aria-expanded="false" aria-controls="navLinks">
       <span></span><span></span><span></span>
@@ -499,7 +498,6 @@
   <div class="wrap foot-bottom">
     <span>© {{ year }} {{ c.copyright }}</span>
     <nav class="foot-legal" aria-label="Legal"><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav>
-    {{ lang_switch(light=True) }}
     <a href="#top" class="to-top" aria-label="{{ t('back_top') }}">↑</a>
   </div>
 </footer>

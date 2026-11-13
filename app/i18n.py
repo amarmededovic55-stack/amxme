@@ -9,6 +9,8 @@ import json
 from flask import g, request
 
 LANGS = {"en": "English", "de": "Deutsch", "hr": "Hrvatski"}
+LANG_SHORT = {"en": "EN", "de": "DE", "hr": "CRO"}   # ASDHEM | labels in the floating switcher
+LANG_ORDER = ("de", "hr", "en")
 DEFAULT_LANG = "en"
 LOCALES = {"en": "en_US", "de": "de_DE", "hr": "hr_HR"}
 
@@ -26,6 +28,7 @@ UI = {
     "menu_close": {"en": "Close menu", "de": "Menü schließen", "hr": "Zatvori izbornik"},
     "home": {"en": "Home", "de": "Startseite", "hr": "Početna"},
     "language": {"en": "Language", "de": "Sprache", "hr": "Jezik"},
+    "choose_lang": {"en": "Choose language", "de": "Sprache wählen", "hr": "Odaberite jezik"},
     # hero visual
     "chip_ssl": {"en": "SSL Secured", "de": "SSL-gesichert", "hr": "SSL zaštita"},
     "chip_online": {"en": "Servers Online", "de": "Server online", "hr": "Poslužitelji online"},

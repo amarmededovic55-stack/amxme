@@ -1,13 +1,13 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
 {% extends "base.html" %}
-{% from "_macros.html" import logo, rack, lang_switch with context %}
+{% from "_macros.html" import logo, rack with context %}
 {% block body %}
 <main class="mt">
   <div class="mt-bg" aria-hidden="true">
     <div class="mt-orb a"></div><div class="mt-orb b"></div><div class="mt-grid"></div>
   </div>
 
-  <header class="mt-top wrap">{{ logo(light=True) }}{{ lang_switch(light=True) }}</header>
+  <header class="mt-top wrap">{{ logo(light=True) }}</header>
 
   <section class="wrap mt-in">
     <div class="mt-copy">

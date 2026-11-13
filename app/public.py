@@ -1,23 +1,22 @@
 # Signed: ASDHEM | AMXME Web Solutions
+"""Public website: homepage (EN / DE / HR), legal pages, contact form, preview links, sitemap."""
 import ipaddress
-import re
-from datetime import timedelta
-
-from flask import Blueprint, Response, current_app, flash, g, jsonify, redirect, render_template, request, url_for
-
-from .extensions import db
-from .mailer import send_mail
-from .models import Activity, Faq, Feature, Message, Project, Service, Visit, utcnow
-from .i18n import DEFAULT_LANG, LANGS, best_browser_lang, current_lang, t
-from .templating import get_content, localize
-from flask import session
-import random
 import json
+import random
+import re
 import secrets
 import time
+from datetime import timedelta
+
+from flask import (Blueprint, Response, current_app, flash, g, jsonify, redirect, render_template, request,
+                   session, url_for)
 from itsdangerous import BadSignature, URLSafeSerializer
 
-from .models import Setting
+from .extensions import db
+from .i18n import DEFAULT_LANG, LANGS, best_browser_lang, current_lang, t
+from .mailer import send_mail
+from .models import Activity, Faq, Feature, Message, Project, Service, Setting, Visit, utcnow
+from .templating import get_content, localize
 
 # ASDHEM | preview links while "under construction" is on.
 # Only ACTIVE links are kept (one small settings row); expired ones are dropped automatically.
@@ -180,7 +179,7 @@ def enabled(model, **filters):
     ).scalars().all()
 
 
-def structured_data(faqs=None):
+def structured_data(faqs=None, services=None):
     """ASDHEM | schema.org JSON-LD (Organization + WebSite, + FAQPage on the homepage) for Google / AI search."""
     c = get_content()
     site = current_app.config["SITE_URL"]
@@ -196,7 +195,8 @@ def structured_data(faqs=None):
         org["email"] = c.contact_email
         org["contactPoint"] = {"@type": "ContactPoint", "contactType": "customer support",
                                "email": c.contact_email, "availableLanguage": ["English", "German", "Croatian"]}
-    services = localize(enabled(Service))
+    if services is None:
+        services = localize(enabled(Service))
     if services:
         org["makesOffer"] = [{"@type": "Offer", "itemOffered": {"@type": "Service", "name": s.title,
                                                                  "description": s.description}} for s in services]
@@ -227,7 +227,8 @@ def index():
             resp = redirect(url_for("public.index", lang=best))
             resp.headers["Vary"] = "Accept-Language"
             return resp
-    session["lang"] = lang
+    if session.get("lang") != lang:
+        session["lang"] = lang
     record_visit()
     c = get_content()
     preview_left = 0
@@ -235,6 +236,7 @@ def index():
         preview_left = preview_seconds_left()
         if not preview_left:
             return render_template("maintenance.html", ld=structured_data(), canonical_path=url_for("public.index"))
+    services = localize(enabled(Service))
     projects = localize(enabled(Project))
     faqs = localize(enabled(Faq))
     faq_cats = {}
@@ -245,7 +247,7 @@ def index():
     categories = sorted({p.category for p in projects if p.category})
     return render_template(
         "index.html",
-        services=localize(enabled(Service)),
+        services=services,
         why=localize(enabled(Feature, group="why")),
         hosting=localize(enabled(Feature, group="hosting")),
         badges=localize(enabled(Feature, group="badge")),
@@ -254,7 +256,7 @@ def index():
         preview_left=preview_left,
         faqs=faqs,
         faq_cats=faq_cats,
-        ld=structured_data(faqs),
+        ld=structured_data(faqs, services),
         canonical_path=url_for("public.index"),
     )
 

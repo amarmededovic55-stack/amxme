@@ -1,3 +1,13 @@
+/*!
+ *     █████╗ ███████╗██████╗ ██╗  ██╗███████╗███╗   ███╗
+ *    ██╔══██╗██╔════╝██╔══██╗██║  ██║██╔════╝████╗ ████║
+ *    ███████║███████╗██║  ██║███████║█████╗  ██╔████╔██║
+ *    ██╔══██║╚════██║██║  ██║██╔══██║██╔══╝  ██║╚██╔╝██║
+ *    ██║  ██║███████║██████╔╝██║  ██║███████╗██║ ╚═╝ ██║
+ *    ╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝
+ *
+ *    Designed & built by ASDHEM  ·  AMXME Web Solutions
+ */
 /* Signed: ASDHEM | AMXME Web Solutions */
 (() => {
   "use strict";
@@ -7,6 +17,26 @@
   let T = {};
   try { T = JSON.parse(($("#i18n") || {}).textContent || "{}"); } catch { T = {}; }
   const tr = (k, fb) => T[k] || fb;
+
+  /* ASDHEM | floating language switcher: tap to open on touch screens, Esc / outside click closes */
+  const lf = $("#langFloat"), lfBtn = $("#langBtn");
+  if (lf && lfBtn) {
+    const setLf = (open) => { lf.classList.toggle("is-open", open); lfBtn.setAttribute("aria-expanded", String(open)); };
+    lfBtn.addEventListener("click", (e) => { e.stopPropagation(); setLf(!lf.classList.contains("is-open")); });
+    document.addEventListener("click", (e) => { if (!lf.contains(e.target)) setLf(false); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { setLf(false); } });
+    lf.addEventListener("mouseenter", () => lfBtn.setAttribute("aria-expanded", "true"));
+    lf.addEventListener("mouseleave", () => { if (!lf.classList.contains("is-open")) lfBtn.setAttribute("aria-expanded", "false"); });
+    let greeted = false;
+    try { greeted = sessionStorage.getItem("lfHello") === "1"; sessionStorage.setItem("lfHello", "1"); } catch { /* private mode */ }
+    if (!greeted) setTimeout(() => { lf.classList.add("hello"); setTimeout(() => lf.classList.remove("hello"), 1400); }, 1800);
+  }
+
+  /* ASDHEM | signature in the browser console */
+  try {
+    console.log("%cASDHEM", "font: 900 46px/1.1 system-ui, sans-serif; letter-spacing: .12em; background: linear-gradient(135deg,#4c1d95,#a855f7); color: #fff; padding: 10px 28px; border-radius: 14px;");
+    console.log("%cDesigned & built by ASDHEM · AMXME Web Solutions", "font: 600 13px system-ui, sans-serif; color: #7c3aed;");
+  } catch { /* no console */ }
 
   /* sticky nav state */
   const nav = $(".nav");

@@ -6,7 +6,7 @@ from flask import url_for, g
 from markupsafe import Markup, escape
 
 from .content import DEFAULTS, DEFAULTS_I18N, TRANSLATABLE
-from .i18n import DEFAULT_LANG, LANGS, LOCALES, current_lang, js_strings, t
+from .i18n import DEFAULT_LANG, LANG_ORDER, LANG_SHORT, LANGS, LOCALES, current_lang, js_strings, t
 from .extensions import db
 from .icons import icon
 from .models import Setting
@@ -142,7 +142,7 @@ def init_app(app):
     app.jinja_env.filters["ua_short"] = ua_short
     app.jinja_env.globals.update(icon=icon)
     app.jinja_env.filters.update(lines=lines, paragraphs=paragraphs, highlight=highlight, safe_url=safe_url, steps=steps)
-    app.jinja_env.globals.update(t=t, LANGS=LANGS, LOCALES=LOCALES)
+    app.jinja_env.globals.update(t=t, LANGS=LANGS, LOCALES=LOCALES, LANG_SHORT=LANG_SHORT, LANG_ORDER=LANG_ORDER)
 
     @app.template_filter("dt")
     def fmt_dt(value, fmt="%d %b %Y, %H:%M"):

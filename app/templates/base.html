@@ -49,6 +49,7 @@
 </head>
 <body>
 {% block body %}{% endblock %}
+{% from "_macros.html" import lang_float with context %}{{ lang_float() }}
 <script type="application/json" id="i18n">{{ i18n_js() | safe }}</script>
 <script src="{{ asset('js/site.js') }}" defer></script>
 </body>

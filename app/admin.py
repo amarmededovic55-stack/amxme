@@ -3,7 +3,6 @@ import base64
 import hashlib
 import hmac
 import io
-import json
 import secrets as _secrets
 import time
 
