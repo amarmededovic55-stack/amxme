@@ -77,41 +77,6 @@
     reveals.forEach((el) => el.classList.add("is-in"));
   }
 
-  /* ASDHEM | desktop only: sections "form out of a cloud" every time they scroll into view
-     (down or up); once a section has left the screen its clouds quietly gather again */
-  const cloudOk = window.matchMedia("(min-width: 981px) and (prefers-reduced-motion: no-preference)").matches;
-  if (cloudOk && "IntersectionObserver" in window) {
-    const secs = $$("main > section").filter((s) => !s.classList.contains("hero"));
-    const puffs = [[-6, 2, 62, 44], [38, -4, 58, 40], [70, 10, 50, 46], [8, 40, 56, 42], [48, 36, 60, 48], [-4, 66, 60, 40], [56, 68, 56, 38]];
-    const cio = new IntersectionObserver((entries) => {
-      entries.forEach((en) => {
-        const s = en.target;
-        if (en.isIntersecting) {
-          if (s.classList.contains("cloud-go")) return;
-          s.classList.remove("cloud-reset");
-          void s.offsetWidth;                       // let the "covered" state paint before parting
-          requestAnimationFrame(() => s.classList.add("cloud-go"));
-        } else if (s.classList.contains("cloud-go")) {
-          s.classList.add("cloud-reset");           // off screen: clouds gather again without animating
-          s.classList.remove("cloud-go");
-        }
-      });
-    }, { threshold: 0, rootMargin: "0px 0px -18% 0px" });
-    secs.forEach((s) => {
-      const v = document.createElement("div");
-      v.className = "cloud-veil";
-      v.setAttribute("aria-hidden", "true");
-      puffs.forEach(([x, y, w, h], i) => {
-        const p = document.createElement("i");
-        p.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%;--dx:${x + w / 2 < 50 ? -1 : 1};--d:${i * 45}ms`;
-        v.appendChild(p);
-      });
-      s.classList.add("cloudy");
-      s.appendChild(v);
-      cio.observe(s);
-    });
-  }
-
   /* highlight current section in nav */
   const navLinks = $$('.nav-links a[href^="#"]:not(.btn)');
   const targets = navLinks.map((a) => $(a.getAttribute("href"))).filter(Boolean);
