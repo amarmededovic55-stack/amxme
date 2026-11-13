@@ -7,7 +7,7 @@ from flask import Blueprint, Response, current_app, flash, jsonify, redirect, re
 
 from .extensions import db
 from .mailer import send_mail
-from .models import Activity, Feature, Message, Project, Service, Visit, utcnow
+from .models import Activity, Faq, Feature, Message, Project, Service, Visit, utcnow
 from .templating import get_content
 from flask import session
 import random
@@ -164,6 +164,34 @@ def enabled(model, **filters):
     ).scalars().all()
 
 
+def structured_data(faqs=None):
+    """ASDHEM | schema.org JSON-LD (Organization + WebSite, + FAQPage on the homepage) for Google / AI search."""
+    c = get_content()
+    site = current_app.config["SITE_URL"]
+    org = {
+        "@type": "Organization", "@id": f"{site}/#organization",
+        "name": c.company_name or "AMXME Web Solutions", "url": f"{site}/",
+        "logo": f"{site}/static/img/favicon.svg",
+        "description": c.meta_description,
+    }
+    if c.contact_email:
+        org["email"] = c.contact_email
+        org["contactPoint"] = {"@type": "ContactPoint", "contactType": "customer support",
+                               "email": c.contact_email, "availableLanguage": ["English", "German"]}
+    services = enabled(Service)
+    if services:
+        org["makesOffer"] = [{"@type": "Offer", "itemOffered": {"@type": "Service", "name": s.title,
+                                                                 "description": s.description}} for s in services]
+    graph = [org, {"@type": "WebSite", "@id": f"{site}/#website", "url": f"{site}/",
+                   "name": c.company_name or "AMXME Web Solutions", "publisher": {"@id": f"{site}/#organization"},
+                   "inLanguage": "en"}]
+    if faqs:
+        graph.append({"@type": "FAQPage", "@id": f"{site}/#faq", "mainEntity": [
+            {"@type": "Question", "name": f.title,
+             "acceptedAnswer": {"@type": "Answer", "text": f.text}} for f in faqs]})
+    return {"@context": "https://schema.org", "@graph": graph}
+
+
 @bp.route("/")
 def index():
     record_visit()
@@ -172,8 +200,15 @@ def index():
     if c.maintenance_enabled == "1" and not session.get("admin_id"):
         preview_left = preview_seconds_left()
         if not preview_left:
-            return render_template("maintenance.html")
+            return render_template("maintenance.html", ld=structured_data())
     projects = enabled(Project)
+    faqs = enabled(Faq)
+    for f in faqs:
+        f.cat = (f.category or "").strip() or "General"
+    faq_cats = {}
+    for f in faqs:
+        faq_cats[f.cat] = faq_cats.get(f.cat, 0) + 1
+    faq_cats = list(faq_cats.items())
     categories = sorted({p.category for p in projects if p.category})
     return render_template(
         "index.html",
@@ -184,6 +219,9 @@ def index():
         projects=projects,
         categories=categories,
         preview_left=preview_left,
+        faqs=faqs,
+        faq_cats=faq_cats,
+        ld=structured_data(faqs),
     )
 
 

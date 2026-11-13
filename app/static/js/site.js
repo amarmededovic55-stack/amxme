@@ -133,4 +133,68 @@
       btn.disabled = false; label.textContent = original;
     }
   });
+
+  /* ASDHEM | FAQ: categories, live search, "ask this question" hand-off to the contact form, deep links */
+  const faqList = $("#faqList");
+  if (faqList) {
+    const items = $$(".faq-item", faqList);
+    const search = $("#faqSearch"), empty = $("#faqEmpty"), term = $("#faqTerm"), ask = $("#faqAsk");
+    const cats = $$(".faq-cat");
+    let cat = "*";
+    const norm = (t) => (t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    items.forEach((it) => { it.dataset.text = norm(it.textContent); });
+
+    const apply = () => {
+      const raw = search ? search.value.trim() : "";
+      const words = norm(raw).split(/\s+/).filter(Boolean);
+      let shown = 0;
+      items.forEach((it) => {
+        const ok = (cat === "*" || it.dataset.cat === cat) && words.every((w) => it.dataset.text.includes(w));
+        it.hidden = !ok;
+        if (ok) { it.classList.add("is-in"); shown++; }
+      });
+      if (empty) {
+        empty.hidden = shown > 0;
+        if (term) term.textContent = raw;
+      }
+    };
+    cats.forEach((b) => b.addEventListener("click", () => {
+      cat = b.dataset.cat;
+      cats.forEach((x) => { const on = x === b; x.classList.toggle("is-active", on); x.setAttribute("aria-selected", String(on)); });
+      apply();
+    }));
+    if (search) search.addEventListener("input", apply);
+
+    /* only one answer open at a time */
+    items.forEach((it) => it.addEventListener("toggle", () => {
+      if (it.open) items.forEach((o) => { if (o !== it && o.open) o.open = false; });
+    }));
+
+    /* "Ask this question" -> prefill the contact form message */
+    if (ask) ask.addEventListener("click", () => {
+      const msg = $("#f-message"), q = search ? search.value.trim() : "";
+      if (msg && q && !msg.value.trim()) msg.value = `Question: ${q}\n\n`;
+      setTimeout(() => { const n = $("#f-name"); if (n) n.focus({ preventScroll: true }); }, 700);
+    });
+
+    /* deep link: /#faq-12 opens that answer; "copy link" copies it */
+    const openFromHash = () => {
+      const t = location.hash.startsWith("#faq-") ? document.getElementById(location.hash.slice(1)) : null;
+      if (t && t.classList.contains("faq-item")) {
+        t.hidden = false; t.classList.add("is-in"); t.open = true;
+        t.scrollIntoView({ block: "center" });
+      }
+    };
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    $$("[data-copy-link]", faqList).forEach((a) => a.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const hash = a.getAttribute("href");
+      history.replaceState(null, "", hash);
+      const span = $("span", a), old = span.textContent;
+      try { await navigator.clipboard.writeText(location.origin + location.pathname + hash); span.textContent = "Link copied!"; }
+      catch { span.textContent = "Copy the address from your browser bar"; }
+      setTimeout(() => { span.textContent = old; }, 2200);
+    }));
+  }
 })();

@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
   <noscript><style>.reveal { opacity: 1 !important; transform: none !important; }</style></noscript>
   <link rel="stylesheet" href="{{ asset('css/site.css') }}">
+  {% if ld %}<script type="application/ld+json">{{ ld | tojson }}</script>{% endif %}
   {% block head %}{% endblock %}
 </head>
 <body>

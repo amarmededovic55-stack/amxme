@@ -20,7 +20,7 @@ from .content import SECTION_MAP, SECTIONS
 from .extensions import db
 from .icons import PICKER
 from .mailer import smtp_configured
-from .models import Activity, AdminUser, Feature, Message, Project, Service, Setting, Visit, utcnow
+from .models import Activity, AdminUser, Faq, Feature, Message, Project, Service, Setting, Visit, utcnow
 from sqlalchemy import func
 from .uploads import UploadError, delete_upload, save_image
 
@@ -384,6 +384,16 @@ COLLECTIONS = {
         "intro": "Highlights listed in the Hosting section.",
         "fields": [fld("title", "Title", required=True), fld("text", "Text", "textarea"), fld("icon", "Icon", "icon")],
         "subtitle": lambda o: o.text,
+    },
+    "faq": {
+        "model": Faq, "title": "FAQ", "singular": "Question", "icon": "help-circle",
+        "intro": "Questions & answers in the FAQ section. Questions with the same category are grouped under one tab. Drag to reorder.",
+        "fields": [
+            fld("title", "Question", required=True),
+            fld("text", "Answer", "textarea", required=True, help="Keep it short – 2 to 4 sentences. Separate paragraphs with an empty line."),
+            fld("category", "Category", help="e.g. General, Websites, Hosting, Domains, Support. Leave empty for “General”."),
+        ],
+        "subtitle": lambda o: f"{o.category or 'General'} · {(o.text or '')[:90]}",
     },
     "badges": {
         "model": Feature, "group": "badge", "title": "Trust Badges", "singular": "Badge", "icon": "shield-check",

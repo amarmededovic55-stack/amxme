@@ -17,6 +17,7 @@
       <a href="#hosting">Hosting</a>
       {% if projects %}<a href="#portfolio">Our Work</a>{% endif %}
       <a href="#about">About</a>
+      {% if faqs %}<a href="#faq">FAQ</a>{% endif %}
       <a href="#contact" class="btn btn-sm btn-primary nav-cta">Contact Us</a>
     </nav>
     <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
@@ -301,6 +302,67 @@
   </div>
 </section>
 
+<!-- ============================== FAQ (ASDHEM) ============================== -->
+{% if faqs %}
+<section class="section section--soft" id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{{ c.faq_eyebrow }}</span>
+      <h2>{{ c.faq_title }}</h2>
+      {% if c.faq_intro %}<p>{{ c.faq_intro }}</p>{% endif %}
+    </div>
+
+    <div class="faq">
+      <div class="faq-main">
+        <div class="faq-tools reveal">
+          <label class="faq-search">
+            {{ icon('search') }}
+            <span class="sr-only">Search questions</span>
+            <input type="search" id="faqSearch" placeholder="Search questions, e.g. SSL, domain, price…" autocomplete="off" maxlength="80">
+          </label>
+          {% if faq_cats | length > 1 %}
+          <div class="faq-cats" role="tablist" aria-label="Question categories">
+            <button type="button" class="faq-cat is-active" data-cat="*" role="tab" aria-selected="true">All <span>{{ faqs | length }}</span></button>
+            {% for cat, n in faq_cats %}
+            <button type="button" class="faq-cat" data-cat="{{ cat }}" role="tab" aria-selected="false">{{ cat }} <span>{{ n }}</span></button>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="faq-list" id="faqList">
+          {% for f in faqs %}
+          <details class="faq-item reveal" id="faq-{{ f.id }}" data-cat="{{ f.cat }}" style="--i: {{ loop.index0 % 4 }}">
+            <summary>
+              <span class="faq-q">{{ f.title }}</span>
+              <span class="faq-chev" aria-hidden="true">{{ icon('chevron-down') }}</span>
+            </summary>
+            <div class="faq-a">
+              {% for p in f.text | paragraphs %}<p>{{ p }}</p>{% endfor %}
+              <a href="#faq-{{ f.id }}" class="faq-link" data-copy-link>{{ icon('link') }}<span>Copy link to this answer</span></a>
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+
+        <div class="faq-empty" id="faqEmpty" hidden>
+          <p><b>No answer for “<span id="faqTerm"></span>” yet.</b> That's a good question – ask us and we'll reply personally.</p>
+          <a href="#contact" class="btn btn-primary" id="faqAsk">Ask this question {{ icon('arrow-right') }}</a>
+        </div>
+      </div>
+
+      <aside class="faq-help reveal">
+        <span class="faq-help-ic">{{ icon('help-circle') }}</span>
+        <h3>{{ c.faq_help_title }}</h3>
+        {% if c.faq_help_text %}<p>{{ c.faq_help_text }}</p>{% endif %}
+        <a href="#contact" class="btn btn-white btn-block">Send us a message {{ icon('send') }}</a>
+        {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="faq-help-mail">{{ icon('mail') }} {{ c.contact_email }}</a>{% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <!-- ============================== CTA ============================== -->
 {% if c.cta_title %}
 <section class="wrap">
@@ -391,6 +453,7 @@
         <li><a href="#hosting">Hosting</a></li>
         {% if projects %}<li><a href="#portfolio">Our Work</a></li>{% endif %}
         <li><a href="#about">About Us</a></li>
+        {% if faqs %}<li><a href="#faq">FAQ</a></li>{% endif %}
         <li><a href="#contact">Contact</a></li>
       </ul>
     </div>

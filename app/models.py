@@ -70,6 +70,16 @@ class Project(db.Model):
         return [t.strip() for t in (self.technologies or "").split(",") if t.strip()]
 
 
+class Faq(db.Model):
+    """ASDHEM | FAQ section: question (title) + answer (text), grouped by category."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    text = db.Column(db.Text, default="")
+    category = db.Column(db.String(60), default="General")
+    position = db.Column(db.Integer, default=0)
+    enabled = db.Column(db.Boolean, default=True)
+
+
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)

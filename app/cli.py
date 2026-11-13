@@ -4,9 +4,9 @@ import secrets
 import click
 from werkzeug.security import generate_password_hash
 
-from .content import SEED_FEATURES, SEED_PROJECTS, SEED_SERVICES
+from .content import SEED_FAQ, SEED_FEATURES, SEED_PROJECTS, SEED_SERVICES
 from .extensions import db
-from .models import AdminUser, Feature, Project, Service
+from .models import AdminUser, Faq, Feature, Project, Service
 
 
 def seed():
@@ -20,6 +20,9 @@ def seed():
     if not db.session.query(Project.id).first():
         for i, (title, desc, cat, tech, img) in enumerate(SEED_PROJECTS):
             db.session.add(Project(title=title, description=desc, category=cat, technologies=tech, image=img, position=i))
+    if not db.session.query(Faq.id).first():
+        for i, (cat, q, a) in enumerate(SEED_FAQ):
+            db.session.add(Faq(category=cat, title=q, text=a, position=i))
     db.session.commit()
 
 

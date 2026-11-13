@@ -44,6 +44,13 @@ SECTIONS = [
             F("portfolio_title", "Portfolio – heading", default="Projects We're Proud Of"),
             F("portfolio_intro", "Portfolio – intro", "textarea",
               default="A selection of websites, platforms and communities we have designed, built and hosted."),
+            F("faq_eyebrow", "FAQ – label", default="Questions & answers"),
+            F("faq_title", "FAQ – heading", default="Good Questions, Straight Answers"),
+            F("faq_intro", "FAQ – intro", "textarea",
+              default="Everything people usually ask before working with us. Type a keyword to find your answer in seconds."),
+            F("faq_help_title", "FAQ – help card heading", default="Still have a question?"),
+            F("faq_help_text", "FAQ – help card text", "textarea",
+              default="Can't find what you are looking for? Ask us directly – a real person reads every message."),
             F("contact_eyebrow", "Contact – label", default="Get in touch"),
             F("contact_title", "Contact – heading", default="Let's Build Something Great"),
             F("contact_intro", "Contact – intro", "textarea",
@@ -234,3 +241,33 @@ SEED_PROJECTS = [
     ("Online Store", "Sample project – an e-commerce website with product catalog, cart and secure checkout.",
      "E-commerce", "E-commerce, Payments, SSL", "/static/img/samples/shop.svg"),
 ]
+
+
+# ASDHEM | example FAQ – review and adapt every answer in Admin → FAQ before going live
+SEED_FAQ = [
+    ("General", "What exactly does AMXME do?",
+     "We build websites, web applications and discussion forums, and we host them on our own carefully maintained servers. Domains, SSL, backups and ongoing maintenance are included in what we offer – one partner for everything online."),
+    ("General", "How do we start working together?",
+     "Send us a short message through the contact form: what you need, any examples you like and your timeline. We reply with questions or a clear proposal including price and schedule. Nothing starts until you agree."),
+    ("Websites", "How much does a website cost?",
+     "Every project is different, so we don't sell one-size-fits-all packages. After a short conversation you get a fixed, transparent quote – no hidden costs and no surprises later."),
+    ("Websites", "How long does it take to build a website?",
+     "It depends on the size of the project. A compact business website is much faster than a custom web application. You receive a realistic timeline together with your quote."),
+    ("Websites", "Will my website work on phones and tablets?",
+     "Yes. Every website we build is fully responsive and tested on phones, tablets and desktops, because most visitors arrive on a phone today."),
+    ("Websites", "Can I update the content myself?",
+     "Yes, if you want to. We can build your website with a simple admin panel so you can change texts, images and projects yourself – or we take care of updates for you."),
+    ("Hosting", "Is an SSL certificate included?",
+     "Yes. Every website we host gets a free SSL certificate that renews automatically, so your site always loads securely over https://."),
+    ("Hosting", "Where are your servers located?",
+     "Our servers are located in the European Union, so your data and your visitors' data stay under GDPR protection."),
+    ("Hosting", "Do you make backups?",
+     "Yes. Websites are backed up regularly and can be restored if something goes wrong."),
+    ("Hosting", "Can you move my existing website to your hosting?",
+     "Yes. We migrate your website, files, databases and emails for you and switch over with as little downtime as possible."),
+    ("Domains", "Can I keep my existing domain?",
+     "Of course. You can transfer the domain to us, or keep it where it is and we simply point it to your new website."),
+    ("Support", "How do I get help if something isn't working?",
+     "Write to us by email or through the contact form. You talk directly to the people who built and host your website – no call centres, no ticket ping-pong."),
+]
+

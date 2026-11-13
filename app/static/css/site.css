@@ -678,3 +678,74 @@ html { overflow-x: clip; }
   .mt-legal { display: flex; justify-content: center; margin: 8px 0 0; }
   .legal-top .btn { font-size: 13px; }
 }
+
+/* ----------------------------------------------------------------- ASDHEM | FAQ */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.faq { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; align-items: start; }
+.faq-tools { display: grid; gap: 16px; margin-bottom: 22px; }
+.faq-search { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--violet-200); border-radius: 16px; padding: 0 18px; box-shadow: var(--shadow-sm); transition: border-color .2s, box-shadow .2s; }
+.faq-search:focus-within { border-color: var(--purple); box-shadow: 0 0 0 4px rgba(124,58,237,.12); }
+.faq-search .ic { width: 20px; height: 20px; color: var(--purple); flex: none; }
+.faq-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 500 16px var(--font); color: var(--ink); padding: 16px 0; }
+.faq-cats { display: flex; flex-wrap: wrap; gap: 8px; }
+.faq-cat { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border: 1px solid var(--violet-200); background: #fff; color: var(--ink); font: 600 14.5px var(--font); padding: 8px 16px; border-radius: 999px; cursor: pointer; transition: all .2s; }
+.faq-cat span { font-size: 12.5px; font-weight: 700; min-width: 22px; padding: 1px 7px; border-radius: 99px; background: var(--violet-100); color: var(--purple-deep); }
+.faq-cat:hover { border-color: var(--purple); color: var(--purple); }
+.faq-cat.is-active { background: var(--grad); color: #fff; border-color: transparent; box-shadow: 0 8px 18px -8px rgba(109,40,217,.7); }
+.faq-cat.is-active span { background: rgba(255,255,255,.22); color: #fff; }
+.faq-list { display: grid; gap: 12px; }
+.faq-item { background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-sm); transition: border-color .2s, box-shadow .25s; scroll-margin-top: 100px; }
+.faq-item[hidden] { display: none; }
+.faq-item:hover { border-color: var(--violet-300); }
+.faq-item[open] { border-color: var(--violet-300); box-shadow: var(--shadow); }
+.faq-item summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 22px; cursor: pointer; list-style: none; font-weight: 700; font-size: 16.5px; color: var(--ink); min-height: 48px; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:focus-visible { outline: 3px solid var(--violet-400); outline-offset: 2px; border-radius: 18px; }
+.faq-chev { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--violet-50); color: var(--purple); transition: transform .3s var(--ease), background .2s, color .2s; }
+.faq-chev .ic { width: 18px; height: 18px; }
+.faq-item[open] .faq-chev { transform: rotate(180deg); background: var(--grad); color: #fff; }
+.faq-a { padding: 0 22px 20px; color: var(--muted); animation: faqIn .35s var(--ease); }
+.faq-a p { margin: 0 0 10px; }
+@keyframes faqIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.faq-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--purple); padding: 6px 0; }
+.faq-link .ic { width: 15px; height: 15px; }
+.faq-link:hover { text-decoration: underline; }
+.faq-empty { text-align: center; background: #fff; border: 1px dashed var(--violet-300); border-radius: 18px; padding: 28px 22px; }
+.faq-empty p { margin: 0 0 16px; color: var(--muted); }
+.faq-empty b { color: var(--ink); }
+.faq-help { position: sticky; top: 100px; background: var(--navy); color: #b4aee0; border-radius: var(--radius); padding: 30px 26px; overflow: hidden; isolation: isolate; box-shadow: var(--shadow-lg); }
+.faq-help::before { content: ""; position: absolute; z-index: -1; width: 340px; height: 340px; right: -160px; top: -170px; border-radius: 50%; background: radial-gradient(closest-side, rgba(168,85,247,.55), transparent); }
+.faq-help-ic { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--grad); color: #fff; margin-bottom: 18px; }
+.faq-help-ic .ic { width: 26px; height: 26px; }
+.faq-help h3 { color: #fff; font-size: 21px; margin: 0 0 10px; }
+.faq-help p { margin: 0 0 22px; font-size: 15px; }
+.faq-help-mail { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; padding: 8px 0; color: #fff; font-weight: 600; font-size: 14.5px; overflow-wrap: anywhere; }
+.faq-help-mail .ic { width: 16px; height: 16px; flex: none; }
+@media (max-width: 1000px) {
+  .faq { grid-template-columns: 1fr; }
+  .faq-help { position: static; text-align: center; }
+  .faq-help-ic { margin-inline: auto; }
+}
+@media (max-width: 640px) {
+  .faq-item summary { padding: 16px 16px; font-size: 16px; }
+  .faq-a { padding: 0 16px 16px; }
+  .faq-cats { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 6px; scrollbar-width: none; }
+  .faq-cats::-webkit-scrollbar { display: none; }
+  .faq-cat { flex: none; }
+}
+
+/* ----------------------------------------------------------------- ASDHEM | mobile readability + tap targets */
+@media (max-width: 640px) {
+  .logo-text small { font-size: 11.5px; letter-spacing: .24em; }
+  .hp-status, .hp-srv-name small, .hp-tile small, .pf-cat, .tags span { font-size: 13px; }
+  .form-note { font-size: 14px; }
+  .footer li a { display: inline-block; padding: 8px 0; font-size: 16px; }
+  .footer ul { gap: 2px; }
+  .foot-mail { padding: 8px 0; }
+  .foot-legal a, .mt-legal a, .legal-bottom nav a { display: inline-block; padding: 10px 0; font-size: 15px; }
+  .to-top { width: 48px; height: 48px; }
+  .filter { min-height: 44px; font-size: 15px; }
+  .mt-foot { font-size: 14.5px; }
+  .error-legal a { display: inline-block; padding: 10px 4px; }
+  .legal p, .legal li { font-size: 16px; }
+}
