@@ -1,4 +1,5 @@
 # Signed: ASDHEM | AMXME Web Solutions
+import json
 from datetime import datetime, timezone
 
 from .extensions import db
@@ -6,6 +7,37 @@ from .extensions import db
 
 def utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+class Translatable:
+    """ASDHEM | per-language overrides stored as JSON: {"de": {"title": ...}, "hr": {...}}."""
+    I18N_FIELDS = ()
+
+    @property
+    def translations(self):
+        try:
+            data = json.loads(self.i18n or "{}")
+        except ValueError:
+            data = {}
+        return data if isinstance(data, dict) else {}
+
+    def tr(self, field, lang):
+        if lang and lang != "en":
+            v = (self.translations.get(lang) or {}).get(field)
+            if v and str(v).strip():
+                return v
+        return getattr(self, field) or ""
+
+    def set_tr(self, lang, field, value):
+        data = self.translations
+        bucket = data.setdefault(lang, {})
+        if value and value.strip():
+            bucket[field] = value.strip()
+        else:
+            bucket.pop(field, None)
+        if not bucket:
+            data.pop(lang, None)
+        self.i18n = json.dumps(data, ensure_ascii=False) if data else ""
 
 
 class AdminUser(db.Model):
@@ -28,8 +60,10 @@ class Setting(db.Model):
     updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
 
 
-class Service(db.Model):
+class Service(Translatable, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    I18N_FIELDS = ("title", "description", "items")
+    i18n = db.Column(db.Text, default="")  # ASDHEM | translations (JSON)
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, default="")
     items = db.Column(db.Text, default="")  # one per line
@@ -42,9 +76,11 @@ class Service(db.Model):
         return [l.strip() for l in (self.items or "").splitlines() if l.strip()]
 
 
-class Feature(db.Model):
+class Feature(Translatable, db.Model):
     """Small icon + title + text blocks. group: why | hosting | badge"""
     id = db.Column(db.Integer, primary_key=True)
+    I18N_FIELDS = ("title", "text")
+    i18n = db.Column(db.Text, default="")  # ASDHEM | translations (JSON)
     group = db.Column(db.String(20), nullable=False, index=True)
     title = db.Column(db.String(150), nullable=False)
     text = db.Column(db.Text, default="")
@@ -53,8 +89,10 @@ class Feature(db.Model):
     enabled = db.Column(db.Boolean, default=True)
 
 
-class Project(db.Model):
+class Project(Translatable, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    I18N_FIELDS = ("title", "description", "category")
+    i18n = db.Column(db.Text, default="")  # ASDHEM | translations (JSON)
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, default="")
     category = db.Column(db.String(80), default="")
@@ -70,9 +108,11 @@ class Project(db.Model):
         return [t.strip() for t in (self.technologies or "").split(",") if t.strip()]
 
 
-class Faq(db.Model):
+class Faq(Translatable, db.Model):
     """ASDHEM | FAQ section: question (title) + answer (text), grouped by category."""
     id = db.Column(db.Integer, primary_key=True)
+    I18N_FIELDS = ("title", "text", "category")
+    i18n = db.Column(db.Text, default="")  # ASDHEM | translations (JSON)
     title = db.Column(db.String(200), nullable=False)
     text = db.Column(db.Text, default="")
     category = db.Column(db.String(60), default="General")

@@ -3,12 +3,13 @@ import ipaddress
 import re
 from datetime import timedelta
 
-from flask import Blueprint, Response, current_app, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, Response, current_app, flash, g, jsonify, redirect, render_template, request, url_for
 
 from .extensions import db
 from .mailer import send_mail
 from .models import Activity, Faq, Feature, Message, Project, Service, Visit, utcnow
-from .templating import get_content
+from .i18n import DEFAULT_LANG, LANGS, best_browser_lang, current_lang, t
+from .templating import get_content, localize
 from flask import session
 import random
 import json
@@ -149,6 +150,21 @@ def record_visit():
         db.session.rollback()
 
 bp = Blueprint("public", __name__)
+LANG_RULE = "<any(de, hr):lang>"
+
+
+@bp.url_value_preprocessor
+def _pull_lang(endpoint, values):
+    """ASDHEM | /de/... and /hr/... set the page language; everything else is English."""
+    g.lang = (values or {}).pop("lang", DEFAULT_LANG) if values else DEFAULT_LANG
+    if g.lang not in LANGS:
+        g.lang = DEFAULT_LANG
+
+
+@bp.url_defaults
+def _push_lang(endpoint, values):
+    if "lang" not in values and current_app.url_map.is_endpoint_expecting(endpoint, "lang"):
+        values["lang"] = current_lang()
 
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+'-]{1,64}@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,24}$")
 RATE_LIMIT_PER_HOUR = 5          # per IP
@@ -168,6 +184,8 @@ def structured_data(faqs=None):
     """ASDHEM | schema.org JSON-LD (Organization + WebSite, + FAQPage on the homepage) for Google / AI search."""
     c = get_content()
     site = current_app.config["SITE_URL"]
+    lang = current_lang()
+    page_url = site + url_for("public.index")
     org = {
         "@type": "Organization", "@id": f"{site}/#organization",
         "name": c.company_name or "AMXME Web Solutions", "url": f"{site}/",
@@ -177,52 +195,67 @@ def structured_data(faqs=None):
     if c.contact_email:
         org["email"] = c.contact_email
         org["contactPoint"] = {"@type": "ContactPoint", "contactType": "customer support",
-                               "email": c.contact_email, "availableLanguage": ["English", "German"]}
-    services = enabled(Service)
+                               "email": c.contact_email, "availableLanguage": ["English", "German", "Croatian"]}
+    services = localize(enabled(Service))
     if services:
         org["makesOffer"] = [{"@type": "Offer", "itemOffered": {"@type": "Service", "name": s.title,
                                                                  "description": s.description}} for s in services]
     graph = [org, {"@type": "WebSite", "@id": f"{site}/#website", "url": f"{site}/",
                    "name": c.company_name or "AMXME Web Solutions", "publisher": {"@id": f"{site}/#organization"},
-                   "inLanguage": "en",
+                   "inLanguage": ["en", "de", "hr"],
                    "creator": {"@type": "Organization", "name": "ASDHEM"}}]  # ASDHEM | signature, visible in schema validators
     if faqs:
-        graph.append({"@type": "FAQPage", "@id": f"{site}/#faq", "mainEntity": [
+        graph.append({"@type": "FAQPage", "@id": f"{page_url}#faq", "inLanguage": lang, "mainEntity": [
             {"@type": "Question", "name": f.title,
              "acceptedAnswer": {"@type": "Answer", "text": f.text}} for f in faqs]})
     return {"@context": "https://schema.org", "@graph": graph}
 
 
-@bp.route("/")
+@bp.route("/", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/")
 def index():
+    lang = current_lang()
+    # ASDHEM | language: ?hl=xx remembers a choice; first visit to "/" follows the browser language
+    hl = request.args.get("hl")
+    if hl in LANGS:
+        session["lang"] = hl
+        return redirect(url_for("public.index", lang=hl))
+    if lang == DEFAULT_LANG and "lang" not in session and not BOT_RE.search(request.headers.get("User-Agent") or ""):
+        best = best_browser_lang()
+        if best and best != DEFAULT_LANG:
+            session["lang"] = best
+            resp = redirect(url_for("public.index", lang=best))
+            resp.headers["Vary"] = "Accept-Language"
+            return resp
+    session["lang"] = lang
     record_visit()
     c = get_content()
     preview_left = 0
     if c.maintenance_enabled == "1" and not session.get("admin_id"):
         preview_left = preview_seconds_left()
         if not preview_left:
-            return render_template("maintenance.html", ld=structured_data())
-    projects = enabled(Project)
-    faqs = enabled(Faq)
-    for f in faqs:
-        f.cat = (f.category or "").strip() or "General"
+            return render_template("maintenance.html", ld=structured_data(), canonical_path=url_for("public.index"))
+    projects = localize(enabled(Project))
+    faqs = localize(enabled(Faq))
     faq_cats = {}
     for f in faqs:
+        f.cat = (f.category or "").strip() or ("General" if lang == "en" else {"de": "Allgemein", "hr": "Općenito"}[lang])
         faq_cats[f.cat] = faq_cats.get(f.cat, 0) + 1
     faq_cats = list(faq_cats.items())
     categories = sorted({p.category for p in projects if p.category})
     return render_template(
         "index.html",
-        services=enabled(Service),
-        why=enabled(Feature, group="why"),
-        hosting=enabled(Feature, group="hosting"),
-        badges=enabled(Feature, group="badge"),
+        services=localize(enabled(Service)),
+        why=localize(enabled(Feature, group="why")),
+        hosting=localize(enabled(Feature, group="hosting")),
+        badges=localize(enabled(Feature, group="badge")),
         projects=projects,
         categories=categories,
         preview_left=preview_left,
         faqs=faqs,
         faq_cats=faq_cats,
         ld=structured_data(faqs),
+        canonical_path=url_for("public.index"),
     )
 
 
@@ -232,11 +265,9 @@ def preview(token):
     try:
         link_id = _preview_serializer().loads(token)
     except BadSignature:
-        return render_template("error.html", code=404,
-                               message="The page you are looking for does not exist."), 404
+        return render_template("error.html", code=404, message=t("e404")), 404
     if not any(l.get("i") == link_id for l in preview_links()):
-        return render_template("error.html", code=410,
-                               message="This preview link has expired or was deleted. Ask for a new one."), 410
+        return render_template("error.html", code=410, message=t("e410")), 410
     session["preview_id"] = link_id
     session.pop("preview_until", None)
     resp = redirect(url_for("public.index"))
@@ -248,6 +279,7 @@ def preview(token):
 def contact():
     f = request.form
     is_fetch = request.headers.get("X-Requested-With") == "fetch"
+    g.lang = f.get("lang") if f.get("lang") in LANGS else DEFAULT_LANG  # ASDHEM | reply in the visitor's language
     c = get_content()
 
     def respond(ok, errors=None, status=200):
@@ -273,17 +305,17 @@ def contact():
 
     errors = {}
     if len(name) < 2:
-        errors["name"] = "Please enter your full name."
+        errors["name"] = t("err_name")
     elif len(name) > 120:
-        errors["name"] = "Name is too long."
+        errors["name"] = t("err_name_long")
     if not EMAIL_RE.match(email) or len(email) > 200:
-        errors["email"] = "Please enter a valid email address."
+        errors["email"] = t("err_email")
     if not service:
-        errors["service"] = "Please choose the service you are interested in."
+        errors["service"] = t("err_service")
     if len(body) < 10:
-        errors["message"] = "Please write a message of at least 10 characters."
+        errors["message"] = t("err_message")
     elif len(body) > 5000:
-        errors["message"] = "Message is too long (max 5000 characters)."
+        errors["message"] = t("err_message_long")
     if errors:
         return respond(False, errors, 422)
 
@@ -294,7 +326,7 @@ def contact():
     hour_ago = utcnow() - timedelta(hours=1)
     total_recent = db.session.query(Message).filter(Message.created_at > hour_ago).count()
     if recent >= RATE_LIMIT_PER_HOUR or total_recent >= GLOBAL_LIMIT_PER_HOUR:
-        return respond(False, {"_": "Too many messages sent. Please try again later or email us directly."}, 429)
+        return respond(False, {"_": t("err_rate")}, 429)
 
     msg = Message(name=name, email=email, service=service, body=body, ip=ip)
     db.session.add(msg)
@@ -306,7 +338,7 @@ def contact():
             to,
             f"New inquiry: {service} – {name}",
             f"New message from the AMXME website contact form\n\n"
-            f"Name:    {name}\nEmail:   {email}\nService: {service}\n\n{body}\n\n"
+            f"Name:    {name}\nEmail:   {email}\nService: {service}\nLanguage: {LANGS[current_lang()]}\n\n{body}\n\n"
             f"---\nView in admin: {current_app.config['SITE_URL']}/admin/messages/{msg.id}\n",
             reply_to=email,
         )
@@ -329,27 +361,29 @@ def contact():
 
 
 # ASDHEM | GDPR / German law: Imprint + Privacy Policy, always reachable (also in "under construction" mode)
-@bp.route("/imprint")
+@bp.route("/imprint", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/imprint")
 def imprint():
     record_visit()
-    return render_template("legal.html", page="imprint", canonical_path="/imprint")
+    return render_template("legal.html", page="imprint", canonical_path=url_for("public.imprint"))
 
 
-@bp.route("/privacy")
+@bp.route("/privacy", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/privacy")
 def privacy():
     record_visit()
-    return render_template("legal.html", page="privacy", canonical_path="/privacy", visit_days=VISIT_RETENTION_DAYS,
+    return render_template("legal.html", page="privacy", canonical_path=url_for("public.privacy"), visit_days=VISIT_RETENTION_DAYS,
                            message_ip_days=MESSAGE_IP_DAYS)
 
 
 @bp.route("/impressum")
 def impressum_alias():
-    return redirect(url_for("public.imprint"), 301)
+    return redirect(url_for("public.imprint", lang="de"), 301)
 
 
 @bp.route("/datenschutz")
 def datenschutz_alias():
-    return redirect(url_for("public.privacy"), 301)
+    return redirect(url_for("public.privacy", lang="de"), 301)
 
 
 @bp.route("/robots.txt")
@@ -361,8 +395,13 @@ def robots():
 @bp.route("/sitemap.xml")
 def sitemap():
     site = current_app.config["SITE_URL"]
+    urls = []
+    for ep in ("public.index", "public.imprint", "public.privacy"):
+        alts = {code: site + url_for(ep, lang=code) for code in LANGS}
+        links = "".join(f'<xhtml:link rel="alternate" hreflang="{code}" href="{u}"/>' for code, u in alts.items())
+        links += f'<xhtml:link rel="alternate" hreflang="x-default" href="{alts[DEFAULT_LANG]}"/>'
+        urls += [f"<url><loc>{u}</loc>{links}</url>" for u in alts.values()]
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
-           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-           f"<url><loc>{site}/</loc></url><url><loc>{site}/imprint</loc></url>"
-           f"<url><loc>{site}/privacy</loc></url></urlset>\n")
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'
+           + "".join(urls) + "</urlset>\n")
     return Response(xml, mimetype="application/xml")

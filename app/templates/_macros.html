@@ -20,7 +20,7 @@
 <div class="ms{{ ' ms--compact' if compact }}">
   <div class="ms-nav">
     <span class="ms-logo"></span>
-    {% if not compact %}<span class="ms-links"><i>Home</i><i>Services</i><i>About</i><i>Contact</i></span>{% else %}<span class="ms-burger"><i></i><i></i></span>{% endif %}
+    {% if not compact %}<span class="ms-links">{% for w in t('ms_nav').split('|') %}<i>{{ w }}</i>{% endfor %}</span>{% else %}<span class="ms-burger"><i></i><i></i></span>{% endif %}
   </div>
   <div class="ms-hero">
     <svg class="ms-mtn" viewBox="0 0 300 160" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
@@ -35,9 +35,9 @@
       <path d="M0 140 60 100l50 24 60-40 70 46 60-30v60H0z" fill="url(#mm2{{ uid }})"/>
     </svg>
     <div class="ms-copy">
-      <b>Your Business<br>Online</b>
-      <span>Fast. Secure. Reliable.</span>
-      <em>Get Started →</em>
+      <b>{{ t('ms_title') | safe }}</b>
+      <span>{{ t('ms_sub') }}</span>
+      <em>{{ t('ms_cta') }}</em>
     </div>
   </div>
   {% if not compact %}
@@ -54,5 +54,12 @@
     <span class="ru-leds"><i style="--d:{{ (u * 37) % 17 / 10 }}s"></i><i style="--d:{{ (u * 53) % 13 / 10 }}s"></i><i class="b" style="--d:{{ (u * 29) % 11 / 10 }}s"></i></span>
   </div>
   {% endfor %}
+</div>
+{%- endmacro %}
+
+{# ASDHEM | language switcher: EN · DE · HR #}
+{% macro lang_switch(light=False) -%}
+<div class="lang-switch{{ ' lang-switch--light' if light }}" role="group" aria-label="{{ t('language') }}">
+  {% for code, name in LANGS.items() %}<a href="{{ lang_url(code) }}{{ '?hl=' ~ code if code == 'en' else '' }}" hreflang="{{ code }}" lang="{{ code }}" title="{{ name }}"{% if code == lang %} class="is-on" aria-current="true"{% endif %}>{{ code | upper }}</a>{% endfor %}
 </div>
 {%- endmacro %}

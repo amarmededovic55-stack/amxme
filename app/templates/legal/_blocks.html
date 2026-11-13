@@ -1,0 +1,18 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% macro owner_block() -%}
+  {% if c.legal_company %}<b>{{ c.legal_company }}</b><br>{% endif %}
+  {% if c.legal_name %}{% if c.legal_company %}{{ t('l_owner') }}: {% endif %}{{ c.legal_name }}<br>{% endif %}
+  {% if c.legal_street %}{{ c.legal_street }}<br>{% endif %}
+  {% if c.legal_city %}{{ c.legal_city }}<br>{% endif %}
+  {% if c.legal_country %}{{ c.legal_country }}{% endif %}
+{%- endmacro %}
+
+{% macro contact_block() -%}
+  {% if c.legal_phone %}{{ t('l_phone') }}: <a href="tel:{{ c.legal_phone | replace(' ', '') }}">{{ c.legal_phone }}</a><br>{% endif %}
+  {% set mail = c.legal_email or c.contact_email %}
+  {% if mail %}{{ t('l_email') }}: <a href="mailto:{{ mail }}">{{ mail }}</a>{% endif %}
+{%- endmacro %}
+
+{% macro responsible() -%}
+  {% if c.legal_responsible %}{{ c.legal_responsible }}{% else %}{{ c.legal_name }}{% if c.legal_street %}<br>{{ c.legal_street }}{% endif %}{% if c.legal_city %}<br>{{ c.legal_city }}{% endif %}{% endif %}
+{%- endmacro %}

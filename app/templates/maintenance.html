@@ -1,13 +1,13 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
 {% extends "base.html" %}
-{% from "_macros.html" import logo, rack with context %}
+{% from "_macros.html" import logo, rack, lang_switch with context %}
 {% block body %}
 <main class="mt">
   <div class="mt-bg" aria-hidden="true">
     <div class="mt-orb a"></div><div class="mt-orb b"></div><div class="mt-grid"></div>
   </div>
 
-  <header class="mt-top wrap">{{ logo(light=True) }}</header>
+  <header class="mt-top wrap">{{ logo(light=True) }}{{ lang_switch(light=True) }}</header>
 
   <section class="wrap mt-in">
     <div class="mt-copy">
@@ -19,7 +19,7 @@
 
       <a class="mt-mail" href="mailto:{{ c.contact_email }}">
         <span class="mail-ic">{{ icon('mail') }}</span>
-        <span><small>Contact us</small><b>{{ c.contact_email }}</b></span>
+        <span><small>{{ t('contact_us_small') }}</small><b>{{ c.contact_email }}</b></span>
         {{ icon('arrow-right') }}
       </a>
 
@@ -50,12 +50,12 @@
           </svg>
           <span class="hv-beam b1"></span><span class="hv-beam b2"></span><span class="hv-beam b3"></span>
         </div>
-        <div class="hv-chip mt-chip c1">{{ icon('lock') }}<span>SSL Secured</span></div>
-        <div class="hv-chip mt-chip c2">{{ icon('server') }}<span>Servers Online</span></div>
+        <div class="hv-chip mt-chip c1">{{ icon('lock') }}<span>{{ t('chip_ssl') }}</span></div>
+        <div class="hv-chip mt-chip c2">{{ icon('server') }}<span>{{ t('chip_online') }}</span></div>
       </div>
     </div>
   </section>
 
-  <footer class="mt-foot wrap">© {{ year }} {{ c.copyright }}<nav class="mt-legal" aria-label="Legal"><a href="{{ url_for('public.imprint') }}">Imprint</a><a href="{{ url_for('public.privacy') }}">Privacy Policy</a></nav></footer>
+  <footer class="mt-foot wrap">© {{ year }} {{ c.copyright }}<nav class="mt-legal" aria-label="Legal"><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav></footer>
 </main>
 {% endblock %}

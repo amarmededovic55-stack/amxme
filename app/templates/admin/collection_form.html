@@ -4,14 +4,30 @@
 {% block title %}{{ 'Edit' if editing else 'New' }} {{ cfg.singular | lower }}{% endblock %}
 {% block heading %}<h1>{{ ('Edit ' ~ cfg.singular | lower) if editing else ('New ' ~ cfg.singular | lower) }}</h1><p><a href="{{ url_for('admin.collection', kind=kind) }}" class="link">{{ icon('arrow-left') }} Back to {{ cfg.title | lower }}</a></p>{% endblock %}
 {% block content %}
+{# ASDHEM | language tabs (available after the item is saved in English) #}
+{% set lang = lang | default('en') %}
+{% if editing and i18n_fields %}
+<div class="tabs lang-tabs" role="tablist" aria-label="Language">
+  {% for code, name in langs.items() %}
+  <a href="{{ url_for('admin.collection_edit', kind=kind, item_id=obj.id, lang=code) }}" class="tab{{ ' on' if code == lang }}" role="tab" aria-selected="{{ 'true' if code == lang else 'false' }}">{{ icon('globe') }}{{ name }}</a>
+  {% endfor %}
+</div>
+{% if lang != 'en' %}
+<div class="note">{{ icon('info') }}<div><b>{{ langs[lang] }} translation.</b> Fields left empty show the English text. Icon, image, links and visibility are shared – change them on the English tab.</div></div>
+{% endif %}
+{% elif not editing and i18n_fields is defined %}
+<div class="note">{{ icon('info') }}<div>Write it in English first. After saving you can add the <b>Deutsch</b> and <b>Hrvatski</b> versions.</div></div>
+{% endif %}
 <form method="post" enctype="multipart/form-data" class="panel form-panel" data-dirty-guard>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  {% for f in cfg.fields %}
-  {% set val = form[f.key] if form else (obj[f.key] if editing else '') %}
+  <input type="hidden" name="lang" value="{{ lang }}">
+  {% for f in cfg.fields if lang == 'en' or f.key in i18n_fields %}
+  {% set val = (form[f.key] if form else (obj[f.key] if editing else '')) if lang == 'en' else tr_vals[f.key] %}
+  {% set ph = obj[f.key] if lang != 'en' else '' %}
   <div class="fgroup{{ ' has-err' if errors[f.key] }}">
     <label class="lbl" for="{{ f.key }}">{{ f.label }}{% if f.required %} <span class="req">*</span>{% endif %}</label>
     {% if f.type in ('textarea', 'lines') %}
-      <textarea class="inp" id="{{ f.key }}" name="{{ f.key }}" rows="{{ 6 if f.type == 'lines' else 3 }}" data-autosize>{{ val or '' }}</textarea>
+      <textarea class="inp" id="{{ f.key }}" name="{{ f.key }}" rows="{{ 6 if f.type == 'lines' else 3 }}" data-autosize{% if ph %} placeholder="{{ ph }}"{% endif %}>{{ val or '' }}</textarea>
     {% elif f.type == 'icon' %}
       {% set cur = val or 'check' %}
       <div class="icon-picker" role="radiogroup" aria-label="{{ f.label }}">
@@ -29,14 +45,16 @@
         </div>
       </div>
     {% else %}
-      <input class="inp" id="{{ f.key }}" name="{{ f.key }}" type="text" value="{{ val or '' }}" {{ 'required' if f.required }} {% if f.type == 'url' %}inputmode="url" placeholder="https://"{% endif %}>
+      <input class="inp" id="{{ f.key }}" name="{{ f.key }}" type="text" value="{{ val or '' }}" {{ 'required' if f.required and lang == 'en' }}{% if ph %} placeholder="{{ ph }}"{% endif %} {% if f.type == 'url' %}inputmode="url" placeholder="https://"{% endif %}>
     {% endif %}
     {% if errors[f.key] %}<small class="ferr">{{ errors[f.key] }}</small>{% endif %}
     {% if f.help or f.type == 'lines' %}<small class="help">{{ f.help or 'One item per line.' }}</small>{% endif %}
   </div>
   {% endfor %}
+  {% if lang == 'en' %}
   {% set is_on = (form.get('enabled') if form else (obj.enabled if editing else True)) %}
   <label class="check big"><input type="checkbox" name="enabled" value="1" {{ 'checked' if is_on }}> Visible on the website</label>
+  {% endif %}
   <div class="form-foot">
     <a href="{{ url_for('admin.collection', kind=kind) }}" class="btn btn-ghost">Cancel</a>
     <button class="btn btn-primary">{{ icon('check') }} {{ 'Save changes' if editing else 'Add ' ~ cfg.singular | lower }}</button>

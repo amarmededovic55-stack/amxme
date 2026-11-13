@@ -1,0 +1,38 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% from "legal/_blocks.html" import owner_block, contact_block, responsible with context %}
+    <h1>Imprint</h1>
+    <p class="legal-sub">Information according to § 5 DDG (German Digital Services Act)</p>
+    <p class="legal-note">This English version is provided for convenience. The <a href="{{ url_for('public.imprint', lang='de') }}">German version</a> is legally binding.</p>
+
+
+    <h2>Service provider</h2>
+    <p>{{ owner_block() }}</p>
+
+    <h2>Contact</h2>
+    <p>{{ contact_block() }}</p>
+
+    {% if c.legal_register %}
+    <h2>Register entry</h2>
+    <p>{{ c.legal_register }}</p>
+    {% endif %}
+
+    {% if c.legal_vat %}
+    <h2>VAT ID</h2>
+    <p>VAT identification number according to § 27a of the German VAT Act (UStG):<br>{{ c.legal_vat }}</p>
+    {% endif %}
+
+    <h2>Responsible for content according to § 18 (2) MStV</h2>
+    <p>{{ responsible() }}</p>
+
+    <h2>Consumer dispute resolution</h2>
+    <p>We are neither willing nor obliged to take part in dispute resolution proceedings before a consumer arbitration board (§ 36 VSBG).</p>
+
+    <h2>Liability for content and links</h2>
+    <p>We create the content of this website with great care. However, we cannot guarantee that it is correct, complete and up to date. As a service provider we are responsible for our own content according to § 7 (1) DDG. We are not obliged to monitor transmitted or stored third-party information (§§ 8–10 DDG).</p>
+    <p>Our website may contain links to external websites. We have no influence on their content and therefore accept no liability for it; the respective provider or operator is always responsible. If we become aware of any legal violations, we will remove such links immediately.</p>
+
+    <h2>Copyright</h2>
+    <p>The content and works on this website are subject to German copyright law. Copying, editing, distributing or any use outside the limits of copyright law requires the written consent of the author.</p>
+
+    <p class="legal-foot">See also our <a href="{{ url_for('public.privacy') }}">Privacy Policy</a>.</p>
+

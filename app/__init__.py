@@ -67,24 +67,33 @@ def create_app():
     def uploads(name):  # nginx serves this in production
         return send_from_directory(app.config["UPLOAD_DIR"], name, max_age=86400 * 30)
 
+    from .i18n import lang_from_path, t
+
+    def _err(code, key):
+        from flask import g
+        g.lang = getattr(g, "lang", None) or lang_from_path()
+        return render_template("error.html", code=code, message=t(key)), code
+
     @app.errorhandler(CSRFError)
     def csrf_error(e):
         if request.headers.get("X-Requested-With") == "fetch":
-            return jsonify(ok=False, errors={"_": "Your session expired. Please reload the page and try again."}), 400
-        return render_template("error.html", code=400, message="Your session expired. Please go back, reload the page and try again."), 400
+            from flask import g
+            g.lang = request.form.get("lang") or lang_from_path()
+            return jsonify(ok=False, errors={"_": t("err_session")}), 400
+        return _err(400, "e400")
 
     @app.errorhandler(404)
     def not_found(e):
-        return render_template("error.html", code=404, message="The page you are looking for does not exist."), 404
+        return _err(404, "e404")
 
     @app.errorhandler(500)
     def server_error(e):
         db.session.rollback()
-        return render_template("error.html", code=500, message="Something went wrong on our side. Please try again later."), 500
+        return _err(500, "e500")
 
     @app.errorhandler(405)
     def not_allowed(e):
-        return render_template("error.html", code=405, message="This action is not allowed."), 405
+        return _err(405, "e405")
 
     @app.errorhandler(413)
     def too_large(e):

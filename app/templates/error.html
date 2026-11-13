@@ -4,10 +4,10 @@
 {% block title %}{{ code }} – {{ c.company_name }}{% endblock %}
 {% block body %}
 <main class="error-page">
-  <a href="/">{{ logo() }}</a>
+  <a href="{{ url_for('public.index', lang=lang) }}">{{ logo() }}</a>
   <h1 class="grad-text">{{ code }}</h1>
   <p>{{ message }}</p>
-  <a href="/" class="btn btn-primary">Back to homepage</a>
-  <p class="error-legal"><a href="/imprint">Imprint</a> · <a href="/privacy">Privacy Policy</a></p>
+  <a href="{{ url_for('public.index', lang=lang) }}" class="btn btn-primary">{{ t('back_home') }}</a>
+  <p class="error-legal"><a href="{{ url_for('public.imprint', lang=lang) }}">{{ t('imprint') }}</a> · <a href="{{ url_for('public.privacy', lang=lang) }}">{{ t('privacy') }}</a></p>
 </main>
 {% endblock %}

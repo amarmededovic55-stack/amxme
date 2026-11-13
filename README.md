@@ -76,3 +76,11 @@ sudo systemctl status amxme          # radi li
 sudo journalctl -u amxme -n 50       # zadnje greške
 sudo -u amxme /opt/amxme/.venv/bin/flask --app wsgi create-admin admin   # reset admin lozinke
 ```
+
+## Jezici (EN / DE / HR)
+
+- Engleski: `/`, njemački: `/de/`, hrvatski: `/hr/` (isto za `/imprint` i `/privacy`).
+- Posjetilac se pri prvoj posjeti automatski preusmjeri na jezik svog browsera; prekidač jezika je u meniju i footeru.
+- U adminu svaka stranica s tekstom i svaka stavka (usluge, FAQ, ...) ima tabove **English / Deutsch / Hrvatski**. Prazno polje u prevodu = prikazuje se engleski tekst.
+- Tekstovi dugmadi i forme su u `app/i18n.py`, pravne stranice u `app/templates/legal/`.
+- Nova baza: `flask init-db` napravi sve tabele. Postojeća baza bez kolone `i18n` treba jednom `ALTER TABLE <tabela> ADD COLUMN i18n TEXT DEFAULT ''` za `service`, `feature`, `project`, `faq`.

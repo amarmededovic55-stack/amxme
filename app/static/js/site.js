@@ -3,6 +3,10 @@
   "use strict";
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  /* ASDHEM | UI strings in the page language (JSON block from the server) */
+  let T = {};
+  try { T = JSON.parse(($("#i18n") || {}).textContent || "{}"); } catch { T = {}; }
+  const tr = (k, fb) => T[k] || fb;
 
   /* sticky nav state */
   const nav = $(".nav");
@@ -15,7 +19,7 @@
   if (toggle && links) {
     const set = (open) => {
       toggle.setAttribute("aria-expanded", String(open));
-      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      toggle.setAttribute("aria-label", open ? tr("menu_close", "Close menu") : tr("menu_open", "Open menu"));
       links.classList.toggle("is-open", open);
       nav.classList.toggle("menu-open", open);
     };
@@ -88,10 +92,10 @@
   function validate() {
     const v = (n) => (form.elements[n].value || "").trim();
     const errors = {};
-    if (v("name").length < 2) errors.name = "Please enter your full name.";
-    if (!EMAIL.test(v("email"))) errors.email = "Please enter a valid email address.";
-    if (!v("service")) errors.service = "Please choose the service you are interested in.";
-    if (v("message").length < 10) errors.message = "Please write a message of at least 10 characters.";
+    if (v("name").length < 2) errors.name = tr("err_name", "Please enter your full name.");
+    if (!EMAIL.test(v("email"))) errors.email = tr("err_email", "Please enter a valid email address.");
+    if (!v("service")) errors.service = tr("err_service", "Please choose the service you are interested in.");
+    if (v("message").length < 10) errors.message = tr("err_message", "Please write a message of at least 10 characters.");
     return errors;
   }
 
@@ -112,13 +116,13 @@
       return;
     }
     const label = btn.querySelector(".btn-label"), original = label.textContent;
-    btn.disabled = true; label.textContent = "Sending…";
+    btn.disabled = true; label.textContent = tr("f_sending", "Sending…");
     try {
       const res = await fetch(form.action, { method: "POST", body: new FormData(form), headers: { "X-Requested-With": "fetch" } });
-      const data = await res.json().catch(() => ({ ok: false, errors: { _: "Unexpected server response." } }));
+      const data = await res.json().catch(() => ({ ok: false, errors: { _: tr("err_unexpected", "Unexpected server response.") } }));
       if (data.ok) {
         form.reset();
-        okBox.textContent = data.message || "Thank you! Your message has been sent.";
+        okBox.textContent = data.message || tr("f_success", "Thank you! Your message has been sent.");
         okBox.hidden = false;
         okBox.scrollIntoView({ behavior: "smooth", block: "center" });
       } else {
@@ -127,7 +131,7 @@
         if (errs._) { errBox.textContent = errs._; errBox.hidden = false; }
       }
     } catch {
-      errBox.textContent = "Could not send your message. Please check your connection or email us directly.";
+      errBox.textContent = tr("err_network", "Could not send your message. Please check your connection or email us directly.");
       errBox.hidden = false;
     } finally {
       btn.disabled = false; label.textContent = original;
@@ -173,7 +177,7 @@
     /* "Ask this question" -> prefill the contact form message */
     if (ask) ask.addEventListener("click", () => {
       const msg = $("#f-message"), q = search ? search.value.trim() : "";
-      if (msg && q && !msg.value.trim()) msg.value = `Question: ${q}\n\n`;
+      if (msg && q && !msg.value.trim()) msg.value = `${tr("faq_q_prefix", "Question")}: ${q}\n\n`;
       setTimeout(() => { const n = $("#f-name"); if (n) n.focus({ preventScroll: true }); }, 700);
     });
 
@@ -192,8 +196,8 @@
       const hash = a.getAttribute("href");
       history.replaceState(null, "", hash);
       const span = $("span", a), old = span.textContent;
-      try { await navigator.clipboard.writeText(location.origin + location.pathname + hash); span.textContent = "Link copied!"; }
-      catch { span.textContent = "Copy the address from your browser bar"; }
+      try { await navigator.clipboard.writeText(location.origin + location.pathname + hash); span.textContent = tr("faq_copied", "Link copied!"); }
+      catch { span.textContent = tr("faq_copy_fail", "Copy the address from your browser bar"); }
       setTimeout(() => { span.textContent = old; }, 2200);
     }));
   }

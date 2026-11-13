@@ -12,7 +12,7 @@
     Designed & built by ASDHEM  ·  AMXME Web Solutions
 
 -->
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,11 +20,26 @@
   <meta name="description" content="{{ c.meta_description }}">
   <meta name="theme-color" content="#5b21b6">
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ c.company_name }}">
   <meta property="og:title" content="{{ c.site_title }}">
   <meta property="og:description" content="{{ c.meta_description }}">
   <meta property="og:url" content="{{ config.SITE_URL }}{{ canonical_path | default('/') }}">
+  <meta property="og:locale" content="{{ LOCALES[lang] }}">
+  {% for code in LANGS if code != lang %}<meta property="og:locale:alternate" content="{{ LOCALES[code] }}">
+  {% endfor %}<meta property="og:image" content="{{ config.SITE_URL }}{{ url_for('static', filename='img/og-' ~ lang ~ '.png') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ c.company_name }} – {{ c.hero_motto }}">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{ config.SITE_URL }}{{ canonical_path | default('/') }}">
+  {% if canonical_path is defined and request.endpoint %}{# ASDHEM | language versions for Google #}
+  {% for code in LANGS %}<link rel="alternate" hreflang="{{ code }}" href="{{ config.SITE_URL }}{{ lang_url(code) }}">
+  {% endfor %}<link rel="alternate" hreflang="x-default" href="{{ config.SITE_URL }}{{ lang_url('en') }}">
+  {% endif %}
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="icon" href="{{ url_for('static', filename='img/icon-192.png') }}" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
   <link rel="preload" href="{{ url_for('static', filename='fonts/jakarta-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
   <noscript><style>.reveal { opacity: 1 !important; transform: none !important; }</style></noscript>
@@ -34,6 +49,7 @@
 </head>
 <body>
 {% block body %}{% endblock %}
+<script type="application/json" id="i18n">{{ i18n_js() | safe }}</script>
 <script src="{{ asset('js/site.js') }}" defer></script>
 </body>
 </html>

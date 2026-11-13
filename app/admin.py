@@ -17,6 +17,8 @@ from flask import (Blueprint, abort, current_app, flash, g, jsonify, redirect, r
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .content import SECTION_MAP, SECTIONS
+from .i18n import LANGS
+from .templating import explicit_translation
 from .extensions import db
 from .icons import PICKER
 from .mailer import smtp_configured
@@ -255,6 +257,33 @@ def dashboard():
 @login_required
 def content(slug):
     section = SECTION_MAP.get(slug) or abort(404)
+    lang = request.values.get("lang", "en")
+    if lang not in LANGS:
+        lang = "en"
+    if request.method == "POST" and lang != "en":
+        # ASDHEM | save translations as <key>__<lang>; empty = use the English text
+        changed = 0
+        for f in section["fields"]:
+            if not f["i18n"]:
+                continue
+            key = f"{f['key']}__{lang}"
+            value = (request.form.get(f["key"]) or "").replace("\r\n", "\n").strip()
+            row = db.session.get(Setting, key)
+            if not value:
+                if row is not None:
+                    db.session.delete(row)
+                    changed += 1
+            elif row is None:
+                db.session.add(Setting(key=key, value=value))
+                changed += 1
+            elif row.value != value:
+                row.value = value
+                changed += 1
+        if changed:
+            log(f"Updated “{section['title']}” – {LANGS[lang]} ({changed} field{'s' if changed != 1 else ''})")
+        db.session.commit()
+        flash("Changes saved." if changed else "No changes to save.", "success")
+        return redirect(url_for("admin.content", slug=slug, lang=lang))
     if request.method == "POST":
         changed = 0
         try:
@@ -300,7 +329,9 @@ def content(slug):
                      preview_default=PREVIEW_DEFAULT, now=now,
                      preview_base=current_app.config["SITE_URL"] + "/preview/",
                      new_link=request.args.get("new", ""))
-    return render_template("admin/content_form.html", section=section, **extra)
+    return render_template("admin/content_form.html", section=section, lang=lang, langs=LANGS,
+                           tr_vals=({f["key"]: explicit_translation(f["key"], lang) for f in section["fields"]}
+                                    if lang != "en" else {}), **extra)
 
 
 @bp.post("/preview-link")
@@ -437,6 +468,18 @@ def collection_edit(kind, item_id=None):
     model = cfg["model"]
     obj = get_item(cfg, item_id) if item_id else None
     errors = {}
+    lang = request.values.get("lang", "en")
+    if lang not in LANGS or obj is None or not getattr(model, "I18N_FIELDS", ()):
+        lang = "en"
+    if request.method == "POST" and lang != "en":
+        # ASDHEM | translations of this item; empty field = show the English text
+        for f in cfg["fields"]:
+            if f["key"] in model.I18N_FIELDS:
+                obj.set_tr(lang, f["key"], (request.form.get(f["key"]) or "").replace("\r\n", "\n"))
+        log(f"Edited {cfg['singular'].lower()} “{obj.title}” – {LANGS[lang]}")
+        db.session.commit()
+        flash(f"{cfg['singular']} saved ({LANGS[lang]}).", "success")
+        return redirect(url_for("admin.collection_edit", kind=kind, item_id=obj.id, lang=lang))
     if request.method == "POST":
         is_new = obj is None
         if is_new:
@@ -485,8 +528,11 @@ def collection_edit(kind, item_id=None):
         db.session.commit()
         flash(f"{cfg['singular']} {'added' if is_new else 'saved'}.", "success")
         return redirect(url_for("admin.collection", kind=kind))
+    tr_vals = ({k: (obj.translations.get(lang) or {}).get(k, "") for k in model.I18N_FIELDS}
+               if lang != "en" else {})
     return render_template("admin/collection_form.html", kind=kind, cfg=cfg, obj=obj, form=None,
-                           errors=errors, icons=PICKER)
+                           errors=errors, icons=PICKER, lang=lang, langs=LANGS, tr_vals=tr_vals,
+                           i18n_fields=getattr(model, "I18N_FIELDS", ()))
 
 
 @bp.post("/c/<kind>/<int:item_id>/delete")

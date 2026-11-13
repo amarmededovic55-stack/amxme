@@ -1,0 +1,35 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% from "legal/_blocks.html" import owner_block, contact_block, responsible with context %}
+    <h1>Impressum</h1>
+    <p class="legal-sub">Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)</p>
+
+    <h2>Diensteanbieter</h2>
+    <p>{{ owner_block() }}</p>
+
+    <h2>Kontakt</h2>
+    <p>{{ contact_block() }}</p>
+
+    {% if c.legal_register %}
+    <h2>Registereintrag</h2>
+    <p>{{ c.legal_register }}</p>
+    {% endif %}
+
+    {% if c.legal_vat %}
+    <h2>Umsatzsteuer-ID</h2>
+    <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:<br>{{ c.legal_vat }}</p>
+    {% endif %}
+
+    <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+    <p>{{ responsible() }}</p>
+
+    <h2>Verbraucherstreitbeilegung</h2>
+    <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen (§ 36 VSBG).</p>
+
+    <h2>Haftung für Inhalte und Links</h2>
+    <p>Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen. Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.</p>
+    <p>Unser Angebot kann Links zu externen Websites Dritter enthalten, auf deren Inhalte wir keinen Einfluss haben. Für diese fremden Inhalte ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.</p>
+
+    <h2>Urheberrecht</h2>
+    <p>Die auf diesen Seiten erstellten Inhalte und Werke unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.</p>
+
+    <p class="legal-foot">Siehe auch unsere <a href="{{ url_for('public.privacy') }}">Datenschutzerklärung</a>.</p>

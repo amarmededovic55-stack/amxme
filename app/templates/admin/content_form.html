@@ -58,17 +58,31 @@
   {% endif %}
 </div>
 {% endif %}
+{# ASDHEM | language tabs #}
+{% set lang = lang | default('en') %}
+{% if section.fields | selectattr('i18n') | list %}
+<div class="tabs lang-tabs" role="tablist" aria-label="Language">
+  {% for code, name in (langs or {}).items() %}
+  <a href="{{ url_for('admin.content', slug=section.slug, lang=code) }}" class="tab{{ ' on' if code == lang }}" role="tab" aria-selected="{{ 'true' if code == lang else 'false' }}">{{ icon('globe') }}{{ name }}</a>
+  {% endfor %}
+</div>
+{% if lang != 'en' %}
+<div class="note">{{ icon('info') }}<div><b>{{ langs[lang] }} translation.</b> Fields left empty show the English text on the {{ langs[lang] }} page. Settings like emails, images and on/off switches are shared by all languages – change them on the English tab.</div></div>
+{% endif %}
+{% endif %}
 <form method="post" enctype="multipart/form-data" class="panel form-panel" data-dirty-guard>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  {% for f in section.fields %}
-  {% set val = c[f.key] %}
+  <input type="hidden" name="lang" value="{{ lang }}">
+  {% for f in section.fields if lang == 'en' or f.i18n %}
+  {% set val = c[f.key] if lang == 'en' else tr_vals[f.key] %}
+  {% set ph = c[f.key] if lang != 'en' else '' %}
   <div class="fgroup">
     <label class="lbl" for="{{ f.key }}">{{ f.label }}</label>
     {% if f.type == 'bool' %}
       <input type="hidden" name="{{ f.key }}" value="0">
       <label class="check big"><input type="checkbox" id="{{ f.key }}" name="{{ f.key }}" value="1" {{ 'checked' if val == '1' }}> Enabled</label>
     {% elif f.type in ('textarea', 'lines') %}
-      <textarea class="inp" id="{{ f.key }}" name="{{ f.key }}" rows="{{ 10 if f.key == 'autoreply_body' else (7 if f.key == 'about_text' else (5 if f.type == 'lines' else 3)) }}" data-autosize>{{ val }}</textarea>
+      <textarea class="inp" id="{{ f.key }}" name="{{ f.key }}" rows="{{ 10 if f.key == 'autoreply_body' else (7 if f.key == 'about_text' else (5 if f.type == 'lines' else 3)) }}" data-autosize{% if ph %} placeholder="{{ ph }}"{% endif %}>{{ val }}</textarea>
     {% elif f.type == 'image' %}
       <div class="imgfield">
         <div class="img-prev" data-preview>{% if val %}<img src="{{ val }}" alt="">{% else %}{{ icon('image') }}<small>No image</small>{% endif %}</div>
@@ -78,7 +92,7 @@
         </div>
       </div>
     {% else %}
-      <input class="inp" id="{{ f.key }}" name="{{ f.key }}" type="{{ 'email' if f.type == 'email' else 'text' }}" value="{{ val }}">
+      <input class="inp" id="{{ f.key }}" name="{{ f.key }}" type="{{ 'email' if f.type == 'email' else 'text' }}" value="{{ val }}"{% if ph %} placeholder="{{ ph }}"{% endif %}>
     {% endif %}
     {% if f.help or f.type == 'lines' %}<small class="help">{{ f.help or 'One item per line.' }}</small>{% endif %}
   </div>

@@ -1,6 +1,6 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
 {% extends "base.html" %}
-{% from "_macros.html" import logo, mini_site, rack with context %}
+{% from "_macros.html" import logo, mini_site, rack, lang_switch with context %}
 {% block body %}
 {% if preview_left %}
 <div class="preview-bar">👀 Preview access – this website is not public yet. Your access expires in {% if preview_left >= 5400 %}{{ (preview_left + 1799) // 3600 }} h{% else %}{{ (preview_left + 59) // 60 }} min{% endif %}.</div>
@@ -10,17 +10,18 @@
 
 <header class="nav" id="top">
   <div class="wrap nav-in">
-    <a href="#top" class="nav-brand" aria-label="{{ c.company_name }} – home">{{ logo() }}</a>
+    <a href="#top" class="nav-brand" aria-label="{{ c.company_name }} – {{ t('home') }}">{{ logo() }}</a>
     <nav class="nav-links" id="navLinks" aria-label="Main">
-      <a href="#services">Services</a>
-      <a href="#why">Why Us</a>
-      <a href="#hosting">Hosting</a>
-      {% if projects %}<a href="#portfolio">Our Work</a>{% endif %}
-      <a href="#about">About</a>
-      {% if faqs %}<a href="#faq">FAQ</a>{% endif %}
-      <a href="#contact" class="btn btn-sm btn-primary nav-cta">Contact Us</a>
+      <a href="#services">{{ t('nav_services') }}</a>
+      <a href="#why">{{ t('nav_why') }}</a>
+      <a href="#hosting">{{ t('nav_hosting') }}</a>
+      {% if projects %}<a href="#portfolio">{{ t('nav_work') }}</a>{% endif %}
+      <a href="#about">{{ t('nav_about') }}</a>
+      {% if faqs %}<a href="#faq">{{ t('nav_faq') }}</a>{% endif %}
+      <a href="#contact" class="btn btn-sm btn-primary nav-cta">{{ t('nav_contact') }}</a>
+      {{ lang_switch() }}
     </nav>
-    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+    <button class="nav-toggle" id="navToggle" aria-label="{{ t('menu_open') }}" aria-expanded="false" aria-controls="navLinks">
       <span></span><span></span><span></span>
     </button>
   </div>
@@ -124,8 +125,8 @@
         </div>
 
         <!-- floating chips -->
-        <div class="hv-chip chip-ssl">{{ icon('lock') }}<span>SSL Secured</span></div>
-        <div class="hv-chip chip-speed">{{ icon('zap') }}<span>Optimized</span></div>
+        <div class="hv-chip chip-ssl">{{ icon('lock') }}<span>{{ t('chip_ssl') }}</span></div>
+        <div class="hv-chip chip-speed">{{ icon('zap') }}<span>{{ t('chip_fast') }}</span></div>
       </div>
     </div>
   </div>
@@ -159,7 +160,7 @@
         {% if s.item_list %}
         <ul class="ticks">{% for it in s.item_list %}<li>{{ icon('check') }}{{ it }}</li>{% endfor %}</ul>
         {% endif %}
-        <a href="#contact" class="svc-link" data-service="{{ s.title }}">Ask about this {{ icon('arrow-right') }}</a>
+        <a href="#contact" class="svc-link" data-service="{{ s.title }}">{{ t('ask_about') }} {{ icon('arrow-right') }}</a>
       </article>
       {% endfor %}
     </div>
@@ -215,22 +216,22 @@
     <div class="host-visual reveal" aria-hidden="true">
       <div class="hp">
         <div class="hp-head">
-          <span class="hp-dot"></span><b>Server Control Panel</b><span class="hp-status">Online</span>
+          <span class="hp-dot"></span><b>{{ t('hp_title') }}</b><span class="hp-status">{{ t('hp_online') }}</span>
         </div>
         <div class="hp-servers">
-          {% for name in ['web-01', 'web-02', 'db-01'] %}
+          {% for name in t('hp_sites').split('|') %}
           <div class="hp-srv">
-            <span class="hp-srv-ic">{{ icon('server') }}</span>
-            <div class="hp-srv-name"><b>{{ name }}</b><small>Healthy</small></div>
+            <span class="hp-srv-ic">{{ icon('globe') }}</span>
+            <div class="hp-srv-name"><b>{{ name }}</b><small>{{ t('hp_online') }} · SSL</small></div>
             <div class="hp-bars"><i style="--h:.55"></i><i style="--h:.8"></i><i style="--h:.45"></i><i style="--h:.7"></i><i style="--h:.6"></i><i style="--h:.9"></i><i style="--h:.5"></i></div>
           </div>
           {% endfor %}
         </div>
         <div class="hp-grid">
-          <div class="hp-tile">{{ icon('lock') }}<b>SSL</b><small>Active &amp; auto-renewing</small></div>
-          <div class="hp-tile">{{ icon('refresh') }}<b>Backups</b><small>Scheduled regularly</small></div>
-          <div class="hp-tile">{{ icon('shield-check') }}<b>Security</b><small>Updates applied</small></div>
-          <div class="hp-tile">{{ icon('gauge') }}<b>Performance</b><small>Caching enabled</small></div>
+          <div class="hp-tile">{{ icon('lock') }}<b>SSL</b><small>{{ t('hp_ssl') }}</small></div>
+          <div class="hp-tile">{{ icon('refresh') }}<b>{{ t('hp_backups') }}</b><small>{{ t('hp_backups_s') }}</small></div>
+          <div class="hp-tile">{{ icon('shield-check') }}<b>{{ t('hp_security') }}</b><small>{{ t('hp_security_s') }}</small></div>
+          <div class="hp-tile">{{ icon('globe') }}<b>{{ t('hp_location') }}</b><small>{{ t('hp_location_s') }}</small></div>
         </div>
       </div>
       <div class="host-cloud">{{ icon('cloud') }}</div>
@@ -248,8 +249,8 @@
       <p>{{ c.portfolio_intro }}</p>
     </div>
     {% if categories | length > 1 %}
-    <div class="filters reveal" role="tablist" aria-label="Filter projects">
-      <button class="filter is-active" data-filter="*" role="tab" aria-selected="true">All</button>
+    <div class="filters reveal" role="tablist" aria-label="{{ t('filter_label') }}">
+      <button class="filter is-active" data-filter="*" role="tab" aria-selected="true">{{ t('filter_all') }}</button>
       {% for cat in categories %}<button class="filter" data-filter="{{ cat }}" role="tab" aria-selected="false">{{ cat }}</button>{% endfor %}
     </div>
     {% endif %}
@@ -258,7 +259,7 @@
       <article class="pf reveal" data-category="{{ p.category }}" style="--i:{{ loop.index0 }}">
         <div class="pf-shot">
           <div class="pf-bar"><i></i><i></i><i></i></div>
-          {% if p.image %}<img src="{{ p.image }}" alt="Screenshot of {{ p.title }}" loading="lazy">
+          {% if p.image %}<img src="{{ p.image }}" alt="{{ t('screenshot_of') }} {{ p.title }}" loading="lazy">
           {% else %}<div class="pf-empty">{{ icon('image') }}</div>{% endif %}
         </div>
         <div class="pf-body">
@@ -266,7 +267,7 @@
           <h3>{{ p.title }}</h3>
           {% if p.description %}<p>{{ p.description }}</p>{% endif %}
           {% if p.tech_list %}<div class="tags">{% for t in p.tech_list %}<span>{{ t }}</span>{% endfor %}</div>{% endif %}
-          {% if p.url %}<a href="{{ p.url | safe_url }}" class="btn btn-sm btn-outline" target="_blank" rel="noopener">View Project {{ icon('external') }}</a>{% endif %}
+          {% if p.url %}<a href="{{ p.url | safe_url }}" class="btn btn-sm btn-outline" target="_blank" rel="noopener">{{ t('view_project') }} {{ icon('external') }}</a>{% endif %}
         </div>
       </article>
       {% endfor %}
@@ -288,7 +289,7 @@
         <div class="ac-icons">
           <span>{{ icon('code') }}</span><span>{{ icon('messages') }}</span><span>{{ icon('server') }}</span><span>{{ icon('globe') }}</span><span>{{ icon('wrench') }}</span>
         </div>
-        <p class="ac-line">Build. Host. Grow.</p>
+        <p class="ac-line">{{ c.hero_motto }}</p>
       </div>
       {% endif %}
     </div>
@@ -301,6 +302,29 @@
     </div>
   </div>
 </section>
+
+<!-- ============================== PROCESS (ASDHEM) ============================== -->
+{% set proc = c.process_steps | steps %}
+{% if proc %}
+<section class="section" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{{ c.process_eyebrow }}</span>
+      <h2>{{ c.process_title }}</h2>
+      {% if c.process_intro %}<p>{{ c.process_intro }}</p>{% endif %}
+    </div>
+    <ol class="steps" style="--n: {{ proc | length }}">
+      {% for title, text in proc %}
+      <li class="step reveal" style="--i:{{ loop.index0 }}">
+        <span class="step-num" aria-hidden="true">{{ '%02d' % loop.index }}</span>
+        <h3>{{ title }}</h3>
+        {% if text %}<p>{{ text }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+{% endif %}
 
 <!-- ============================== FAQ (ASDHEM) ============================== -->
 {% if faqs %}
@@ -317,12 +341,12 @@
         <div class="faq-tools reveal">
           <label class="faq-search">
             {{ icon('search') }}
-            <span class="sr-only">Search questions</span>
-            <input type="search" id="faqSearch" placeholder="Search questions, e.g. SSL, domain, price…" autocomplete="off" maxlength="80">
+            <span class="sr-only">{{ t('faq_search') }}</span>
+            <input type="search" id="faqSearch" placeholder="{{ t('faq_search_ph') }}" autocomplete="off" maxlength="80">
           </label>
           {% if faq_cats | length > 1 %}
-          <div class="faq-cats" role="tablist" aria-label="Question categories">
-            <button type="button" class="faq-cat is-active" data-cat="*" role="tab" aria-selected="true">All <span>{{ faqs | length }}</span></button>
+          <div class="faq-cats" role="tablist" aria-label="{{ t('faq_cats') }}">
+            <button type="button" class="faq-cat is-active" data-cat="*" role="tab" aria-selected="true">{{ t('filter_all') }} <span>{{ faqs | length }}</span></button>
             {% for cat, n in faq_cats %}
             <button type="button" class="faq-cat" data-cat="{{ cat }}" role="tab" aria-selected="false">{{ cat }} <span>{{ n }}</span></button>
             {% endfor %}
@@ -339,15 +363,16 @@
             </summary>
             <div class="faq-a">
               {% for p in f.text | paragraphs %}<p>{{ p }}</p>{% endfor %}
-              <a href="#faq-{{ f.id }}" class="faq-link" data-copy-link>{{ icon('link') }}<span>Copy link to this answer</span></a>
+              <a href="#faq-{{ f.id }}" class="faq-link" data-copy-link>{{ icon('link') }}<span>{{ t('faq_copy') }}</span></a>
             </div>
           </details>
           {% endfor %}
         </div>
 
         <div class="faq-empty" id="faqEmpty" hidden>
-          <p><b>No answer for “<span id="faqTerm"></span>” yet.</b> That's a good question – ask us and we'll reply personally.</p>
-          <a href="#contact" class="btn btn-primary" id="faqAsk">Ask this question {{ icon('arrow-right') }}</a>
+          {% set parts = t('faq_none').split('{q}') %}
+          <p><b>{{ parts[0] }}<span id="faqTerm"></span>{{ parts[1] }}</b> {{ t('faq_none_text') }}</p>
+          <a href="#contact" class="btn btn-primary" id="faqAsk">{{ t('faq_ask') }} {{ icon('arrow-right') }}</a>
         </div>
       </div>
 
@@ -355,7 +380,7 @@
         <span class="faq-help-ic">{{ icon('help-circle') }}</span>
         <h3>{{ c.faq_help_title }}</h3>
         {% if c.faq_help_text %}<p>{{ c.faq_help_text }}</p>{% endif %}
-        <a href="#contact" class="btn btn-white btn-block">Send us a message {{ icon('send') }}</a>
+        <a href="#contact" class="btn btn-white btn-block">{{ t('send_message') }} {{ icon('send') }}</a>
         {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="faq-help-mail">{{ icon('mail') }} {{ c.contact_email }}</a>{% endif %}
       </aside>
     </div>
@@ -386,12 +411,13 @@
       <p class="lead reveal">{{ c.contact_intro }}</p>
       <a class="mail-card reveal" href="mailto:{{ c.contact_email }}">
         <span class="mail-ic">{{ icon('mail') }}</span>
-        <span><small>Email us</small><b>{{ c.contact_email }}</b>{% if c.contact_note %}<em>{{ c.contact_note }}</em>{% endif %}</span>
+        <span><small>{{ t('email_us') }}</small><b>{{ c.contact_email }}</b>{% if c.contact_note %}<em>{{ c.contact_note }}</em>{% endif %}</span>
       </a>
     </div>
 
     <form class="form reveal" id="contactForm" action="{{ url_for('public.contact') }}" method="post" novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="lang" value="{{ lang }}">
       <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 
       {% with msgs = get_flashed_messages(with_categories=true) %}
@@ -402,36 +428,36 @@
 
       <div class="row2">
         <div class="field">
-          <label for="f-name">Full Name</label>
-          <input id="f-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" placeholder="John Smith">
+          <label for="f-name">{{ t('f_name') }}</label>
+          <input id="f-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" placeholder="{{ t('f_name_ph') }}">
           <small class="err" data-for="name"></small>
         </div>
         <div class="field">
-          <label for="f-email">Email Address</label>
-          <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="200" placeholder="you@company.com">
+          <label for="f-email">{{ t('f_email') }}</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="200" placeholder="{{ t('f_email_ph') }}">
           <small class="err" data-for="email"></small>
         </div>
       </div>
       <div class="field">
-        <label for="f-service">Service Interested In</label>
+        <label for="f-service">{{ t('f_service') }}</label>
         <div class="select">
           <select id="f-service" name="service" required>
-            <option value="" disabled selected>Select a service…</option>
+            <option value="" disabled selected>{{ t('f_service_ph') }}</option>
             {% for s in services %}<option>{{ s.title }}</option>{% endfor %}
-            <option>Other / Not sure yet</option>
+            <option>{{ t('f_other') }}</option>
           </select>
         </div>
         <small class="err" data-for="service"></small>
       </div>
       <div class="field">
-        <label for="f-message">Message</label>
-        <textarea id="f-message" name="message" rows="5" required minlength="10" maxlength="5000" placeholder="Tell us about your project, goals and timeline…"></textarea>
+        <label for="f-message">{{ t('f_message') }}</label>
+        <textarea id="f-message" name="message" rows="5" required minlength="10" maxlength="5000" placeholder="{{ t('f_message_ph') }}"></textarea>
         <small class="err" data-for="message"></small>
       </div>
       <button type="submit" class="btn btn-primary btn-lg btn-block" id="contactBtn">
-        <span class="btn-label">Contact Us</span> {{ icon('send') }}
+        <span class="btn-label">{{ t('f_submit') }}</span> {{ icon('send') }}
       </button>
-      <p class="form-note">{{ icon('lock') }}<span>Your details are only used to reply to your inquiry. See our <a href="{{ url_for('public.privacy') }}">Privacy Policy</a>.</span></p>
+      <p class="form-note">{{ icon('lock') }}<span>{{ t('f_note') }} <a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a>.</span></p>
     </form>
   </div>
 </section>
@@ -446,33 +472,35 @@
       <a href="mailto:{{ c.contact_email }}" class="foot-mail">{{ icon('mail') }} {{ c.contact_email }}</a>
     </div>
     <div>
-      <h4>Quick Links</h4>
+      <h4>{{ t('quick_links') }}</h4>
       <ul>
-        <li><a href="#top">Home</a></li>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#hosting">Hosting</a></li>
-        {% if projects %}<li><a href="#portfolio">Our Work</a></li>{% endif %}
-        <li><a href="#about">About Us</a></li>
-        {% if faqs %}<li><a href="#faq">FAQ</a></li>{% endif %}
-        <li><a href="#contact">Contact</a></li>
+        <li><a href="#top">{{ t('home') }}</a></li>
+        <li><a href="#services">{{ t('nav_services') }}</a></li>
+        <li><a href="#hosting">{{ t('nav_hosting') }}</a></li>
+        {% if c.process_steps %}<li><a href="#process">{{ t('nav_process') }}</a></li>{% endif %}
+        {% if projects %}<li><a href="#portfolio">{{ t('nav_work') }}</a></li>{% endif %}
+        <li><a href="#about">{{ t('about_us') }}</a></li>
+        {% if faqs %}<li><a href="#faq">{{ t('nav_faq') }}</a></li>{% endif %}
+        <li><a href="#contact">{{ t('contact') }}</a></li>
       </ul>
     </div>
     <div>
-      <h4>Services</h4>
+      <h4>{{ t('nav_services') }}</h4>
       <ul>{% for s in services %}<li><a href="#services">{{ s.title }}</a></li>{% endfor %}</ul>
     </div>
     <div>
-      <h4>Contact</h4>
+      <h4>{{ t('contact') }}</h4>
       <ul>
         <li><a href="mailto:{{ c.contact_email }}">{{ c.contact_email }}</a></li>
-        <li><a href="#contact">Send us a message</a></li>
+        <li><a href="#contact">{{ t('send_message') }}</a></li>
       </ul>
     </div>
   </div>
   <div class="wrap foot-bottom">
     <span>© {{ year }} {{ c.copyright }}</span>
-    <nav class="foot-legal" aria-label="Legal"><a href="{{ url_for('public.imprint') }}">Imprint</a><a href="{{ url_for('public.privacy') }}">Privacy Policy</a></nav>
-    <a href="#top" class="to-top" aria-label="Back to top">↑</a>
+    <nav class="foot-legal" aria-label="Legal"><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav>
+    {{ lang_switch(light=True) }}
+    <a href="#top" class="to-top" aria-label="{{ t('back_top') }}">↑</a>
   </div>
 </footer>
 {% endblock %}

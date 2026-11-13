@@ -1,0 +1,36 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% from "legal/_blocks.html" import owner_block, contact_block, responsible with context %}
+    <h1>Impressum</h1>
+    <p class="legal-sub">Podaci prema § 5 DDG (njemački Zakon o digitalnim uslugama)</p>
+    <p class="legal-note">Ovo je prijevod radi lakšeg razumijevanja. Pravno je mjerodavna <a href="{{ url_for('public.imprint', lang='de') }}">njemačka verzija</a>.</p>
+
+    <h2>Pružatelj usluge</h2>
+    <p>{{ owner_block() }}</p>
+
+    <h2>Kontakt</h2>
+    <p>{{ contact_block() }}</p>
+
+    {% if c.legal_register %}
+    <h2>Upis u registar</h2>
+    <p>{{ c.legal_register }}</p>
+    {% endif %}
+
+    {% if c.legal_vat %}
+    <h2>PDV identifikacijski broj</h2>
+    <p>PDV identifikacijski broj prema § 27a njemačkog Zakona o porezu na dodanu vrijednost (UStG):<br>{{ c.legal_vat }}</p>
+    {% endif %}
+
+    <h2>Odgovoran za sadržaj prema § 18 st. 2 MStV</h2>
+    <p>{{ responsible() }}</p>
+
+    <h2>Rješavanje potrošačkih sporova</h2>
+    <p>Nismo spremni niti obvezni sudjelovati u postupcima rješavanja sporova pred tijelom za alternativno rješavanje potrošačkih sporova (§ 36 VSBG).</p>
+
+    <h2>Odgovornost za sadržaj i poveznice</h2>
+    <p>Sadržaj ove web stranice izrađujemo s velikom pažnjom, ali ne možemo jamčiti da je točan, potpun i ažuran. Kao pružatelj usluge odgovorni smo za vlastiti sadržaj prema § 7 st. 1 DDG. Prema §§ 8–10 DDG nismo obvezni nadzirati prenesene ili pohranjene tuđe informacije.</p>
+    <p>Naša stranica može sadržavati poveznice na vanjske web stranice trećih osoba na čiji sadržaj nemamo utjecaja. Za njihov sadržaj uvijek je odgovoran pružatelj ili operater tih stranica. Ako saznamo za povredu prava, takve ćemo poveznice odmah ukloniti.</p>
+
+    <h2>Autorsko pravo</h2>
+    <p>Sadržaj i djela na ovoj web stranici podliježu njemačkom autorskom pravu. Umnožavanje, obrada, distribucija i svaka vrsta korištenja izvan granica autorskog prava zahtijevaju pisani pristanak autora.</p>
+
+    <p class="legal-foot">Pogledajte i našu <a href="{{ url_for('public.privacy') }}">Izjavu o zaštiti privatnosti</a>.</p>

@@ -1,0 +1,78 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% from "legal/_blocks.html" import owner_block, contact_block, responsible with context %}
+    <h1>Izjava o zaštiti privatnosti</h1>
+    <p class="legal-sub">Posljednja izmjena: {{ c.privacy_updated }}</p>
+    <p class="legal-note">Ovo je prijevod radi lakšeg razumijevanja. Pravno je mjerodavna <a href="{{ url_for('public.privacy', lang='de') }}">njemačka verzija</a>.</p>
+
+    <p>Zaštita vaših osobnih podataka nam je važna. Ova izjava objašnjava koje osobne podatke obrađujemo kada posjetite ovu web stranicu ili nas kontaktirate, zašto to činimo i koja prava imate prema Općoj uredbi o zaštiti podataka (GDPR) i njemačkom Saveznom zakonu o zaštiti podataka (BDSG).</p>
+
+    <h2>1. Voditelj obrade</h2>
+    <p>Za obradu podataka na ovoj web stranici odgovoran je:</p>
+    <p>{{ owner_block() }}<br>{{ contact_block() }}</p>
+    <p>Sve pojedinosti nalaze se u našem <a href="{{ url_for('public.imprint') }}">Impressumu</a>. Nismo obvezni imenovati službenika za zaštitu podataka.</p>
+
+    <h2>2. Pregled</h2>
+    <ul>
+      <li><b>Ne</b> koristimo Google Analytics niti bilo koju drugu uslugu praćenja ili oglašavanja.</li>
+      <li><b>Ne</b> koristimo dodatke društvenih mreža, vanjske fontove ni drugi sadržaj trećih strana: svi fontovi i datoteke poslužuju se s našeg vlastitog poslužitelja.</li>
+      <li>Koristimo samo jedan tehnički nužan kolačić i <b>nijedan</b> kolačić za praćenje, pa banner za kolačiće nije potreban.</li>
+      <li>Ne prodajemo vaše podatke niti ih koristimo za automatizirano donošenje odluka ili izradu profila.</li>
+    </ul>
+
+    <h2>3. Hosting i datoteke zapisa poslužitelja</h2>
+    <p>Ova web stranica smještena je na poslužitelju koji vodi:<br>{{ c.legal_host | replace('\n', ', ') }}</p>
+    <p>S pružateljem hostinga sklopili smo ugovor o obradi podataka (čl. 28. GDPR-a). Poslužitelj se nalazi u Europskoj uniji.</p>
+    <p>Pri svakom otvaranju stranice vaš preglednik automatski šalje podatke koje naš web poslužitelj sprema u datoteke zapisa: vašu punu IP adresu, datum i vrijeme, traženu stranicu, količinu prenesenih podataka, stranicu s koje dolazite te preglednik i operacijski sustav (user agent).</p>
+    <p>Te podatke trebamo kako bismo isporučili web stranicu i zaštitili je, primjerice za otkrivanje i blokiranje napada (DDoS, brute force). Pravna osnova je naš legitimni interes za sigurnu i ispravnu web stranicu (čl. 6. st. 1. t. (f) GDPR-a). Datoteke zapisa automatski se brišu nakon <b>14 dana</b>. IP adrese s kojih dolaze napadi naš vatrozid može privremeno blokirati.</p>
+
+    <h2>4. Statistika posjeta (bez kolačića)</h2>
+    <p>Kako bismo znali koliko se često naša stranica posjećuje, vodimo jednostavnu statistiku na vlastitom poslužitelju. Treće strane nisu uključene i ne koriste se kolačići. Spremamo:</p>
+    <ul>
+      <li><b>skraćenu (anonimiziranu) IP adresu</b> – zadnji dio uklanja se prije spremanja (npr. 203.0.113.<b>0</b>), pa vas se više ne može identificirati;</li>
+      <li>posjećenu stranicu, datum i vrijeme, stranicu s koje dolazite i vrstu preglednika.</li>
+    </ul>
+    <p>Pravna osnova je naš legitimni interes da razumijemo i poboljšamo našu web stranicu (čl. 6. st. 1. t. (f) GDPR-a). Podaci se automatski brišu nakon <b>{{ visit_days }} dana</b>.</p>
+
+    <h2>5. Kolačići</h2>
+    <p>Koristimo jedan kolačić sesije (<code>__Host-amxme_session</code>). On sadrži jezik koji ste odabrali i nasumični sigurnosni token koji štiti naš kontaktni obrazac od zlouporabe (CSRF zaštita) te – ako ste dobili poveznicu za pregled – vaš privremeni pristup pregledu. Briše se zatvaranjem preglednika i ne koristi se za praćenje.</p>
+    <p>Budući da je taj kolačić nužan za pružanje web stranice koju ste zatražili, za njega nije potreban pristanak (§ 25. st. 2. t. 2. njemačkog TDDDG-a). Pravna osnova za povezanu obradu je čl. 6. st. 1. t. (f) GDPR-a.</p>
+
+    <h2>6. Kontaktni obrazac i e-mail</h2>
+    <p>Kada nam pišete putem kontaktnog obrasca ili e-mailom, obrađujemo podatke koje navedete: <b>ime, e-mail adresu, uslugu koja vas zanima i vašu poruku</b>. Spremamo i <b>IP adresu</b> s koje je obrazac poslan, isključivo radi zaštite od neželjene pošte i zlouporabe; ona se briše nakon <b>{{ message_ip_days }} dana</b>.</p>
+    <p>Te podatke koristimo samo za odgovor na vaš upit i, ako je potrebno, za pripremu ponude ili ugovora. Nakon slanja obrasca dobivate automatsku potvrdu e-mailom.</p>
+    <p>Pravna osnova je čl. 6. st. 1. t. (b) GDPR-a ako se vaš upit odnosi na ugovor ili predugovorne radnje, a inače naš legitimni interes za odgovaranje na upite (čl. 6. st. 1. t. (f) GDPR-a). Davanje podataka je dobrovoljno, ali bez e-mail adrese ne možemo vam odgovoriti.</p>
+    <p>{% set months = (c.message_retention_months or '12') | trim %}
+      {% if months == '0' %}Vaša poruka čuva se dok se ne ispuni svrha, osim ako postoje zakonske obveze čuvanja.{% else %}Vaša poruka automatski se briše najkasnije nakon <b>{{ months }} mjeseci</b>, osim ako postoje zakonske obveze čuvanja (npr. za poslovna pisma i račune prema njemačkom trgovačkom i poreznom pravu, § 257 HGB, § 147 AO).{% endif %}
+      U svakom trenutku možete zatražiti ranije brisanje.</p>
+    <p>E-mailove šalje i pohranjuje naš pružatelj e-mail usluge:<br>{{ c.legal_mail_provider | replace('\n', ', ') }}<br>S tim pružateljem sklopili smo ugovor o obradi podataka (čl. 28. GDPR-a).</p>
+
+    <h2>7. Primatelji i prijenos izvan EU</h2>
+    <p>Vašim podacima imamo pristup samo mi i gore navedeni pružatelji usluga (hosting i e-mail), koji ih obrađuju u naše ime i prema našim uputama. Vaše podatke ne prenosimo u zemlje izvan Europske unije odnosno Europskog gospodarskog prostora.</p>
+
+    <h2>8. SSL/TLS enkripcija</h2>
+    <p>Ova web stranica koristi SSL/TLS enkripciju (prepoznatljivu po „https://” i simbolu lokota u pregledniku), tako da podatke koje nam šaljete, poput poruka iz kontaktnog obrasca, ne mogu čitati treće osobe.</p>
+
+    <h2>9. Vaša prava</h2>
+    <p>Prema GDPR-u imate pravo na:</p>
+    <ul>
+      <li><b>pristup</b> osobnim podacima koje o vama čuvamo (čl. 15. GDPR-a);</li>
+      <li><b>ispravak</b> netočnih podataka (čl. 16. GDPR-a);</li>
+      <li><b>brisanje</b> vaših podataka (čl. 17. GDPR-a);</li>
+      <li><b>ograničenje</b> obrade (čl. 18. GDPR-a);</li>
+      <li>primanje podataka u uobičajenom, strojno čitljivom obliku (<b>prenosivost podataka</b>, čl. 20. GDPR-a);</li>
+      <li><b>povlačenje</b> danog pristanka s učinkom za ubuduće (čl. 7. st. 3. GDPR-a).</li>
+    </ul>
+    <div class="legal-box">
+      <h3>Pravo na prigovor (čl. 21. GDPR-a)</h3>
+      <p>Ako vaše podatke obrađujemo na temelju legitimnog interesa (čl. 6. st. 1. t. (f) GDPR-a), u svakom trenutku imate pravo uložiti prigovor iz razloga koji se odnose na vašu posebnu situaciju. Tada vaše podatke više ne obrađujemo, osim ako dokažemo uvjerljive legitimne razloge koji nadilaze vaše interese ili ako je obrada potrebna za postavljanje, ostvarivanje ili obranu pravnih zahtjeva.</p>
+    </div>
+    <p>Za ostvarivanje svojih prava jednostavno nam pišite na {% set mail = c.legal_email or c.contact_email %}<a href="mailto:{{ mail }}">{{ mail }}</a>.</p>
+    <p>Također imate pravo podnijeti pritužbu nadzornom tijelu za zaštitu podataka (čl. 77. GDPR-a), osobito u državi članici EU u kojoj boravite, radite ili u kojoj je došlo do navodne povrede.{% if c.legal_authority %} Za nas je nadležno:<br>{{ c.legal_authority | replace('\n', ', ') }}{% endif %}</p>
+
+    {% for p in c.privacy_extra | paragraphs %}
+      {% if loop.first %}<h2>10. Dodatne informacije</h2>{% endif %}
+      <p>{{ p }}</p>
+    {% endfor %}
+
+    <h2>{{ '11' if c.privacy_extra | trim else '10' }}. Izmjene ove izjave</h2>
+    <p>Ovu izjavu možemo ažurirati kada se promijeni naša web stranica ili zakon. Aktualna verzija uvijek je dostupna na ovoj stranici.</p>
