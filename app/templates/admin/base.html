@@ -9,6 +9,7 @@
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
   <link rel="preload" href="{{ url_for('static', filename='fonts/jakarta-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
+  <script src="{{ asset('js/theme.js') }}"></script>
   <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
@@ -22,6 +23,7 @@
       <a href="{{ url_for('admin.dashboard') }}" class="{{ 'on' if ep == 'admin.dashboard' }}">{{ icon('grid') }}Dashboard</a>
       <a href="{{ url_for('admin.messages') }}" class="{{ 'on' if ep in ('admin.messages', 'admin.message') }}">{{ icon('inbox') }}Messages{% if unread %}<span class="badge">{{ unread }}</span>{% endif %}</a>
       <a href="{{ url_for('admin.visitors') }}" class="{{ 'on' if ep in ('admin.visitors', 'admin.visitor_ip') }}">{{ icon('activity') }}Visitors</a>
+      <a href="{{ url_for('admin.tickets') }}" class="{{ 'on' if ep in ('admin.tickets', 'admin.ticket_admin') }}">{{ icon('messages') }}Tickets</a>
 
       <span class="side-label">Page content</span>
       {% for s in sections %}
@@ -32,6 +34,17 @@
       {% for kind, col in collections.items() %}
       <a href="{{ url_for('admin.collection', kind=kind) }}" class="{{ 'on' if ep and ep.startswith('admin.collection') and request.view_args.kind == kind }}">{{ icon(col.icon) }}{{ col.title }}</a>
       {% endfor %}
+
+      <span class="side-label">Tools</span>
+      <a href="{{ url_for('admin.media') }}" class="{{ 'on' if ep == 'admin.media' }}">{{ icon('image') }}Media Library</a>
+      <a href="{{ url_for('admin.history') }}" class="{{ 'on' if ep == 'admin.history' }}">{{ icon('clock') }}Version History</a>
+      {% if g.user and g.user.is_owner %}
+      <a href="{{ url_for('admin.monitors') }}" class="{{ 'on' if ep == 'admin.monitors' }}">{{ icon('activity') }}Monitoring</a>
+      <a href="{{ url_for('admin.clients') }}" class="{{ 'on' if ep in ('admin.clients', 'admin.client') }}">{{ icon('briefcase') }}Clients & Portal</a>
+      <a href="{{ url_for('admin.backups') }}" class="{{ 'on' if ep == 'admin.backups' }}">{{ icon('hard-drive') }}Backups</a>
+      <a href="{{ url_for('admin.privacy_tools') }}" class="{{ 'on' if ep == 'admin.privacy_tools' }}">{{ icon('shield') }}GDPR Requests</a>
+      <a href="{{ url_for('admin.users') }}" class="{{ 'on' if ep == 'admin.users' }}">{{ icon('users') }}Users & Roles</a>
+      {% endif %}
 
       <span class="side-label">Account</span>
       <a href="{{ url_for('admin.account') }}" class="{{ 'on' if ep == 'admin.account' }}">{{ icon('user') }}My Account</a>
@@ -49,7 +62,7 @@
     <header class="top">
       <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu">{{ icon('menu') }}</button>
       <div class="top-title">{% block heading %}{% endblock %}</div>
-      <div class="top-actions">{% block actions %}{% endblock %}</div>
+      <div class="top-actions">{% block actions %}{% endblock %}<button type="button" class="icon-btn theme-btn" data-theme-toggle aria-label="Dark / light mode" title="Dark / light mode"><span class="t-moon">🌙</span><span class="t-sun">☀️</span></button></div>
     </header>
     <div class="content">
       {% with msgs = get_flashed_messages(with_categories=true) %}

@@ -15,6 +15,17 @@
     <div><dt>Email notification</dt><dd>{{ 'Sent' if m.emailed else 'Not sent' }}</dd></div>
   </dl>
   <div class="msg-body">{{ m.body }}</div>
+  {% if replies %}
+  <div class="thread">{% for r in replies %}<div class="bubble admin"><small>{{ r.user }} · {{ r.created_at | dt }} · {{ 'sent' if r.sent else 'NOT sent' }}</small><p>{{ r.body }}</p></div>{% endfor %}</div>
+  {% endif %}
+  <form method="post" action="{{ url_for('admin.message_reply', msg_id=m.id) }}" class="reply-box">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="lbl" for="rs">Subject</label>
+    <input class="inp" id="rs" name="subject" value="Re: {{ m.service }}" maxlength="200">
+    <label class="lbl" for="rb">Your reply to {{ m.email }}</label>
+    <textarea class="inp" id="rb" name="body" rows="6" data-autosize required placeholder="Hello {{ m.name.split(' ')[0] }}, …"></textarea>
+    <button class="btn btn-primary">{{ icon('send') }} Send reply</button>
+  </form>
   <div class="form-foot">
     <form method="post" action="{{ url_for('admin.message_unread', msg_id=m.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

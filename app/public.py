@@ -1,5 +1,6 @@
 # Signed: ASDHEM | AMXME Web Solutions
 """Public website: homepage (EN / DE / HR), legal pages, contact form, preview links, sitemap."""
+import hashlib
 import ipaddress
 import json
 import random
@@ -8,14 +9,14 @@ import secrets
 import time
 from datetime import timedelta
 
-from flask import (Blueprint, Response, current_app, flash, g, jsonify, redirect, render_template, request,
+from flask import (Blueprint, Response, abort, current_app, flash, g, jsonify, redirect, render_template, request,
                    session, url_for)
 from itsdangerous import BadSignature, URLSafeSerializer
 
 from .extensions import db
-from .i18n import DEFAULT_LANG, LANGS, best_browser_lang, current_lang, t
+from .i18n import DEFAULT_LANG, LANGS, UI, best_browser_lang, current_lang, t
 from .mailer import send_mail
-from .models import Activity, Faq, Feature, Message, Project, Service, Setting, Visit, utcnow
+from .models import Activity, Faq, Feature, Message, Monitor, Post, Project, Service, Setting, SiteCheck, Testimonial, Visit, utcnow
 from .templating import get_content, localize
 
 # ASDHEM | preview links while "under construction" is on.
@@ -127,6 +128,9 @@ def privacy_cleanup():
             Message.created_at < now - timedelta(days=months * 31)).delete(synchronize_session=False)
     db.session.query(Activity).filter(
         Activity.created_at < now - timedelta(days=ACTIVITY_RETENTION_DAYS)).delete(synchronize_session=False)
+    db.session.query(SiteCheck).filter(SiteCheck.created_at < now - timedelta(days=1)).delete(synchronize_session=False)
+    from .history import prune
+    prune()
 
 
 def record_visit():
@@ -236,6 +240,14 @@ def index():
         preview_left = preview_seconds_left()
         if not preview_left:
             return render_template("maintenance.html", ld=structured_data(), canonical_path=url_for("public.index"))
+    ctx = home_context()
+    ctx["preview_left"] = preview_left
+    return render_template("index.html", **ctx)
+
+
+def home_context():
+    """Everything the homepage template needs (also used by the admin live preview)."""
+    lang = current_lang()
     services = localize(enabled(Service))
     projects = localize(enabled(Project))
     faqs = localize(enabled(Faq))
@@ -243,22 +255,135 @@ def index():
     for f in faqs:
         f.cat = (f.category or "").strip() or ("General" if lang == "en" else {"de": "Allgemein", "hr": "Općenito"}[lang])
         faq_cats[f.cat] = faq_cats.get(f.cat, 0) + 1
-    faq_cats = list(faq_cats.items())
-    categories = sorted({p.category for p in projects if p.category})
-    return render_template(
-        "index.html",
+    return dict(
         services=services,
         why=localize(enabled(Feature, group="why")),
         hosting=localize(enabled(Feature, group="hosting")),
         badges=localize(enabled(Feature, group="badge")),
+        testimonials=localize(enabled(Testimonial)),
+        posts=localize(latest_posts(3)),
         projects=projects,
-        categories=categories,
-        preview_left=preview_left,
+        categories=sorted({p.category for p in projects if p.category}),
+        preview_left=0,
         faqs=faqs,
-        faq_cats=faq_cats,
+        faq_cats=list(faq_cats.items()),
         ld=structured_data(faqs, services),
         canonical_path=url_for("public.index"),
     )
+
+
+def latest_posts(limit=None):
+    q = db.select(Post).filter_by(enabled=True).order_by(Post.created_at.desc())
+    if limit:
+        q = q.limit(limit)
+    return db.session.execute(q).scalars().all()
+
+
+def _site_open():
+    """False while 'under construction' is on (unless admin / preview link)."""
+    c = get_content()
+    return c.maintenance_enabled != "1" or session.get("admin_id") or preview_seconds_left()
+
+
+# ====================================================================== ASDHEM | service pages
+@bp.route("/services/<slug>", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/services/<slug>")
+def service_page(slug):
+    if not _site_open():
+        return redirect(url_for("public.index"))
+    s = db.session.execute(db.select(Service).filter_by(slug=slug, enabled=True)).scalar()
+    if not s or not s.tr("body", current_lang()).strip():
+        abort(404)
+    record_visit()
+    others = [x for x in localize(enabled(Service)) if x.id != s.id]
+    return render_template("service.html", s=localize([s])[0], others=others,
+                           canonical_path=url_for("public.service_page", slug=slug))
+
+
+# ====================================================================== ASDHEM | blog
+@bp.route("/blog", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/blog")
+def blog():
+    if not _site_open():
+        return redirect(url_for("public.index"))
+    record_visit()
+    return render_template("blog.html", posts=localize(latest_posts()), canonical_path=url_for("public.blog"))
+
+
+@bp.route("/blog/<slug>", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/blog/<slug>")
+def blog_post(slug):
+    if not _site_open():
+        return redirect(url_for("public.index"))
+    p = db.session.execute(db.select(Post).filter_by(slug=slug)).scalar()
+    if not p or not (p.enabled or session.get("admin_id")):
+        abort(404)
+    record_visit()
+    more = [x for x in localize(latest_posts(4)) if x.id != p.id][:3]
+    site = current_app.config["SITE_URL"]
+    lp = localize([p])[0]
+    ld = {"@context": "https://schema.org", "@type": "BlogPosting", "headline": lp.title,
+          "description": lp.excerpt, "inLanguage": current_lang(),
+          "datePublished": p.created_at.date().isoformat(), "dateModified": (p.updated_at or p.created_at).date().isoformat(),
+          "author": {"@type": "Organization", "name": get_content().company_name},
+          "publisher": {"@id": f"{site}/#organization"},
+          "mainEntityOfPage": site + url_for("public.blog_post", slug=slug)}
+    if p.image:
+        ld["image"] = site + p.image
+    return render_template("post.html", p=lp, more=more, ld=ld, canonical_path=url_for("public.blog_post", slug=slug))
+
+
+# ====================================================================== ASDHEM | public status page
+@bp.route("/status", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/status")
+def status():
+    from .monitor import daily_bars, uptime
+    items = db.session.query(Monitor).filter_by(public=True, enabled=True).order_by(Monitor.position, Monitor.id).all()
+    for m in items:
+        m.uptime30 = uptime(m.id, 30)
+        m.bars = daily_bars(m.id, 30)
+    all_ok = all(m.status != "down" for m in items)
+    resp = current_app.make_response(render_template("status.html", items=items, all_ok=all_ok,
+                                                     canonical_path=url_for("public.status")))
+    resp.headers["Cache-Control"] = "public, max-age=60"
+    return resp
+
+
+# ====================================================================== ASDHEM | free website check
+CHECK_PER_HOUR = 6
+CHECK_GLOBAL_PER_HOUR = 120
+
+
+def _who():
+    key = current_app.config["SECRET_KEY"]
+    return hashlib.sha256(f"{key}|{anonymize_ip(request.remote_addr)}|{request.remote_addr}".encode()).hexdigest()
+
+
+@bp.route("/check", defaults={"lang": DEFAULT_LANG}, methods=["GET", "POST"])
+@bp.route(f"/{LANG_RULE}/check", methods=["GET", "POST"])
+def website_check():
+    from .checker import CheckError, run
+    if not _site_open():
+        return redirect(url_for("public.index"))
+    result = error = None
+    url = (request.values.get("url") or "").strip()[:300]
+    if request.method == "POST" and url:
+        hour = utcnow() - timedelta(hours=1)
+        who = _who()
+        mine = db.session.query(SiteCheck).filter(SiteCheck.who == who, SiteCheck.created_at > hour).count()
+        total = db.session.query(SiteCheck).filter(SiteCheck.created_at > hour).count()
+        if mine >= CHECK_PER_HOUR or total >= CHECK_GLOBAL_PER_HOUR:
+            error = t("chk_err_rate")
+        else:
+            db.session.add(SiteCheck(who=who))
+            db.session.commit()
+            try:
+                result = run(url)
+            except CheckError as e:
+                error = t(f"chk_err_{e}") if f"chk_err_{e}" in UI else t("chk_err_connect")
+    else:
+        record_visit()
+    return render_template("check.html", url=url, result=result, error=error, canonical_path=url_for("public.website_check"))
 
 
 @bp.route("/preview/<token>")
@@ -397,9 +522,15 @@ def robots():
 @bp.route("/sitemap.xml")
 def sitemap():
     site = current_app.config["SITE_URL"]
+    pages = [("public.index", {}), ("public.imprint", {}), ("public.privacy", {}), ("public.status", {}),
+             ("public.website_check", {})]
+    if latest_posts(1):
+        pages.append(("public.blog", {}))
+    pages += [("public.blog_post", {"slug": p.slug}) for p in latest_posts()]
+    pages += [("public.service_page", {"slug": x.slug}) for x in enabled(Service) if x.slug and (x.body or "").strip()]
     urls = []
-    for ep in ("public.index", "public.imprint", "public.privacy"):
-        alts = {code: site + url_for(ep, lang=code) for code in LANGS}
+    for ep, args in pages:
+        alts = {code: site + url_for(ep, lang=code, **args) for code in LANGS}
         links = "".join(f'<xhtml:link rel="alternate" hreflang="{code}" href="{u}"/>' for code, u in alts.items())
         links += f'<xhtml:link rel="alternate" hreflang="x-default" href="{alts[DEFAULT_LANG]}"/>'
         urls += [f"<url><loc>{u}</loc>{links}</url>" for u in alts.values()]

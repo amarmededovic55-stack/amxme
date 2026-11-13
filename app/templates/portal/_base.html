@@ -1,0 +1,26 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "base.html" %}
+{% from "_macros.html" import logo with context %}
+{% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block body %}
+<header class="sub-top">
+  <div class="wrap sub-top-in">
+    <a href="{{ url_for('portal.home') if g.client else url_for('public.index') }}">{{ logo() }}</a>
+    <nav class="sub-nav">
+      <span class="portal-tag">{{ icon('user') }} {{ t('p_title') }}</span>
+      {% if g.client %}
+      <a href="{{ url_for('portal.password') }}">{{ t('p_change_pw') }}</a>
+      <form method="post" action="{{ url_for('portal.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-ghost">{{ t('p_logout') }}</button></form>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+<main class="sub portal">
+  <div class="wrap">
+    {% with msgs = get_flashed_messages(with_categories=true) %}{% for cat, m in msgs %}<div class="alert alert-{{ cat }}">{{ m }}</div>{% endfor %}{% endwith %}
+    {% block page %}{% endblock %}
+  </div>
+</main>
+<footer class="legal-bottom"><div class="wrap legal-bottom-in"><span>© {{ year }} {{ c.copyright }}</span>
+<nav><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav></div></footer>
+{% endblock %}

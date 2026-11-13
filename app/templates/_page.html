@@ -1,0 +1,31 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{# ASDHEM | layout for sub pages: services, blog, status, website check, client portal #}
+{% extends "base.html" %}
+{% from "_macros.html" import logo with context %}
+{% block body %}
+<header class="sub-top">
+  <div class="wrap sub-top-in">
+    <a href="{{ url_for('public.index') }}" aria-label="{{ c.company_name }} – {{ t('home') }}">{{ logo() }}</a>
+    <nav class="sub-nav" aria-label="Main">
+      <a href="{{ url_for('public.index') }}#services">{{ t('nav_services') }}</a>
+      <a href="{{ url_for('public.blog') }}" class="{{ 'on' if request.endpoint in ('public.blog', 'public.blog_post') }}">{{ t('nav_blog') }}</a>
+      <a href="{{ url_for('public.website_check') }}" class="{{ 'on' if request.endpoint == 'public.website_check' }}">{{ t('nav_check') }}</a>
+      <a href="{{ url_for('public.index') }}#contact" class="btn btn-sm btn-primary">{{ t('nav_contact') }}</a>
+    </nav>
+  </div>
+</header>
+<main class="sub">
+{% block page %}{% endblock %}
+</main>
+<footer class="legal-bottom">
+  <div class="wrap legal-bottom-in">
+    <span>© {{ year }} {{ c.copyright }}</span>
+    <nav aria-label="Legal">
+      <a href="{{ url_for('public.status') }}">{{ t('nav_status') }}</a>
+      <a href="{{ url_for('portal.login') }}">{{ t('nav_portal') }}</a>
+      <a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a>
+      <a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a>
+    </nav>
+  </div>
+</footer>
+{% endblock %}

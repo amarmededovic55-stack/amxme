@@ -1,0 +1,38 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Monitoring{% endblock %}
+{% block heading %}<h1>Website monitoring</h1><p>Every website is checked every 5 minutes. You get an email when one goes down and when it is back. Public ones appear on the <a href="{{ url_for('public.status') }}" target="_blank" class="link">status page</a>.</p>{% endblock %}
+{% block content %}
+<form method="post" class="panel form-panel search-row">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input class="inp" name="name" placeholder="Name, e.g. amxme.info" required maxlength="120">
+  <input class="inp" name="url" placeholder="https://example.com" required maxlength="300">
+  <select class="inp" name="client_id"><option value="">— no client —</option>{% for c in clients %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select>
+  <label class="check"><input type="checkbox" name="public" value="1"> on status page</label>
+  <button class="btn btn-primary">{{ icon('plus') }} Add</button>
+</form>
+{% for m in items %}
+<div class="panel mon">
+  <div class="mon-head">
+    <span class="st-dot {{ m.status }}"></span>
+    <div class="mon-name"><b>{{ m.name }}</b><a href="{{ m.url }}" target="_blank" rel="noopener" class="muted small">{{ m.url }}</a></div>
+    <div class="mon-stats">
+      <span><small>Uptime 30 d</small><b>{{ '%.2f' % m.uptime30 if m.uptime30 is not none else '–' }} %</b></span>
+      <span><small>Response</small><b>{{ m.last_ms or '–' }} ms</b></span>
+      <span><small>SSL until</small><b>{{ m.ssl_expires.strftime('%d.%m.%Y') if m.ssl_expires else '–' }}</b></span>
+      <span><small>Client</small><b>{{ client_names.get(m.client_id, '—') }}</b></span>
+    </div>
+  </div>
+  <div class="st-bars small">{% for d, pct in m.bars %}<i class="{{ 'none' if pct is none else ('ok' if pct >= 99 else ('warn' if pct >= 95 else 'bad')) }}" title="{{ d.strftime('%d.%m.') }}: {{ '–' if pct is none else pct ~ ' %' }}"></i>{% endfor %}</div>
+  {% if m.status == 'down' %}<p class="mon-err">{{ icon('alert') }} {{ m.last_error or ('HTTP ' ~ m.last_code) }}{% if m.down_since %} · since {{ m.down_since | dt('%d %b %H:%M') }}{% endif %}</p>{% endif %}
+  <div class="mon-actions">
+    {% for action, label in [('check', 'Check now'), ('toggle_public', 'Hide from status page' if m.public else 'Show on status page'), ('toggle', 'Pause' if m.enabled else 'Resume')] %}
+    <form method="post" action="{{ url_for('admin.monitor_action', mid=m.id) }}" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-ghost btn-sm" name="action" value="{{ action }}">{{ label }}</button></form>
+    {% endfor %}
+    <form method="post" action="{{ url_for('admin.monitor_action', mid=m.id) }}" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="client">
+      <select class="inp inp-sm" name="client_id" data-autosubmit-change><option value="">— no client —</option>{% for c in clients %}<option value="{{ c.id }}" {{ 'selected' if c.id == m.client_id }}>{{ c.name }}</option>{% endfor %}</select></form>
+    <form method="post" action="{{ url_for('admin.monitor_action', mid=m.id) }}" class="inline" data-confirm="Delete this monitor and its history?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="icon-btn danger" name="action" value="delete" aria-label="Delete">{{ icon('trash') }}</button></form>
+  </div>
+</div>
+{% else %}<div class="panel"><p class="empty">No websites monitored yet. Add your own sites first (amxme.info, testiram.de …).</p></div>{% endfor %}
+{% endblock %}

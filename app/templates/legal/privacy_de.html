@@ -33,7 +33,7 @@
     <p>Rechtsgrundlage ist unser berechtigtes Interesse, unsere Website zu verstehen und zu verbessern (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden nach <b>{{ visit_days }} Tagen</b> automatisch gelöscht.</p>
 
     <h2>5. Cookies</h2>
-    <p>Wir verwenden ein einziges Sitzungs-Cookie (<code>__Host-amxme_session</code>). Es enthält die von Ihnen gewählte Sprache und ein zufälliges Sicherheitstoken, das unser Kontaktformular vor Missbrauch schützt (CSRF-Schutz), sowie – falls Sie einen Vorschau-Link erhalten haben – Ihren befristeten Vorschauzugang. Es wird beim Schließen des Browsers gelöscht und nicht zum Tracking verwendet.</p>
+    <p>Wir verwenden ein einziges Sitzungs-Cookie (<code>__Host-amxme_session</code>). Es enthält die von Ihnen gewählte Sprache und ein zufälliges Sicherheitstoken, das unser Kontaktformular vor Missbrauch schützt (CSRF-Schutz), sowie – falls Sie einen Vorschau-Link erhalten haben – Ihren befristeten Vorschauzugang. Es wird beim Schließen des Browsers gelöscht und nicht zum Tracking verwendet. Wenn Sie zwischen Dunkel- und Hellmodus wechseln, wird diese Wahl nur in Ihrem eigenen Browser gespeichert (Local Storage) und nie an uns übertragen.</p>
     <p>Da dieses Cookie unbedingt erforderlich ist, um die von Ihnen gewünschte Website bereitzustellen, ist keine Einwilligung nötig (§ 25 Abs. 2 Nr. 2 TDDDG). Rechtsgrundlage für die damit verbundene Verarbeitung ist Art. 6 Abs. 1 lit. f DSGVO.</p>
 
     <h2>6. Kontaktformular und E-Mail</h2>
@@ -68,10 +68,16 @@
     <p>Um Ihre Rechte auszuüben, schreiben Sie uns einfach an {% set mail = c.legal_email or c.contact_email %}<a href="mailto:{{ mail }}">{{ mail }}</a>.</p>
     <p>Außerdem haben Sie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO), insbesondere in dem EU-Mitgliedstaat Ihres Aufenthaltsorts, Ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes.{% if c.legal_authority %} Für uns zuständig ist:<br>{{ c.legal_authority | replace('\n', ', ') }}{% endif %}</p>
 
+    <h2>10. Kostenloser Website-Check</h2>
+    <p>Wenn Sie unseren kostenlosen Website-Check nutzen, rufen wir die öffentliche Startseite der eingegebenen Adresse ab und zeigen Ihnen das Ergebnis an. Adresse und Ergebnis werden nicht gespeichert. Zum Schutz vor Missbrauch speichern wir für höchstens 24 Stunden einen nicht umkehrbar verschlüsselten (gehashten) Wert, der aus Ihrer gekürzten IP-Adresse gebildet wird. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (sicherer Betrieb des Tools).</p>
+
+    <h2>11. Kundenportal</h2>
+    <p>Kunden mit Vertrag können unser Kundenportal nutzen. Dabei verarbeiten wir Ihren Namen, Ihre Firma, Ihre E-Mail-Adresse, ein verschlüsseltes Passwort, die von uns betreuten Websites (einschließlich ihrer Erreichbarkeit), Rechnungen und Ihre Support-Anfragen. Dies ist zur Vertragserfüllung erforderlich (Art. 6 Abs. 1 lit. b DSGVO). Die Daten werden für die Dauer des Vertrags gespeichert; Rechnungen bewahren wir entsprechend den handels- und steuerrechtlichen Pflichten auf (bis zu 10 Jahre, § 147 AO). Das Portal verwendet das in Abschnitt 5 beschriebene Sitzungs-Cookie.</p>
+
     {% for p in c.privacy_extra | paragraphs %}
-      {% if loop.first %}<h2>10. Weitere Informationen</h2>{% endif %}
+      {% if loop.first %}<h2>12. Weitere Informationen</h2>{% endif %}
       <p>{{ p }}</p>
     {% endfor %}
 
-    <h2>{{ '11' if c.privacy_extra | trim else '10' }}. Änderungen dieser Datenschutzerklärung</h2>
+    <h2>{{ '13' if c.privacy_extra | trim else '12' }}. Änderungen dieser Datenschutzerklärung</h2>
     <p>Wir passen diese Datenschutzerklärung an, wenn sich unsere Website oder die Rechtslage ändert. Die aktuelle Fassung finden Sie immer auf dieser Seite.</p>

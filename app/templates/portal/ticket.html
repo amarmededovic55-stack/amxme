@@ -1,0 +1,19 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "portal/_base.html" %}
+{% block title %}{{ tk.subject }} – {{ t('p_title') }}{% endblock %}
+{% block page %}
+<a href="{{ url_for('portal.home') }}#tickets" class="link-back">{{ t('p_back') }}</a>
+<h1 class="portal-h">{{ tk.subject }}</h1>
+<div class="thread">
+  {% for m in msgs %}
+  <div class="bubble {{ m.author }}"><small>{{ t('p_you') if m.author == 'client' else t('p_team') }} · {{ m.created_at.strftime('%d.%m.%Y %H:%M') }}</small><p>{{ m.body }}</p></div>
+  {% endfor %}
+</div>
+{% if tk.status != 'closed' %}
+<form method="post" class="form-stack p-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>{{ t('p_message') }}<textarea name="body" rows="4" required maxlength="5000"></textarea></label>
+  <button class="btn btn-primary">{{ t('p_send') }}</button>
+</form>
+{% else %}<p class="muted">{{ t('p_closed') }}</p>{% endif %}
+{% endblock %}

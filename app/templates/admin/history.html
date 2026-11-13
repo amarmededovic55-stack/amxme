@@ -1,0 +1,29 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Version history{% endblock %}
+{% block heading %}<h1>Version history</h1><p>{% if section %}Changes in “{{ section.title }}”. <a href="{{ url_for('admin.history') }}" class="link">Show all</a>{% else %}Every change to texts and items is saved here. “Restore” brings back the version from before that change.{% endif %}</p>{% endblock %}
+{% block content %}
+<div class="panel">
+  {% if items %}
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>When</th><th>What</th><th class="hide-md">Previous value</th><th>By</th><th></th></tr></thead>
+    <tbody>
+    {% for r in items %}
+    <tr>
+      <td class="nowrap">{{ r.created_at | dt('%d %b, %H:%M') }}</td>
+      <td><b>{{ r.label }}</b><br><span class="chip">{{ {'update': 'edited', 'create': 'added', 'delete': 'deleted'}[r.action] }}</span></td>
+      <td class="hide-md muted small">{{ r.preview if r.preview else ('— (did not exist before)' if r.action == 'create' else '—') }}</td>
+      <td>{{ r.user }}</td>
+      <td class="right">
+        <form method="post" action="{{ url_for('admin.history_restore', rev_id=r.id) }}" data-confirm="Restore the version from before this change?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-ghost btn-sm">{{ icon('refresh') }} Restore</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<p class="empty">No changes recorded yet.</p>{% endif %}
+</div>
+{% endblock %}

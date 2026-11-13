@@ -21,7 +21,7 @@ from .templating import explicit_translation
 from .extensions import db
 from .icons import PICKER
 from .mailer import smtp_configured
-from .models import Activity, AdminUser, Faq, Feature, Message, Project, Service, Setting, Visit, utcnow
+from .models import Activity, AdminUser, Faq, Feature, Message, Post, Project, Service, Setting, Testimonial, Visit, utcnow
 from sqlalchemy import func
 from .uploads import UploadError, delete_upload, save_image
 
@@ -247,8 +247,9 @@ def dashboard():
         db.select(Activity).where(Activity.kind != "auth_fail").order_by(Activity.created_at.desc()).limit(12)
     ).scalars().all()
     latest = db.session.execute(db.select(Message).order_by(Message.created_at.desc()).limit(5)).scalars().all()
+    from .admin_tools import dashboard_widgets
     return render_template("admin/dashboard.html", stats=stats, recent=recent, latest=latest,
-                           smtp=smtp_configured())
+                           smtp=smtp_configured(), w=dashboard_widgets())
 
 
 # ---------------------------------------------------------------- text content
@@ -387,6 +388,9 @@ COLLECTIONS = {
             fld("description", "Description", "textarea"),
             fld("items", "Included items (one per line)", "lines"),
             fld("icon", "Icon", "icon"),
+            fld("slug", "Page address", help="Used for the service's own page, e.g. “web-hosting” → /services/web-hosting. Leave empty to create it from the name."),
+            fld("body", "Page text (own service page)", "textarea",
+                help="Longer text for the service's own page (good for Google). Use “## Heading” for headings and “- ” for lists. Leave empty = no own page."),
         ],
         "subtitle": lambda o: o.description,
     },
@@ -424,6 +428,30 @@ COLLECTIONS = {
             fld("category", "Category", help="e.g. General, Websites, Hosting, Domains, Support. Leave empty for “General”."),
         ],
         "subtitle": lambda o: f"{o.category or 'General'} · {(o.text or '')[:90]}",
+    },
+    "posts": {
+        "model": Post, "title": "Blog / Guides", "singular": "Article", "icon": "file-text",
+        "intro": "Articles shown under /blog. New articles stay hidden until you switch them on.",
+        "fields": [
+            fld("title", "Title", required=True),
+            fld("slug", "Address", help="e.g. “what-does-a-website-cost” → /blog/what-does-a-website-cost. Leave empty to create it from the title."),
+            fld("excerpt", "Short summary", "textarea", help="1–2 sentences shown in the list and on Google."),
+            fld("body", "Article text", "textarea",
+                help="Separate paragraphs with an empty line. “## Heading” = heading, “- item” = list, **bold**, [link text](https://…)."),
+            fld("image", "Cover image", "image", help="Optional, landscape (16:9)."),
+        ],
+        "subtitle": lambda o: f"/blog/{o.slug} · {(o.excerpt or '')[:80]}",
+    },
+    "testimonials": {
+        "model": Testimonial, "title": "Testimonials", "singular": "Testimonial", "icon": "star",
+        "intro": "Real client reviews only. New ones are hidden until you switch them on – the section appears on the homepage when at least one is visible.",
+        "fields": [
+            fld("title", "Name", required=True),
+            fld("role", "Company / position"),
+            fld("text", "Review", "textarea", required=True),
+            fld("rating", "Stars (1–5)", help="Number from 1 to 5."),
+        ],
+        "subtitle": lambda o: f"{'★' * int(o.rating or 5)} · {o.role}",
     },
     "badges": {
         "model": Feature, "group": "badge", "title": "Trust Badges", "singular": "Badge", "icon": "shield-check",
@@ -521,6 +549,15 @@ def collection_edit(kind, item_id=None):
             setattr(obj, "image", new)
             if old and old != new:
                 delete_upload(old)
+        if hasattr(obj, "slug"):  # ASDHEM | clean, unique page address
+            from .templating import slugify
+            base = slugify(obj.slug or obj.title) or "page"
+            slug, n = base, 2
+            while db.session.query(model).filter(model.slug == slug, model.id != (obj.id or 0)).first():
+                slug, n = f"{base}-{n}", n + 1
+            obj.slug = slug
+        if hasattr(obj, "rating"):
+            obj.rating = obj.rating if obj.rating in ("1", "2", "3", "4", "5") else "5"
         if is_new:
             db.session.add(obj)
         log(f"{'Added' if is_new else 'Edited'} {cfg['singular'].lower()} “{obj.title}”")
@@ -600,7 +637,8 @@ def message(msg_id):
     if not m.is_read:
         m.is_read = True
         db.session.commit()
-    return render_template("admin/message.html", m=m)
+    from .admin_tools import message_replies
+    return render_template("admin/message.html", m=m, replies=message_replies(m.id))
 
 
 @bp.post("/messages/<int:msg_id>/delete")
@@ -776,3 +814,7 @@ def visitors_clear():
     db.session.commit()
     flash("Visitor statistics cleared.", "success")
     return redirect(url_for("admin.visitors"))
+
+
+# ASDHEM | extra admin pages (history, media, backups, users, GDPR, monitoring, clients, tickets)
+from . import admin_portal, admin_tools  # noqa: E402,F401

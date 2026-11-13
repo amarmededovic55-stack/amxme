@@ -1,0 +1,16 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "portal/_base.html" %}
+{% block title %}{{ t('p_title') }} – {{ c.company_name }}{% endblock %}
+{% block page %}
+<div class="auth-card">
+  <span class="sub-ic">{{ icon('lock') }}</span>
+  <h1>{{ t('p_title') }}</h1>
+  <form method="post" class="form-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>{{ t('p_email') }}<input type="email" name="email" autocomplete="username" required maxlength="200"></label>
+    <label>{{ t('p_password') }}<input type="password" name="password" autocomplete="current-password" required maxlength="200"></label>
+    <button class="btn btn-primary btn-block">{{ t('p_login') }}</button>
+  </form>
+  <a href="{{ url_for('portal.forgot') }}" class="link-small">{{ t('p_forgot') }}</a>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "_page.html" %}
+{% block title %}{{ t('chk_title') }} – {{ c.company_name }}{% endblock %}
+{% block page %}
+<section class="sub-hero check-hero">
+  <div class="wrap">
+    <h1>{{ t('chk_title') }}</h1>
+    <p class="lead">{{ t('chk_intro') }}</p>
+    <form method="post" class="check-form" id="checkForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="sr-only" for="chkUrl">URL</label>
+      <input id="chkUrl" name="url" type="text" inputmode="url" autocomplete="url" required maxlength="300" placeholder="{{ t('chk_ph') }}" value="{{ url }}">
+      <button class="btn btn-primary btn-lg" data-busy="{{ t('chk_checking') }}">{{ icon('search') }} {{ t('chk_btn') }}</button>
+    </form>
+    <p class="check-privacy">{{ icon('lock') }} {{ t('chk_privacy') }}</p>
+    {% if error %}<div class="alert alert-error check-err">{{ error }}</div>{% endif %}
+  </div>
+</section>
+{% if result %}
+{% set sc = result.score %}
+<div class="wrap check-result">
+  <div class="score-card {{ 'good' if sc >= 85 else ('mid' if sc >= 60 else 'bad') }}">
+    <div class="score-ring" style="--p: {{ sc }}"><b>{{ sc }}</b><small>/100</small></div>
+    <div>
+      <span class="eyebrow">{{ t('chk_score') }}</span>
+      <h2>{{ result.host }}</h2>
+      <p>{{ t('chk_good') if sc >= 85 else (t('chk_mid') if sc >= 60 else t('chk_bad')) }}</p>
+    </div>
+  </div>
+  <ul class="check-list">
+    {% for ch in result.checks %}
+    <li class="{{ 'ok' if ch.ok else 'no' }}"><span class="ck">{{ '✓' if ch.ok else '✕' }}</span>{{ t('chk_' ~ ('title_tag' if ch.key == 'title' else ch.key)) }}
+      {% if ch.detail and ch.key == 'speed' %}<small>{{ ch.detail }} ms</small>{% elif ch.detail and ch.key == 'size' %}<small>{{ ch.detail }} KB</small>{% elif ch.detail and ch.key == 'ssl_valid' %}<small>{{ ch.detail }} d</small>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% if sc < 100 %}
+  <div class="post-cta">
+    <b>{{ t('chk_cta') }}</b>
+    <a href="{{ url_for('public.index') }}#contact" class="btn btn-primary">{{ t('chk_cta_btn') }} {{ icon('arrow-right') }}</a>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

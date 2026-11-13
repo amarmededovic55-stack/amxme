@@ -1,0 +1,30 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "_page.html" %}
+{% block title %}{{ t('status_title') }} – {{ c.company_name }}{% endblock %}
+{% block page %}
+<section class="sub-hero">
+  <div class="wrap">
+    <h1>{{ t('status_title') }}</h1>
+    {% if items %}
+    <div class="status-banner {{ 'ok' if all_ok else 'bad' }}"><span class="pulse"></span>{{ t('status_ok') if all_ok else t('status_bad') }}</div>
+    {% endif %}
+  </div>
+</section>
+<div class="wrap status-wrap">
+  {% for m in items %}
+  <div class="st-row">
+    <div class="st-head">
+      <b>{{ m.name }}</b>
+      <span class="st-badge {{ m.status }}">{{ t(m.status) }}</span>
+    </div>
+    <div class="st-bars" role="img" aria-label="{{ t('uptime_30') }}: {{ m.uptime30 if m.uptime30 is not none else '–' }} %">
+      {% for d, pct in m.bars %}<i class="{{ 'none' if pct is none else ('ok' if pct >= 99 else ('warn' if pct >= 95 else 'bad')) }}" title="{{ d.strftime('%d.%m.') }}: {{ '–' if pct is none else pct ~ ' %' }}"></i>{% endfor %}
+    </div>
+    <div class="st-foot"><span>{{ t('days_ago_30') }}</span><span>{{ t('uptime_30') }}: <b>{{ '%.2f' % m.uptime30 if m.uptime30 is not none else '–' }} %</b></span><span>{{ t('today') }}</span></div>
+  </div>
+  {% else %}
+  <p class="empty-note">{{ t('status_none') }}</p>
+  {% endfor %}
+  <p class="st-note">{{ t('status_note') }}</p>
+</div>
+{% endblock %}

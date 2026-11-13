@@ -136,4 +136,65 @@
     });
   });
   document.querySelectorAll("[data-select-all]").forEach((el) => el.addEventListener("focus", () => el.select()));
+  /* ASDHEM | auto-submit selects / file pickers */
+  $$("[data-autosubmit-change]").forEach((el) => el.addEventListener("change", () => el.form.submit()));
+  $$("[data-autosubmit]").forEach((el) => el.addEventListener("change", () => el.form.submit()));
+
+  /* ASDHEM | media library drag & drop */
+  const dz = $("#dropzone");
+  if (dz) {
+    const input = dz.querySelector('input[type="file"]');
+    ["dragenter", "dragover"].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add("over"); }));
+    ["dragleave", "drop"].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove("over"); }));
+    dz.addEventListener("drop", (e) => { if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; dz.submit(); } });
+  }
+
+  /* ASDHEM | backups: "Restore" in the table pre-selects the backup below */
+  $$("[data-restore]").forEach((b) => b.addEventListener("click", () => {
+    const sel = $("#rName"); if (!sel) return;
+    sel.value = b.dataset.restore; $("#restoreForm").scrollIntoView({ behavior: "smooth" }); $("#rPw").focus({ preventScroll: true });
+  }));
+
+  /* ASDHEM | Google search preview (SEO section) */
+  const st = $("#site_title"), md = $("#meta_description"), sT = $("#serpTitle"), sD = $("#serpDesc"), sH = $("#serpHint");
+  if (st && md && sT) {
+    const upd = () => {
+      const tt = st.value || st.placeholder, dd = md.value || md.placeholder;
+      sT.textContent = tt.length > 60 ? tt.slice(0, 58) + "…" : tt;
+      sD.textContent = dd.length > 158 ? dd.slice(0, 155) + "…" : dd;
+      const tips = [];
+      if (tt.length > 60) tips.push(`Title is ${tt.length} characters – Google shows about 60.`);
+      if (dd.length < 70) tips.push("Description is short – aim for 120–158 characters.");
+      if (dd.length > 158) tips.push(`Description is ${dd.length} characters – Google cuts after about 158.`);
+      sH.textContent = tips.join(" ") || "✓ Length looks good.";
+    };
+    [st, md].forEach((el) => el.addEventListener("input", upd)); upd();
+  }
+
+  /* ASDHEM | live preview: renders the homepage with your unsaved text in a side panel */
+  const lpBtn = $("#lpToggle"), lpWrap = $("#lpWrap"), lpPane = $("#lpPane"), lpFrame = $("#lpFrame");
+  if (lpBtn && lpWrap && lpPane) {
+    const form = lpWrap.querySelector("form");
+    let timer = null, busy = false, again = false;
+    const render = async () => {
+      if (busy) { again = true; return; }
+      busy = true;
+      try {
+        const fd = new FormData(form);
+        const res = await fetch(lpWrap.dataset.url, { method: "POST", body: fd, headers: { "X-Requested-With": "fetch" } });
+        const html = await res.text();
+        const y = lpFrame.contentWindow ? lpFrame.contentWindow.scrollY : 0;
+        lpFrame.srcdoc = html;
+        lpFrame.onload = () => { try { lpFrame.contentWindow.scrollTo(0, y); } catch { /* ignore */ } };
+      } catch { /* offline */ }
+      busy = false;
+      if (again) { again = false; render(); }
+    };
+    lpBtn.addEventListener("click", () => {
+      const on = lpPane.hidden;
+      lpPane.hidden = !on; lpWrap.classList.toggle("on", on); lpBtn.classList.toggle("on", on);
+      if (on) render();
+    });
+    form.addEventListener("input", () => { if (lpPane.hidden) return; clearTimeout(timer); timer = setTimeout(render, 500); });
+  }
 })();

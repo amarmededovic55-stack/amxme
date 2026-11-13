@@ -159,7 +159,10 @@
         {% if s.item_list %}
         <ul class="ticks">{% for it in s.item_list %}<li>{{ icon('check') }}{{ it }}</li>{% endfor %}</ul>
         {% endif %}
-        <a href="#contact" class="svc-link" data-service="{{ s.title }}">{{ t('ask_about') }} {{ icon('arrow-right') }}</a>
+        <div class="svc-links">
+          <a href="#contact" class="svc-link" data-service="{{ s.title }}">{{ t('ask_about') }} {{ icon('arrow-right') }}</a>
+          {% if s.slug and s.body %}<a href="{{ url_for('public.service_page', slug=s.slug) }}" class="svc-more">{{ t('learn_more') }}</a>{% endif %}
+        </div>
       </article>
       {% endfor %}
     </div>
@@ -302,6 +305,24 @@
   </div>
 </section>
 
+<!-- ============================== TESTIMONIALS (ASDHEM, real reviews only) ============================== -->
+{% if testimonials %}
+<section class="section section--soft" id="reviews">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="eyebrow">★★★★★</span><h2>{{ t('testimonials') }}</h2></div>
+    <div class="tm-grid">
+      {% for r in testimonials %}
+      <figure class="tm reveal" style="--i:{{ loop.index0 }}">
+        <div class="tm-stars" aria-label="{{ r.rating }}/5">{{ '★' * (r.rating | int) }}<span>{{ '★' * (5 - (r.rating | int)) }}</span></div>
+        <blockquote>{{ r.text }}</blockquote>
+        <figcaption><span class="avatar">{{ r.title[:1] | upper }}</span><span><b>{{ r.title }}</b>{% if r.role %}<small>{{ r.role }}</small>{% endif %}</span></figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <!-- ============================== PROCESS (ASDHEM) ============================== -->
 {% set proc = c.process_steps | steps %}
 {% if proc %}
@@ -383,6 +404,24 @@
         {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="faq-help-mail">{{ icon('mail') }} {{ c.contact_email }}</a>{% endif %}
       </aside>
     </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================== BLOG TEASER (ASDHEM) ============================== -->
+{% if posts %}
+<section class="section" id="blog">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="eyebrow">{{ t('nav_blog') }}</span><h2>{{ t('blog_title') }}</h2><p>{{ t('blog_intro') }}</p></div>
+    <div class="post-grid">
+      {% for p in posts %}
+      <a href="{{ url_for('public.blog_post', slug=p.slug) }}" class="post-card reveal" style="--i:{{ loop.index0 }}">
+        <div class="post-img">{% if p.image %}<img src="{{ p.image }}" alt="" loading="lazy">{% else %}<span>{{ icon('file-text') }}</span>{% endif %}</div>
+        <div class="post-body"><h3>{{ p.title }}</h3>{% if p.excerpt %}<p>{{ p.excerpt }}</p>{% endif %}<span class="link-more">{{ t('read_more') }} {{ icon('arrow-right') }}</span></div>
+      </a>
+      {% endfor %}
+    </div>
+    <p class="center mt-s"><a href="{{ url_for('public.blog') }}" class="btn btn-ghost">{{ t('all_posts') }} {{ icon('arrow-right') }}</a></p>
   </div>
 </section>
 {% endif %}
@@ -485,13 +524,17 @@
     </div>
     <div>
       <h4>{{ t('nav_services') }}</h4>
-      <ul>{% for s in services %}<li><a href="#services">{{ s.title }}</a></li>{% endfor %}</ul>
+      <ul>{% for s in services %}<li><a href="{{ url_for('public.service_page', slug=s.slug) if s.slug and s.body else '#services' }}">{{ s.title }}</a></li>{% endfor %}</ul>
     </div>
     <div>
       <h4>{{ t('contact') }}</h4>
       <ul>
         <li><a href="mailto:{{ c.contact_email }}">{{ c.contact_email }}</a></li>
         <li><a href="#contact">{{ t('send_message') }}</a></li>
+        <li><a href="{{ url_for('public.website_check') }}">{{ t('nav_check') }}</a></li>
+        {% if posts %}<li><a href="{{ url_for('public.blog') }}">{{ t('nav_blog') }}</a></li>{% endif %}
+        <li><a href="{{ url_for('public.status') }}">{{ t('nav_status') }}</a></li>
+        <li><a href="{{ url_for('portal.login') }}">{{ t('nav_portal') }}</a></li>
       </ul>
     </div>
   </div>

@@ -2,7 +2,10 @@
 {% extends "admin/base.html" %}
 {% block title %}{{ section.title }}{% endblock %}
 {% block heading %}<h1>{{ section.title }}</h1><p>{{ section.intro }}</p>{% endblock %}
-{% block actions %}<a href="/" target="_blank" rel="noopener" class="btn btn-ghost">{{ icon('eye') }}<span class="hide-sm">Preview</span></a>{% endblock %}
+{% block actions %}
+<a href="{{ url_for('admin.history', section=section.slug) }}" class="btn btn-ghost">{{ icon('clock') }}<span class="hide-sm">History</span></a>
+{% if section.slug not in ('legal', 'autoreply', 'maintenance') %}<button type="button" class="btn btn-ghost" id="lpToggle">{{ icon('eye') }}<span class="hide-sm">Live preview</span></button>{% endif %}
+{% endblock %}
 {% block content %}
 {% if section.slug == 'maintenance' %}
 {# ASDHEM | preview links #}
@@ -70,6 +73,15 @@
 <div class="note">{{ icon('info') }}<div><b>{{ langs[lang] }} translation.</b> Fields left empty show the English text on the {{ langs[lang] }} page. Settings like emails, images and on/off switches are shared by all languages – change them on the English tab.</div></div>
 {% endif %}
 {% endif %}
+{% if section.slug == 'seo' %}
+{# ASDHEM | Google search result preview #}
+<div class="panel serp-panel">
+  <div class="panel-head"><h2>{{ icon('search') }} Google preview ({{ (langs or {}).get(lang, 'English') }})</h2></div>
+  <div class="serp"><small>{{ config.SITE_URL | replace('https://', '') }}{{ '' if lang == 'en' else ' › ' ~ lang }}</small><b id="serpTitle"></b><p id="serpDesc"></p></div>
+  <p class="muted small" id="serpHint"></p>
+</div>
+{% endif %}
+<div class="lp-wrap" id="lpWrap" data-url="{{ url_for('admin.live_preview', slug=section.slug) }}">
 <form method="post" enctype="multipart/form-data" class="panel form-panel" data-dirty-guard>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <input type="hidden" name="lang" value="{{ lang }}">
@@ -101,4 +113,6 @@
     <button class="btn btn-primary">{{ icon('check') }} Save changes</button>
   </div>
 </form>
+<div class="lp-pane" id="lpPane" hidden><div class="lp-bar">{{ icon('eye') }} Live preview – updates while you type (not saved yet)</div><iframe id="lpFrame" title="Live preview"></iframe></div>
+</div>
 {% endblock %}

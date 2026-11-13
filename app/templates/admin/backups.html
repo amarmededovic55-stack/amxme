@@ -1,0 +1,43 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Backups{% endblock %}
+{% block heading %}<h1>Backups</h1><p>Database + all images in one ZIP file. An automatic backup is made every night (the newest 14 are kept).</p>{% endblock %}
+{% block actions %}
+<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-primary">{{ icon('plus') }} Create backup now</button></form>
+{% endblock %}
+{% block content %}
+<div class="note">{{ icon('info') }}<div>Backups are stored on this server. Download one from time to time and keep it somewhere else (your PC or cloud) – if the server is lost, the backups on it are lost too.</div></div>
+<div class="panel">
+  {% if items %}
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Backup</th><th>Created</th><th class="num">Size</th><th></th></tr></thead>
+    <tbody>
+    {% for b in items %}
+    <tr>
+      <td><b>{{ b.name }}</b>{% if '-auto' in b.name %} <span class="chip">auto</span>{% elif 'before-restore' in b.name %} <span class="chip warn">safety copy</span>{% endif %}</td>
+      <td>{{ b.time.strftime('%d %b %Y, %H:%M') }}</td>
+      <td class="num">{{ (b.size / 1048576) | round(1) }} MB</td>
+      <td class="right nowrap">
+        <a href="{{ url_for('admin.backup_download', name=b.name) }}" class="btn btn-ghost btn-sm">{{ icon('upload-cloud') }} Download</a>
+        <button type="button" class="btn btn-ghost btn-sm" data-restore="{{ b.name }}">{{ icon('refresh') }} Restore</button>
+        <form method="post" action="{{ url_for('admin.backup_delete', name=b.name) }}" data-confirm="Delete this backup?" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="icon-btn danger" aria-label="Delete">{{ icon('trash') }}</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<p class="empty">No backups yet.</p>{% endif %}
+</div>
+<form method="post" action="{{ url_for('admin.backup_restore') }}" enctype="multipart/form-data" class="panel form-panel" id="restoreForm"
+      data-confirm="Restore this backup? The current content will be replaced (a safety copy is made first).">
+  <div class="panel-head"><h2>{{ icon('refresh') }} Restore a backup</h2></div>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="fgroup"><label class="lbl" for="rName">Backup from the list</label>
+    <select class="inp" id="rName" name="name"><option value="">— or upload a file below —</option>{% for b in items %}<option>{{ b.name }}</option>{% endfor %}</select></div>
+  <div class="fgroup"><label class="lbl">…or upload a backup ZIP</label><input class="inp" type="file" name="file" accept=".zip"></div>
+  <div class="fgroup"><label class="lbl" for="rPw">Your password (for safety)</label><input class="inp" id="rPw" type="password" name="password" required autocomplete="current-password"></div>
+  <div class="form-foot"><button class="btn btn-danger">{{ icon('refresh') }} Restore</button></div>
+</form>
+{% endblock %}

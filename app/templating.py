@@ -1,5 +1,6 @@
 # Signed: ASDHEM | AMXME Web Solutions
 import os
+import re
 from datetime import datetime
 
 from flask import url_for, g
@@ -113,6 +114,64 @@ def highlight(text, word):
     return escape(text)
 
 
+def slugify(text):
+    import unicodedata
+    text = (text or "").replace("ß", "ss").replace("đ", "d").replace("Đ", "D")
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:80]
+
+
+_INLINE = re.compile(r"\*\*(.+?)\*\*|\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def _inline(text):
+    out, pos = [], 0
+    for m in _INLINE.finditer(text):
+        out.append(escape(text[pos:m.start()]))
+        if m.group(1):
+            out.append(Markup("<strong>%s</strong>") % m.group(1))
+        else:
+            url = safe_url(m.group(3), "")
+            ext = url.startswith("http")
+            out.append(Markup('<a href="%s"%s>%s</a>') % (url, Markup(' rel="noopener" target="_blank"') if ext else "", m.group(2))
+                       if url else escape(m.group(2)))
+        pos = m.end()
+    out.append(escape(text[pos:]))
+    return Markup("").join(out)
+
+
+def richtext(text):
+    """ASDHEM | tiny safe markdown: ## headings, - lists, paragraphs, **bold**, [links](url). Everything is escaped."""
+    html, para, items = [], [], []
+
+    def flush():
+        if para:
+            html.append(Markup("<p>%s</p>") % Markup("<br>").join(_inline(r) for r in para))
+            para.clear()
+        if items:
+            html.append(Markup("<ul>%s</ul>") % Markup("").join(Markup("<li>%s</li>") % _inline(i) for i in items))
+            items.clear()
+
+    for raw in (text or "").replace("\r\n", "\n").split("\n"):
+        line = raw.strip()
+        if not line:
+            flush()
+        elif line.startswith("### "):
+            flush(); html.append(Markup("<h3>%s</h3>") % _inline(line[4:]))
+        elif line.startswith("## "):
+            flush(); html.append(Markup("<h2>%s</h2>") % _inline(line[3:]))
+        elif line.startswith(("- ", "* ")):
+            if para:
+                flush()
+            items.append(line[2:])
+        else:
+            if items:
+                flush()
+            para.append(line)
+    flush()
+    return Markup("\n").join(html)
+
+
 def steps(text):
     """'Title | Text' lines -> [(title, text)]."""
     out = []
@@ -141,7 +200,7 @@ def ua_short(ua):
 def init_app(app):
     app.jinja_env.filters["ua_short"] = ua_short
     app.jinja_env.globals.update(icon=icon)
-    app.jinja_env.filters.update(lines=lines, paragraphs=paragraphs, highlight=highlight, safe_url=safe_url, steps=steps)
+    app.jinja_env.filters.update(lines=lines, paragraphs=paragraphs, highlight=highlight, safe_url=safe_url, steps=steps, richtext=richtext)
     app.jinja_env.globals.update(t=t, LANGS=LANGS, LOCALES=LOCALES, LANG_SHORT=LANG_SHORT, LANG_ORDER=LANG_ORDER)
 
     @app.template_filter("dt")

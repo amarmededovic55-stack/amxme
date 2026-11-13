@@ -52,6 +52,11 @@ class AdminUser(db.Model):
     totp_last = db.Column(db.Integer, default=0)       # last used time-step, blocks code reuse
     backup_codes = db.Column(db.Text, default="")       # hashed one-time recovery codes, one per line
     session_gen = db.Column(db.Integer, default=0, nullable=False, server_default="0")  # ASDHEM | +1 on logout = all sessions revoked
+    role = db.Column(db.String(20), default="owner", nullable=False, server_default="owner")  # ASDHEM | owner | editor
+
+    @property
+    def is_owner(self):
+        return self.role == "owner"
 
 
 class Setting(db.Model):
@@ -62,7 +67,9 @@ class Setting(db.Model):
 
 class Service(Translatable, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    I18N_FIELDS = ("title", "description", "items")
+    I18N_FIELDS = ("title", "description", "items", "body")
+    slug = db.Column(db.String(80), default="")      # ASDHEM | own page at /services/<slug> when body is filled
+    body = db.Column(db.Text, default="")
     i18n = db.Column(db.Text, default="")  # ASDHEM | translations (JSON)
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, default="")
@@ -148,4 +155,140 @@ class Visit(db.Model):
     user_agent = db.Column(db.String(300), default="")
     referrer = db.Column(db.String(300), default="")
     is_bot = db.Column(db.Boolean, default=False, index=True)
+    created_at = db.Column(db.DateTime, default=utcnow, index=True)
+
+
+# ====================================================================== ASDHEM | admin tools
+class Revision(db.Model):
+    """Snapshot of content BEFORE a change -> one-click restore (version history)."""
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, default=utcnow, index=True)
+    user = db.Column(db.String(80), default="")
+    table = db.Column(db.String(40), nullable=False)
+    row_key = db.Column(db.String(120), nullable=False, index=True)
+    action = db.Column(db.String(10), nullable=False)   # update | create | delete
+    label = db.Column(db.String(200), default="")
+    data = db.Column(db.Text, default="")              # JSON of the previous row state
+
+
+class MessageReply(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey("message.id", ondelete="CASCADE"), index=True, nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    user = db.Column(db.String(80), default="")
+    sent = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+
+class Media(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.String(300), nullable=False, unique=True)
+    name = db.Column(db.String(200), default="")
+    alt = db.Column(db.String(300), default="")
+    width = db.Column(db.Integer, default=0)
+    height = db.Column(db.Integer, default=0)
+    size = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+
+# ====================================================================== ASDHEM | blog & testimonials
+class Post(Translatable, db.Model):
+    I18N_FIELDS = ("title", "excerpt", "body")
+    id = db.Column(db.Integer, primary_key=True)
+    i18n = db.Column(db.Text, default="")
+    slug = db.Column(db.String(120), unique=True, nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    excerpt = db.Column(db.Text, default="")
+    body = db.Column(db.Text, default="")
+    image = db.Column(db.String(500), default="")
+    enabled = db.Column(db.Boolean, default=False)
+    position = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=utcnow)
+    updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
+
+
+class Testimonial(Translatable, db.Model):
+    I18N_FIELDS = ("role", "text")
+    id = db.Column(db.Integer, primary_key=True)
+    i18n = db.Column(db.Text, default="")
+    title = db.Column(db.String(120), nullable=False)        # person's name
+    role = db.Column(db.String(160), default="")             # company / position
+    text = db.Column(db.Text, default="")
+    rating = db.Column(db.String(1), default="5")
+    position = db.Column(db.Integer, default=0)
+    enabled = db.Column(db.Boolean, default=False)           # hidden until you have real reviews
+
+
+# ====================================================================== ASDHEM | monitoring & client portal
+class Client(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    company = db.Column(db.String(160), default="")
+    email = db.Column(db.String(200), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), default="")
+    lang = db.Column(db.String(5), default="de")
+    active = db.Column(db.Boolean, default=True)
+    session_gen = db.Column(db.Integer, default=0, nullable=False, server_default="0")
+    notes = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=utcnow)
+    last_login = db.Column(db.DateTime)
+
+
+class Monitor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    url = db.Column(db.String(300), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey("client.id", ondelete="SET NULL"), index=True)
+    public = db.Column(db.Boolean, default=False)            # shown on the public status page
+    enabled = db.Column(db.Boolean, default=True)
+    position = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(10), default="unknown")     # up | down | unknown
+    last_code = db.Column(db.Integer, default=0)
+    last_ms = db.Column(db.Integer, default=0)
+    last_error = db.Column(db.String(200), default="")
+    last_checked = db.Column(db.DateTime)
+    ssl_expires = db.Column(db.DateTime)
+    down_since = db.Column(db.DateTime)
+
+
+class MonitorCheck(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    monitor_id = db.Column(db.Integer, db.ForeignKey("monitor.id", ondelete="CASCADE"), index=True, nullable=False)
+    ok = db.Column(db.Boolean, default=True)
+    ms = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=utcnow, index=True)
+
+
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey("client.id", ondelete="CASCADE"), index=True, nullable=False)
+    number = db.Column(db.String(60), default="")
+    title = db.Column(db.String(200), default="")
+    amount = db.Column(db.String(40), default="")
+    status = db.Column(db.String(10), default="open")        # open | paid
+    file = db.Column(db.String(120), default="")             # stored in DATA_DIR/private, never public
+    issued_at = db.Column(db.DateTime, default=utcnow)
+
+
+class Ticket(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey("client.id", ondelete="CASCADE"), index=True, nullable=False)
+    subject = db.Column(db.String(200), nullable=False)
+    status = db.Column(db.String(12), default="open")        # open | answered | closed
+    created_at = db.Column(db.DateTime, default=utcnow)
+    updated_at = db.Column(db.DateTime, default=utcnow, index=True)
+
+
+class TicketMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id", ondelete="CASCADE"), index=True, nullable=False)
+    author = db.Column(db.String(10), default="client")      # client | admin
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+
+class SiteCheck(db.Model):
+    """Free website check: only a salted hash of the shortened IP, for rate limiting (deleted after 1 day)."""
+    id = db.Column(db.Integer, primary_key=True)
+    who = db.Column(db.String(64), index=True)
     created_at = db.Column(db.DateTime, default=utcnow, index=True)

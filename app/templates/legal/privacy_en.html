@@ -34,7 +34,7 @@
     <p>The legal basis is our legitimate interest in understanding and improving our website (Art. 6 (1)(f) GDPR). The data is deleted automatically after <b>{{ visit_days }} days</b>.</p>
 
     <h2>5. Cookies</h2>
-    <p>We use a single session cookie (<code>__Host-amxme_session</code>). It contains your chosen language and a random security token that protects our contact form against misuse (CSRF protection) and, if you received a preview link, your temporary preview access. It is deleted when you close your browser and is not used for tracking.</p>
+    <p>We use a single session cookie (<code>__Host-amxme_session</code>). It contains your chosen language and a random security token that protects our contact form against misuse (CSRF protection) and, if you received a preview link, your temporary preview access. It is deleted when you close your browser and is not used for tracking. If you switch between dark and light mode, this choice is saved only in your own browser (local storage) and is never sent to us.</p>
     <p>Because this cookie is strictly necessary to provide the website you requested, it does not require consent (§ 25 (2) no. 2 TDDDG). The legal basis for the related processing is Art. 6 (1)(f) GDPR.</p>
 
     <h2>6. Contact form and email</h2>
@@ -69,10 +69,16 @@
     <p>To exercise your rights, simply contact us at {% set mail = c.legal_email or c.contact_email %}<a href="mailto:{{ mail }}">{{ mail }}</a>.</p>
     <p>You also have the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR), in particular in the EU member state of your residence, your place of work or the place of the alleged violation.{% if c.legal_authority %} The authority responsible for us is:<br>{{ c.legal_authority | replace('\n', ', ') }}{% endif %}</p>
 
+    <h2>10. Free website check</h2>
+    <p>If you use our free website check, we fetch the public homepage of the address you enter and show the result to you. We do not store the address or the result. To prevent abuse, we store a one-way encrypted (hashed) value derived from your shortened IP address for at most 24 hours. Legal basis: Art. 6 (1)(f) GDPR (secure operation of the tool).</p>
+
+    <h2>11. Client portal</h2>
+    <p>Clients with a contract can use our portal. We process your name, company, email address, an encrypted password, the websites we look after for you (including their availability), invoices and your support requests. This is necessary to fulfil our contract (Art. 6 (1)(b) GDPR). Data is kept for the duration of the contract; invoices are kept as required by German commercial and tax law (up to 10 years, § 147 AO). The portal uses the session cookie described in section 5.</p>
+
     {% for p in c.privacy_extra | paragraphs %}
-      {% if loop.first %}<h2>10. Additional information</h2>{% endif %}
+      {% if loop.first %}<h2>12. Additional information</h2>{% endif %}
       <p>{{ p }}</p>
     {% endfor %}
 
-    <h2>{{ '11' if c.privacy_extra | trim else '10' }}. Changes to this policy</h2>
+    <h2>{{ '13' if c.privacy_extra | trim else '12' }}. Changes to this policy</h2>
     <p>We may update this privacy policy when our website or the law changes. The current version is always available on this page.</p>

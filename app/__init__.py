@@ -26,6 +26,7 @@ def create_app():
     data_dir = os.environ.get("DATA_DIR", os.path.join(base, "data"))
     upload_dir = os.environ.get("UPLOAD_DIR", os.path.join(data_dir, "uploads"))
     os.makedirs(upload_dir, exist_ok=True)
+    os.makedirs(os.environ.get("PRIVATE_DIR", os.path.join(data_dir, "private")), mode=0o700, exist_ok=True)
 
     secret = os.environ.get("SECRET_KEY") or ""
     if len(secret) < 32:
@@ -39,6 +40,9 @@ def create_app():
         SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(data_dir, "amxme.db"),
         SQLALCHEMY_ENGINE_OPTIONS={"connect_args": {"timeout": 15}},
         UPLOAD_DIR=upload_dir,
+        DATA_DIR=data_dir,
+        PRIVATE_DIR=os.environ.get("PRIVATE_DIR", os.path.join(data_dir, "private")),   # ASDHEM | invoices, never public
+        BACKUP_DIR=os.environ.get("BACKUP_DIR", os.path.join(base, "backups")),
         MAX_CONTENT_LENGTH=12 * 1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
@@ -65,10 +69,13 @@ def create_app():
     from . import templating
     templating.init_app(app)
 
+    from . import history  # noqa: F401  ASDHEM | version-history hooks
     from .public import bp as public_bp
     from .admin import bp as admin_bp
+    from .portal import bp as portal_bp
     app.register_blueprint(public_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(portal_bp, url_prefix="/portal")
 
     from . import cli
     cli.init_app(app)

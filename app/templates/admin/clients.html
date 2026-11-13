@@ -1,0 +1,33 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Clients{% endblock %}
+{% block heading %}<h1>Clients</h1><p>Clients sign in at <a href="{{ url_for('portal.login') }}" target="_blank" class="link">/portal</a> to see their websites, invoices and support requests.</p>{% endblock %}
+{% block content %}
+<form method="post" class="panel form-panel search-row">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input class="inp" name="name" placeholder="Name" required maxlength="120">
+  <input class="inp" name="company" placeholder="Company (optional)" maxlength="160">
+  <input class="inp" type="email" name="email" placeholder="Email" required maxlength="200">
+  <select class="inp" name="lang">{% for code, n in langs.items() %}<option value="{{ code }}" {{ 'selected' if code == 'de' }}>{{ n }}</option>{% endfor %}</select>
+  <button class="btn btn-primary">{{ icon('plus') }} Add client</button>
+</form>
+<div class="panel">
+  {% if items %}
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Client</th><th class="hide-md">Email</th><th>Status</th><th class="hide-md">Last login</th><th></th></tr></thead>
+    <tbody>
+    {% for c in items %}
+    <tr>
+      <td><a href="{{ url_for('admin.client', client_id=c.id) }}" class="link">{{ c.name }}</a>{% if c.company %}<br><small class="muted">{{ c.company }}</small>{% endif %}</td>
+      <td class="hide-md">{{ c.email }}</td>
+      <td>{% if not c.active %}<span class="chip">inactive</span>{% elif not c.password_hash %}<span class="chip warn">not invited yet</span>{% else %}<span class="chip ok">active</span>{% endif %}
+          {% if open_t.get(c.id) %}<span class="chip warn">{{ open_t[c.id] }} open ticket(s)</span>{% endif %}</td>
+      <td class="hide-md">{{ c.last_login | dt if c.last_login else '—' }}</td>
+      <td class="right"><a href="{{ url_for('admin.client', client_id=c.id) }}" class="btn btn-ghost btn-sm">Open</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<p class="empty">No clients yet.</p>{% endif %}
+</div>
+{% endblock %}

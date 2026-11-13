@@ -39,6 +39,22 @@ def init_app(app):
         seed()
         click.echo("Database ready.")
 
+    @app.cli.command("check-monitors")
+    def check_monitors():
+        """ASDHEM | check all monitored websites (run every 5 minutes by a systemd timer)."""
+        from .monitor import check_all
+        click.echo(f"Checked {check_all()} website(s).")
+
+    @app.cli.command("backup")
+    @click.option("--auto", is_flag=True, help="Mark as automatic backup (only the newest 14 are kept).")
+    def backup(auto):
+        """ASDHEM | zip of the database + uploaded images into the backups folder."""
+        from .admin_tools import create_backup, prune_auto_backups
+        name = create_backup("auto" if auto else "")
+        if auto:
+            prune_auto_backups()
+        click.echo(f"Backup created: {name}")
+
     @app.cli.command("create-admin")
     @click.argument("username")
     @click.option("--password", default=None, help="Leave empty to generate one.")

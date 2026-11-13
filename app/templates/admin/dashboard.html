@@ -17,6 +17,19 @@
 </div>
 {% endif %}
 
+{# ASDHEM | dashboard widgets #}
+<div class="widgets">
+  <div class="widget {{ 'bad' if w.ssl_days is not none and w.ssl_days < 14 else '' }}"><span class="w-ic">{{ icon('lock') }}</span><div><small>SSL {{ w.host }}</small><b>{{ (w.ssl_days ~ ' days left') if w.ssl_days is not none else 'unknown' }}</b></div></div>
+  <a href="{{ url_for('admin.monitors') }}" class="widget {{ 'bad' if w.mon_down else '' }}"><span class="w-ic">{{ icon('activity') }}</span><div><small>Monitored websites</small><b>{% if w.mon_total %}{{ w.mon_up }} / {{ w.mon_total }} online{% else %}not set up{% endif %}</b>{% for m in w.mon_down %}<em>⚠ {{ m.name }} is DOWN</em>{% endfor %}</div></a>
+  <a href="{{ url_for('admin.messages') }}" class="widget"><span class="w-ic">{{ icon('inbox') }}</span><div><small>Inquiries (7 days)</small><b>{{ w.msgs_week }}</b></div></a>
+  <a href="{{ url_for('admin.tickets') }}" class="widget {{ 'warn' if w.tickets_open else '' }}"><span class="w-ic">{{ icon('messages') }}</span><div><small>Open tickets</small><b>{{ w.tickets_open }}</b></div></a>
+  <a href="{{ url_for('admin.backups') }}" class="widget"><span class="w-ic">{{ icon('hard-drive') }}</span><div><small>Last backup · disk {{ w.disk_pct }}% used</small><b>{{ w.last_backup.strftime('%d %b, %H:%M') if w.last_backup else 'none yet' }}</b></div></a>
+</div>
+<section class="panel chart-panel">
+  <div class="panel-head"><h2>Visits – last 14 days</h2><span class="muted">{{ w.visits_total }} total</span></div>
+  <div class="bars">{% for d in w.visits %}<div class="bar" title="{{ d.day.strftime('%d %b') }}: {{ d.n }}"><i style="height: {{ (d.n / w.peak * 100) | round }}%"></i><span>{{ d.day.strftime('%d') }}</span></div>{% endfor %}</div>
+</section>
+
 <div class="stats">
   {% for label, active, total, ic, link in stats %}
   <a href="{{ link }}" class="stat">

@@ -1,0 +1,15 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}{{ tk.subject }}{% endblock %}
+{% block heading %}<h1>{{ tk.subject }}</h1><p><a href="{{ url_for('admin.tickets') }}" class="link">{{ icon('arrow-left') }} All tickets</a> · {{ c.name if c else '—' }} · <span class="chip">{{ tk.status }}</span></p>{% endblock %}
+{% block content %}
+<div class="thread">{% for m in msgs %}<div class="bubble {{ m.author }}"><small>{{ (c.name if c else 'Client') if m.author == 'client' else 'You' }} · {{ m.created_at | dt('%d %b %Y, %H:%M') }}</small><p>{{ m.body }}</p></div>{% endfor %}</div>
+<form method="post" class="panel form-panel">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="fgroup"><label class="lbl" for="tb">Your answer</label><textarea class="inp" id="tb" name="body" rows="5" data-autosize></textarea></div>
+  <div class="form-foot">
+    {% if tk.status != 'closed' %}<button class="btn btn-ghost" name="action" value="close">Close ticket</button>{% endif %}
+    <button class="btn btn-primary" name="action" value="reply">{{ icon('send') }} Send answer</button>
+  </div>
+</form>
+{% endblock %}

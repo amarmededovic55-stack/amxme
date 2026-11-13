@@ -32,6 +32,13 @@
     if (!greeted) setTimeout(() => { lf.classList.add("hello"); setTimeout(() => lf.classList.remove("hello"), 1400); }, 1800);
   }
 
+  /* ASDHEM | website check: show progress on the button */
+  const chk = $("#checkForm");
+  if (chk) chk.addEventListener("submit", () => {
+    const b = chk.querySelector("button[data-busy]");
+    if (b) { b.disabled = true; b.textContent = b.dataset.busy; }
+  });
+
   /* ASDHEM | signature in the browser console */
   try {
     console.log("%cASDHEM", "font: 900 46px/1.1 system-ui, sans-serif; letter-spacing: .12em; background: linear-gradient(135deg,#4c1d95,#a855f7); color: #fff; padding: 10px 28px; border-radius: 14px;");

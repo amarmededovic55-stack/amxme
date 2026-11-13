@@ -1,0 +1,54 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}{{ c.name }}{% endblock %}
+{% block heading %}<h1>{{ c.name }}</h1><p><a href="{{ url_for('admin.clients') }}" class="link">{{ icon('arrow-left') }} All clients</a></p>{% endblock %}
+{% block actions %}
+<form method="post" data-confirm="Send {{ c.email }} a link to set their portal password?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-primary" name="action" value="invite">{{ icon('send') }}<span class="hide-sm">{{ 'Send password link' if c.password_hash else 'Send invitation' }}</span></button></form>
+{% endblock %}
+{% block content %}
+<div class="cols">
+  <form method="post" class="panel form-panel">
+    <div class="panel-head"><h2>Details</h2></div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="save">
+    <div class="fgroup"><label class="lbl">Name</label><input class="inp" name="name" value="{{ c.name }}" required></div>
+    <div class="fgroup"><label class="lbl">Company</label><input class="inp" name="company" value="{{ c.company }}"></div>
+    <div class="fgroup"><label class="lbl">Email</label><input class="inp" value="{{ c.email }}" disabled></div>
+    <div class="fgroup"><label class="lbl">Portal language</label><select class="inp" name="lang">{% for code, n in langs.items() %}<option value="{{ code }}" {{ 'selected' if code == c.lang }}>{{ n }}</option>{% endfor %}</select></div>
+    <div class="fgroup"><label class="lbl">Internal notes (client cannot see)</label><textarea class="inp" name="notes" rows="3" data-autosize>{{ c.notes }}</textarea></div>
+    <label class="check big"><input type="checkbox" name="active" value="1" {{ 'checked' if c.active }}> Portal access active</label>
+    <div class="form-foot"><button class="btn btn-primary">{{ icon('check') }} Save</button></div>
+  </form>
+  <div>
+    <section class="panel">
+      <div class="panel-head"><h2>Websites</h2><a href="{{ url_for('admin.monitors') }}" class="link">Manage</a></div>
+      {% for m in sites %}<p><span class="st-dot {{ m.status }}"></span> <b>{{ m.name }}</b> <small class="muted">{{ m.url }}</small></p>{% else %}<p class="empty">Link websites under Monitoring.</p>{% endfor %}
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h2>Support requests</h2></div>
+      {% for tk in tickets %}<p><a href="{{ url_for('admin.ticket_admin', ticket_id=tk.id) }}" class="link">{{ tk.subject }}</a> <span class="chip {{ 'warn' if tk.status == 'open' else '' }}">{{ tk.status }}</span></p>{% else %}<p class="empty">None.</p>{% endfor %}
+    </section>
+  </div>
+</div>
+<section class="panel">
+  <div class="panel-head"><h2>Invoices</h2></div>
+  {% for i in invoices %}
+  <div class="inv-row">
+    <b>{{ i.number or '—' }}</b><span>{{ i.title }}</span><span>{{ i.amount }}</span><span>{{ i.issued_at.strftime('%d.%m.%Y') }}</span>
+    <a href="{{ url_for('admin.invoice_file', inv_id=i.id) }}" class="btn btn-ghost btn-sm" target="_blank">PDF</a>
+    <form method="post" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="invoice_id" value="{{ i.id }}"><button class="btn btn-sm {{ 'btn-ghost' if i.status == 'paid' else 'btn-primary' }}" name="action" value="inv_paid">{{ '✓ Paid' if i.status == 'paid' else 'Mark paid' }}</button></form>
+    <form method="post" class="inline" data-confirm="Delete this invoice?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="invoice_id" value="{{ i.id }}"><button class="icon-btn danger" name="action" value="inv_delete" aria-label="Delete">{{ icon('trash') }}</button></form>
+  </div>
+  {% else %}<p class="empty">No invoices yet.</p>{% endfor %}
+  <form method="post" enctype="multipart/form-data" class="search-row mt">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="invoice">
+    <input class="inp" name="number" placeholder="Invoice no." maxlength="60">
+    <input class="inp" name="title" placeholder="Title, e.g. Hosting 2027" maxlength="200">
+    <input class="inp" name="amount" placeholder="Amount, e.g. 120,00 €" maxlength="40">
+    <input class="inp" type="file" name="file" accept="application/pdf" required>
+    <button class="btn btn-primary">{{ icon('upload-cloud') }} Upload PDF</button>
+  </form>
+</section>
+<form method="post" data-confirm="Delete this client with all invoices and tickets? This cannot be undone." class="right">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-danger" name="action" value="delete">{{ icon('trash') }} Delete client</button>
+</form>
+{% endblock %}

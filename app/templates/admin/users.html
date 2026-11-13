@@ -1,0 +1,33 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Users{% endblock %}
+{% block heading %}<h1>Users & roles</h1><p><b>Owner</b>: everything. <b>Editor</b>: texts, collections, blog, media and messages – no backups, users, clients or GDPR tools.</p>{% endblock %}
+{% block content %}
+{% if new_password %}<div class="note note-warn">{{ icon('lock') }}<div>Password: <code class="big-code">{{ new_password }}</code> – copy it now, it will not be shown again. Ask them to change it and enable 2FA under “My Account”.</div></div>{% endif %}
+<div class="panel">
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>User</th><th>Role</th><th class="hide-md">2FA</th><th class="hide-md">Last login</th><th></th></tr></thead>
+    <tbody>
+    {% for u in accounts %}
+    <tr>
+      <td><b>{{ u.username }}</b>{% if u.id == g.user.id %} <span class="chip">you</span>{% endif %}</td>
+      <td><form method="post" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="role"><input type="hidden" name="user_id" value="{{ u.id }}">
+        <select class="inp inp-sm" name="role" data-autosubmit-change><option value="owner" {{ 'selected' if u.role == 'owner' }}>Owner</option><option value="editor" {{ 'selected' if u.role == 'editor' }}>Editor</option></select></form></td>
+      <td class="hide-md">{{ '✓ on' if u.totp_enabled else '— off' }}</td>
+      <td class="hide-md">{{ u.last_login | dt if u.last_login else '—' }}</td>
+      <td class="right nowrap">
+        <form method="post" class="inline" data-confirm="Create a new password for {{ u.username }}? They will be signed out."><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="user_id" value="{{ u.id }}"><button class="btn btn-ghost btn-sm" name="action" value="reset">New password</button></form>
+        {% if u.id != g.user.id %}<form method="post" class="inline" data-confirm="Delete {{ u.username }}?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="user_id" value="{{ u.id }}"><button class="icon-btn danger" name="action" value="delete" aria-label="Delete">{{ icon('trash') }}</button></form>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+<form method="post" class="panel form-panel search-row">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="add">
+  <input class="inp" name="username" placeholder="New username" required minlength="3" maxlength="40">
+  <select class="inp" name="role"><option value="editor">Editor</option><option value="owner">Owner</option></select>
+  <button class="btn btn-primary">{{ icon('plus') }} Add user</button>
+</form>
+{% endblock %}

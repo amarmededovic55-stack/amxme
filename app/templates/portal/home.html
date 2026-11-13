@@ -1,0 +1,51 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "portal/_base.html" %}
+{% block title %}{{ t('p_title') }} – {{ c.company_name }}{% endblock %}
+{% block page %}
+<h1 class="portal-h">{{ t('p_hello') }} {{ g.client.name }} 👋</h1>
+<section class="p-card">
+  <h2>{{ icon('globe') }} {{ t('p_sites') }}</h2>
+  {% for m in sites %}
+  <div class="p-site">
+    <span class="st-badge {{ m.status }}">{{ t(m.status) }}</span>
+    <div><b>{{ m.name }}</b><a href="{{ m.url }}" target="_blank" rel="noopener" class="muted">{{ m.url }}</a></div>
+    <div class="p-meta">
+      {% if m.uptime30 is not none %}<span>{{ t('uptime_30') }}: <b>{{ '%.2f' % m.uptime30 }} %</b></span>{% endif %}
+      {% if m.ssl_expires %}<span>{{ t('p_ssl_until') }}: <b>{{ m.ssl_expires.strftime('%d.%m.%Y') }}</b></span>{% endif %}
+      {% if m.last_ms %}<span>{{ m.last_ms }} ms</span>{% endif %}
+    </div>
+  </div>
+  {% else %}<p class="muted">{{ t('p_no_sites') }}</p>{% endfor %}
+</section>
+<div class="p-cols">
+  <section class="p-card">
+    <h2>{{ icon('file-text') }} {{ t('p_invoices') }}</h2>
+    {% for i in invoices %}
+    <div class="p-row">
+      <div><b>{{ i.number or i.title }}</b><small class="muted">{{ i.title if i.number else '' }} · {{ i.issued_at.strftime('%d.%m.%Y') }}</small></div>
+      <span>{{ i.amount }}</span>
+      <span class="chip {{ 'ok' if i.status == 'paid' else 'warn' }}">{{ t('p_paid') if i.status == 'paid' else t('p_open') }}</span>
+      <a href="{{ url_for('portal.invoice', inv_id=i.id) }}" class="btn btn-sm btn-ghost">{{ icon('upload-cloud') }} PDF</a>
+    </div>
+    {% else %}<p class="muted">{{ t('p_no_invoices') }}</p>{% endfor %}
+  </section>
+  <section class="p-card" id="tickets">
+    <h2>{{ icon('messages') }} {{ t('p_tickets') }}</h2>
+    {% for tk in tickets %}
+    <a class="p-row p-link" href="{{ url_for('portal.ticket', ticket_id=tk.id) }}">
+      <div><b>{{ tk.subject }}</b><small class="muted">{{ tk.updated_at.strftime('%d.%m.%Y %H:%M') }}</small></div>
+      <span class="chip {{ {'open': 'warn', 'answered': 'ok', 'closed': ''}[tk.status] }}">{{ {'open': t('p_open'), 'answered': t('p_answered'), 'closed': t('p_closed')}[tk.status] }}</span>
+    </a>
+    {% else %}<p class="muted">{{ t('p_no_tickets') }}</p>{% endfor %}
+    <details class="p-new"><summary class="btn btn-sm btn-primary">{{ icon('plus') }} {{ t('p_new_ticket') }}</summary>
+      <form method="post" action="{{ url_for('portal.ticket_new') }}" class="form-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>{{ t('p_subject') }}<input name="subject" required maxlength="200"></label>
+        <label>{{ t('p_message') }}<textarea name="body" rows="5" required maxlength="5000"></textarea></label>
+        <button class="btn btn-primary">{{ t('p_send') }}</button>
+      </form>
+    </details>
+  </section>
+</div>
+<p class="muted small-note">{{ icon('lock') }} {{ t('p_privacy') }}</p>
+{% endblock %}

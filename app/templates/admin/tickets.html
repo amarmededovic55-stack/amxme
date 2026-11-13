@@ -1,0 +1,15 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Support tickets{% endblock %}
+{% block heading %}<h1>Support tickets</h1><p>Requests from clients in the portal. Your answer is emailed to the client.</p>{% endblock %}
+{% block content %}
+<div class="tabs">{% for s, l in [('open', 'Open'), ('answered', 'Answered'), ('closed', 'Closed'), ('all', 'All')] %}<a href="{{ url_for('admin.tickets', status=s) }}" class="tab{{ ' on' if status == s }}">{{ l }}</a>{% endfor %}</div>
+<div class="panel">
+  {% if items %}
+  <ul class="mlist">{% for tk in items %}
+    <li><a href="{{ url_for('admin.ticket_admin', ticket_id=tk.id) }}" class="{{ 'unread' if tk.status == 'open' }}"><span class="avatar">{{ (names.get(tk.client_id) or '?')[:1] | upper }}</span>
+      <span class="m-main"><b>{{ tk.subject }}</b><small>{{ names.get(tk.client_id, '—') }} · {{ tk.updated_at | dt('%d %b, %H:%M') }} · {{ tk.status }}</small></span></a></li>
+  {% endfor %}</ul>
+  {% else %}<p class="empty">Nothing here.</p>{% endif %}
+</div>
+{% endblock %}

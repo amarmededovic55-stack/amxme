@@ -1,0 +1,37 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "admin/base.html" %}
+{% block title %}Media library{% endblock %}
+{% block heading %}<h1>Media library</h1><p>All images in one place. Uploads are checked, resized and converted to fast WebP automatically. {{ items | length }} images · {{ (total / 1048576) | round(1) }} MB.</p>{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel dropzone" id="dropzone">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {{ icon('upload-cloud') }}
+  <p><b>Drag images here</b> or <label class="link">choose files<input type="file" name="files" accept="image/*" multiple hidden data-autosubmit></label></p>
+  <small class="muted">JPG, PNG, WebP or GIF · up to 20 at once</small>
+</form>
+<div class="media-grid">
+  {% for m in items %}
+  <figure class="media-item" id="m{{ m.id }}">
+    <a href="{{ m.url }}" target="_blank" rel="noopener"><img src="{{ m.url }}" alt="{{ m.alt }}" loading="lazy"></a>
+    <figcaption>
+      <small class="muted">{{ m.width }}×{{ m.height }} · {{ ((m.size or 0) / 1024) | round | int }} KB {% if m.used %}<span class="chip ok">used</span>{% endif %}</small>
+      <div class="media-row">
+        <input class="inp inp-sm" id="u{{ m.id }}" value="{{ m.url }}" readonly data-select-all aria-label="Image address">
+        <button type="button" class="btn btn-ghost btn-sm" data-copy="#u{{ m.id }}">Copy</button>
+      </div>
+      <form method="post" action="{{ url_for('admin.media_update', media_id=m.id) }}" class="media-row">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input class="inp inp-sm" name="alt" value="{{ m.alt }}" placeholder="Description (for Google & screen readers)" maxlength="300">
+        <button class="btn btn-ghost btn-sm">Save</button>
+      </form>
+      {% if not m.used %}
+      <form method="post" action="{{ url_for('admin.media_delete', media_id=m.id) }}" data-confirm="Delete this image?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-danger btn-sm btn-block">{{ icon('trash') }} Delete</button>
+      </form>
+      {% endif %}
+    </figcaption>
+  </figure>
+  {% else %}<p class="empty">No images yet.</p>{% endfor %}
+</div>
+{% endblock %}

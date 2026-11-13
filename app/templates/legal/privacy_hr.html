@@ -34,7 +34,7 @@
     <p>Pravna osnova je naš legitimni interes da razumijemo i poboljšamo našu web stranicu (čl. 6. st. 1. t. (f) GDPR-a). Podaci se automatski brišu nakon <b>{{ visit_days }} dana</b>.</p>
 
     <h2>5. Kolačići</h2>
-    <p>Koristimo jedan kolačić sesije (<code>__Host-amxme_session</code>). On sadrži jezik koji ste odabrali i nasumični sigurnosni token koji štiti naš kontaktni obrazac od zlouporabe (CSRF zaštita) te – ako ste dobili poveznicu za pregled – vaš privremeni pristup pregledu. Briše se zatvaranjem preglednika i ne koristi se za praćenje.</p>
+    <p>Koristimo jedan kolačić sesije (<code>__Host-amxme_session</code>). On sadrži jezik koji ste odabrali i nasumični sigurnosni token koji štiti naš kontaktni obrazac od zlouporabe (CSRF zaštita) te – ako ste dobili poveznicu za pregled – vaš privremeni pristup pregledu. Briše se zatvaranjem preglednika i ne koristi se za praćenje. Ako prebacite između tamnog i svijetlog načina, taj se izbor sprema samo u vašem pregledniku (local storage) i nikada nam se ne šalje.</p>
     <p>Budući da je taj kolačić nužan za pružanje web stranice koju ste zatražili, za njega nije potreban pristanak (§ 25. st. 2. t. 2. njemačkog TDDDG-a). Pravna osnova za povezanu obradu je čl. 6. st. 1. t. (f) GDPR-a.</p>
 
     <h2>6. Kontaktni obrazac i e-mail</h2>
@@ -69,10 +69,16 @@
     <p>Za ostvarivanje svojih prava jednostavno nam pišite na {% set mail = c.legal_email or c.contact_email %}<a href="mailto:{{ mail }}">{{ mail }}</a>.</p>
     <p>Također imate pravo podnijeti pritužbu nadzornom tijelu za zaštitu podataka (čl. 77. GDPR-a), osobito u državi članici EU u kojoj boravite, radite ili u kojoj je došlo do navodne povrede.{% if c.legal_authority %} Za nas je nadležno:<br>{{ c.legal_authority | replace('\n', ', ') }}{% endif %}</p>
 
+    <h2>10. Besplatna provjera web stranice</h2>
+    <p>Ako koristite našu besplatnu provjeru web stranice, dohvaćamo javnu početnu stranicu upisane adrese i prikazujemo vam rezultat. Adresu i rezultat ne spremamo. Radi sprječavanja zlouporabe najviše 24 sata čuvamo jednosmjerno šifriranu (hashiranu) vrijednost izvedenu iz vaše skraćene IP adrese. Pravna osnova: čl. 6. st. 1. t. (f) GDPR-a (siguran rad alata).</p>
+
+    <h2>11. Portal za klijente</h2>
+    <p>Klijenti s ugovorom mogu koristiti naš portal. Pritom obrađujemo vaše ime, tvrtku, e-mail adresu, šifriranu lozinku, web stranice koje za vas održavamo (uključujući njihovu dostupnost), račune i vaše zahtjeve za podršku. To je potrebno za ispunjenje ugovora (čl. 6. st. 1. t. (b) GDPR-a). Podaci se čuvaju tijekom trajanja ugovora; račune čuvamo prema njemačkim trgovačkim i poreznim propisima (do 10 godina, § 147 AO). Portal koristi kolačić sesije opisan u odjeljku 5.</p>
+
     {% for p in c.privacy_extra | paragraphs %}
-      {% if loop.first %}<h2>10. Dodatne informacije</h2>{% endif %}
+      {% if loop.first %}<h2>12. Dodatne informacije</h2>{% endif %}
       <p>{{ p }}</p>
     {% endfor %}
 
-    <h2>{{ '11' if c.privacy_extra | trim else '10' }}. Izmjene ove izjave</h2>
+    <h2>{{ '13' if c.privacy_extra | trim else '12' }}. Izmjene ove izjave</h2>
     <p>Ovu izjavu možemo ažurirati kada se promijeni naša web stranica ili zakon. Aktualna verzija uvijek je dostupna na ovoj stranici.</p>

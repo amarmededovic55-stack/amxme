@@ -1,0 +1,22 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{% extends "_page.html" %}
+{% block title %}{{ p.title }} – {{ c.company_name }}{% endblock %}
+{% block description %}{{ p.excerpt or c.meta_description }}{% endblock %}
+{% block page %}
+<article class="wrap post">
+  <a href="{{ url_for('public.blog') }}" class="link-back">← {{ t('all_posts') }}</a>
+  <time datetime="{{ p.created_at.date() }}">{{ p.created_at.strftime('%d.%m.%Y') }}</time>
+  <h1>{{ p.title }}</h1>
+  {% if p.excerpt %}<p class="lead">{{ p.excerpt }}</p>{% endif %}
+  {% if p.image %}<img src="{{ p.image }}" alt="" class="post-cover">{% endif %}
+  <div class="prose">{{ p.body | richtext }}</div>
+  <div class="post-cta">
+    <b>{{ t('service_cta') }}</b>
+    <a href="{{ url_for('public.index') }}#contact" class="btn btn-primary">{{ t('nav_contact') }} {{ icon('arrow-right') }}</a>
+  </div>
+  {% if more %}
+  <h2 class="more-h">{{ t('all_posts') }}</h2>
+  <ul class="more-list">{% for m in more %}<li><a href="{{ url_for('public.blog_post', slug=m.slug) }}">{{ m.title }} {{ icon('arrow-right') }}</a></li>{% endfor %}</ul>
+  {% endif %}
+</article>
+{% endblock %}
