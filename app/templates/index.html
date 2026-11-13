@@ -151,7 +151,7 @@
       <h2>{{ c.services_title }}</h2>
       <p>{{ c.services_intro }}</p>
     </div>
-    <div class="svc-grid">
+    <div class="svc-grid svc-grid--n{{ services | length }}">
       {% for s in services %}
       <article class="svc reveal" style="--i:{{ loop.index0 }}">
         <div class="svc-ic">{{ icon(s.icon) }}</div>
@@ -171,6 +171,29 @@
 </section>
 {% endif %}
 
+<!-- ============================== PROCESS (ASDHEM) ============================== -->
+{% set proc = c.process_steps | steps %}
+{% if proc %}
+<section class="section section--soft" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{{ c.process_eyebrow }}</span>
+      <h2>{{ c.process_title }}</h2>
+      {% if c.process_intro %}<p>{{ c.process_intro }}</p>{% endif %}
+    </div>
+    <ol class="steps" style="--n: {{ proc | length }}">
+      {% for title, text in proc %}
+      <li class="step reveal" style="--i:{{ loop.index0 }}">
+        <span class="step-num" aria-hidden="true">{{ '%02d' % loop.index }}</span>
+        <h3>{{ title }}</h3>
+        {% if text %}<p>{{ text }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+{% endif %}
+
 <!-- ============================== WHY ============================== -->
 {% if why %}
 <section class="section section--dark" id="why">
@@ -181,7 +204,7 @@
       <h2>{{ c.why_title }}</h2>
       <p>{{ c.why_intro }}</p>
     </div>
-    <div class="why-grid">
+    <div class="why-grid{{ ' why-grid--bento' if why | length == 6 }}">
       {% for w in why %}
       <div class="why reveal" style="--i:{{ loop.index0 }}">
         <div class="why-ic">{{ icon(w.icon) }}</div>
@@ -203,16 +226,6 @@
       <span class="eyebrow reveal">{{ c.hosting_eyebrow }}</span>
       <h2 class="reveal">{{ c.hosting_title }}</h2>
       <p class="lead reveal">{{ c.hosting_text }}</p>
-      {% if hosting %}
-      <ul class="host-list">
-        {% for h in hosting %}
-        <li class="reveal" style="--i:{{ loop.index0 }}">
-          <span class="host-ic">{{ icon(h.icon) }}</span>
-          <div><b>{{ h.title }}</b>{% if h.text %}<span>{{ h.text }}</span>{% endif %}</div>
-        </li>
-        {% endfor %}
-      </ul>
-      {% endif %}
       {% if c.hosting_btn_text %}<a href="{{ c.hosting_btn_link | safe_url('#contact') }}" class="btn btn-primary reveal">{{ c.hosting_btn_text }} {{ icon('arrow-right') }}</a>{% endif %}
     </div>
 
@@ -240,25 +253,18 @@
       <div class="host-cloud">{{ icon('cloud') }}</div>
     </div>
   </div>
-</section>
-
-<!-- ============================== WEBSITE CHECK (ASDHEM) ============================== -->
-<section class="wrap" id="check">
-  <div class="chk-band reveal">
-    <div class="chk-band-copy">
-      <span class="eyebrow">{{ c.check_eyebrow }}</span>
-      <h2>{{ c.check_title }}</h2>
-      {% if c.check_intro %}<p>{{ c.check_intro }}</p>{% endif %}
-      <ul class="chk-mini">{% for k in ['chk_https', 'chk_speed', 'chk_hsts', 'chk_viewport'] %}<li>{{ icon('check') }}{{ t(k) }}</li>{% endfor %}</ul>
-    </div>
-    <form method="post" action="{{ url_for('public.website_check') }}" class="check-form chk-band-form">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label class="sr-only" for="chkHome">URL</label>
-      <input id="chkHome" name="url" type="text" inputmode="url" required maxlength="300" placeholder="{{ t('chk_ph') }}">
-      <button class="btn btn-primary btn-lg">{{ icon('search') }} {{ c.check_btn }}</button>
-    </form>
-    <div class="chk-gauge" aria-hidden="true"><div class="score-ring" style="--p: 100"><b>100</b><small>/100</small></div><small>amxme.info</small></div>
+  {% if hosting %}
+  <div class="wrap">
+    <ul class="host-list host-list--wide">
+      {% for h in hosting %}
+      <li class="reveal" style="--i:{{ loop.index0 }}">
+        <span class="host-ic">{{ icon(h.icon) }}</span>
+        <div><b>{{ h.title }}</b>{% if h.text %}<span>{{ h.text }}</span>{% endif %}</div>
+      </li>
+      {% endfor %}
+    </ul>
   </div>
+  {% endif %}
 </section>
 
 <!-- ============================== PORTFOLIO ============================== -->
@@ -276,7 +282,7 @@
       {% for cat in categories %}<button class="filter" data-filter="{{ cat }}" role="tab" aria-selected="false">{{ cat }}</button>{% endfor %}
     </div>
     {% endif %}
-    <div class="pf-grid">
+    <div class="pf-grid pf-grid--n{{ [projects | length, 3] | min }}">
       {% for p in projects %}
       <article class="pf reveal" data-category="{{ p.category }}" style="--i:{{ loop.index0 }}">
         <div class="pf-shot">
@@ -376,28 +382,24 @@
 </section>
 {% endif %}
 
-<!-- ============================== PROCESS (ASDHEM) ============================== -->
-{% set proc = c.process_steps | steps %}
-{% if proc %}
-<section class="section" id="process">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">{{ c.process_eyebrow }}</span>
-      <h2>{{ c.process_title }}</h2>
-      {% if c.process_intro %}<p>{{ c.process_intro }}</p>{% endif %}
+<!-- ============================== WEBSITE CHECK (ASDHEM) ============================== -->
+<section class="wrap" id="check">
+  <div class="chk-band reveal">
+    <div class="chk-band-copy">
+      <span class="eyebrow">{{ c.check_eyebrow }}</span>
+      <h2>{{ c.check_title }}</h2>
+      {% if c.check_intro %}<p>{{ c.check_intro }}</p>{% endif %}
+      <ul class="chk-mini">{% for k in ['chk_https', 'chk_speed', 'chk_hsts', 'chk_viewport'] %}<li>{{ icon('check') }}{{ t(k) }}</li>{% endfor %}</ul>
     </div>
-    <ol class="steps" style="--n: {{ proc | length }}">
-      {% for title, text in proc %}
-      <li class="step reveal" style="--i:{{ loop.index0 }}">
-        <span class="step-num" aria-hidden="true">{{ '%02d' % loop.index }}</span>
-        <h3>{{ title }}</h3>
-        {% if text %}<p>{{ text }}</p>{% endif %}
-      </li>
-      {% endfor %}
-    </ol>
+    <form method="post" action="{{ url_for('public.website_check') }}" class="check-form chk-band-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="sr-only" for="chkHome">URL</label>
+      <input id="chkHome" name="url" type="text" inputmode="url" required maxlength="300" placeholder="{{ t('chk_ph') }}">
+      <button class="btn btn-primary btn-lg">{{ icon('search') }} {{ c.check_btn }}</button>
+    </form>
+    <div class="chk-gauge" aria-hidden="true"><div class="score-ring" style="--p: 100"><b>100</b><small>/100</small></div><small>amxme.info</small></div>
   </div>
 </section>
-{% endif %}
 
 <!-- ============================== FAQ (ASDHEM) ============================== -->
 {% if faqs %}
@@ -410,8 +412,8 @@
     </div>
 
     <div class="faq">
-      <div class="faq-main">
-        <div class="faq-tools reveal">
+      <aside class="faq-side">
+        <div class="faq-tools">
           <label class="faq-search">
             {{ icon('search') }}
             <span class="sr-only">{{ t('faq_search') }}</span>
@@ -427,6 +429,15 @@
           {% endif %}
         </div>
 
+        <div class="faq-help reveal">
+          <span class="faq-help-ic">{{ icon('help-circle') }}</span>
+        <h3>{{ c.faq_help_title }}</h3>
+        {% if c.faq_help_text %}<p>{{ c.faq_help_text }}</p>{% endif %}
+        <a href="#contact" class="btn btn-white btn-block">{{ t('send_message') }} {{ icon('send') }}</a>
+        {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="faq-help-mail">{{ icon('mail') }} {{ c.contact_email }}</a>{% endif %}
+      </div>
+      </aside>
+      <div class="faq-main">
         <div class="faq-list" id="faqList">
           {% for f in faqs %}
           <details class="faq-item reveal" id="faq-{{ f.id }}" data-cat="{{ f.cat }}" style="--i: {{ loop.index0 % 4 }}">
@@ -449,13 +460,6 @@
         </div>
       </div>
 
-      <aside class="faq-help reveal">
-        <span class="faq-help-ic">{{ icon('help-circle') }}</span>
-        <h3>{{ c.faq_help_title }}</h3>
-        {% if c.faq_help_text %}<p>{{ c.faq_help_text }}</p>{% endif %}
-        <a href="#contact" class="btn btn-white btn-block">{{ t('send_message') }} {{ icon('send') }}</a>
-        {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="faq-help-mail">{{ icon('mail') }} {{ c.contact_email }}</a>{% endif %}
-      </aside>
     </div>
   </div>
 </section>
@@ -466,7 +470,7 @@
 <section class="section" id="blog">
   <div class="wrap">
     <div class="sec-head reveal"><span class="eyebrow">{{ t('nav_blog') }}</span><h2>{{ t('blog_title') }}</h2><p>{{ t('blog_intro') }}</p></div>
-    <div class="post-grid">
+    <div class="post-grid post-grid--n{{ [posts | length, 3] | min }}">
       {% for p in posts %}
       <a href="{{ url_for('public.blog_post', slug=p.slug) }}" class="post-card reveal" style="--i:{{ loop.index0 }}">
         <div class="post-img">{% if p.image %}<img src="{{ p.image }}" alt="" loading="lazy">{% else %}<span>{{ icon('file-text') }}</span>{% endif %}</div>
