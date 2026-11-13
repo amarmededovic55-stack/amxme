@@ -77,18 +77,24 @@
     reveals.forEach((el) => el.classList.add("is-in"));
   }
 
-  /* ASDHEM | desktop only: every section "forms out of a cloud" when it scrolls into view */
+  /* ASDHEM | desktop only: sections "form out of a cloud" every time they scroll into view
+     (down or up); once a section has left the screen its clouds quietly gather again */
   const cloudOk = window.matchMedia("(min-width: 981px) and (prefers-reduced-motion: no-preference)").matches;
   if (cloudOk && "IntersectionObserver" in window) {
-    const secs = $$("main > section").filter((s) => !s.classList.contains("hero") && s.getBoundingClientRect().top > window.innerHeight * 0.9);
+    const secs = $$("main > section").filter((s) => !s.classList.contains("hero"));
     const puffs = [[-6, 2, 62, 44], [38, -4, 58, 40], [70, 10, 50, 46], [8, 40, 56, 42], [48, 36, 60, 48], [-4, 66, 60, 40], [56, 68, 56, 38]];
     const cio = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
-        if (!en.isIntersecting) return;
-        const s = en.target, v = s.querySelector(":scope > .cloud-veil");
-        s.classList.add("cloud-go");
-        cio.unobserve(s);
-        if (v) setTimeout(() => v.remove(), 2200);
+        const s = en.target;
+        if (en.isIntersecting) {
+          if (s.classList.contains("cloud-go")) return;
+          s.classList.remove("cloud-reset");
+          void s.offsetWidth;                       // let the "covered" state paint before parting
+          requestAnimationFrame(() => s.classList.add("cloud-go"));
+        } else if (s.classList.contains("cloud-go")) {
+          s.classList.add("cloud-reset");           // off screen: clouds gather again without animating
+          s.classList.remove("cloud-go");
+        }
       });
     }, { threshold: 0, rootMargin: "0px 0px -18% 0px" });
     secs.forEach((s) => {

@@ -1,0 +1,67 @@
+{# Signed: ASDHEM | AMXME Web Solutions -#}
+{# ASDHEM | FAQ on its own page (opened from the "FAQ" link in the menu) #}
+{% extends "_page.html" %}
+{% block title %}{{ t('nav_faq') }} – {{ c.company_name }}{% endblock %}
+{% block page %}
+<section class="sub-hero">
+  <div class="wrap">
+    <span class="eyebrow">{{ c.faq_eyebrow }}</span>
+    <h1>{{ c.faq_title }}</h1>
+    {% if c.faq_intro %}<p class="lead">{{ c.faq_intro }}</p>{% endif %}
+  </div>
+</section>
+<section class="faq-page" id="faq">
+  <div class="wrap">
+    <div class="faq">
+      <aside class="faq-side">
+        <div class="faq-tools">
+          <label class="faq-search">
+            {{ icon('search') }}
+            <span class="sr-only">{{ t('faq_search') }}</span>
+            <input type="search" id="faqSearch" placeholder="{{ t('faq_search_ph') }}" autocomplete="off" maxlength="80">
+          </label>
+          {% if faq_cats | length > 1 %}
+          <div class="faq-cats" role="tablist" aria-label="{{ t('faq_cats') }}">
+            <button type="button" class="faq-cat is-active" data-cat="*" role="tab" aria-selected="true">{{ t('filter_all') }} <span>{{ faqs | length }}</span></button>
+            {% for cat, n in faq_cats %}
+            <button type="button" class="faq-cat" data-cat="{{ cat }}" role="tab" aria-selected="false">{{ cat }} <span>{{ n }}</span></button>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="faq-help reveal">
+          <span class="faq-help-ic">{{ icon('help-circle') }}</span>
+        <h3>{{ c.faq_help_title }}</h3>
+        {% if c.faq_help_text %}<p>{{ c.faq_help_text }}</p>{% endif %}
+        <a href="{{ url_for('public.index') }}#contact" class="btn btn-white btn-block">{{ t('send_message') }} {{ icon('send') }}</a>
+        {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="faq-help-mail">{{ icon('mail') }} {{ c.contact_email }}</a>{% endif %}
+      </div>
+      </aside>
+      <div class="faq-main">
+        <div class="faq-list" id="faqList">
+          {% for f in faqs %}
+          <details class="faq-item reveal" id="faq-{{ f.id }}" data-cat="{{ f.cat }}" style="--i: {{ loop.index0 % 4 }}">
+            <summary>
+              <span class="faq-q">{{ f.title }}</span>
+              <span class="faq-chev" aria-hidden="true">{{ icon('chevron-down') }}</span>
+            </summary>
+            <div class="faq-a">
+              {% for p in f.text | paragraphs %}<p>{{ p }}</p>{% endfor %}
+              <a href="#faq-{{ f.id }}" class="faq-link" data-copy-link>{{ icon('link') }}<span>{{ t('faq_copy') }}</span></a>
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+
+        <div class="faq-empty" id="faqEmpty" hidden>
+          {% set parts = t('faq_none').split('{q}') %}
+          <p><b>{{ parts[0] }}<span id="faqTerm"></span>{{ parts[1] }}</b> {{ t('faq_none_text') }}</p>
+          <a href="{{ url_for('public.index') }}#contact" class="btn btn-primary" id="faqAsk">{{ t('faq_ask') }} {{ icon('arrow-right') }}</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

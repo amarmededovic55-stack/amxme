@@ -8,7 +8,9 @@
     <a href="{{ url_for('public.index') }}" aria-label="{{ c.company_name }} – {{ t('home') }}">{{ logo() }}</a>
     <nav class="sub-nav" aria-label="Main">
       <a href="{{ url_for('public.index') }}#services">{{ t('nav_services') }}</a>
+      {% if c.process_steps %}<a href="{{ url_for('public.process') }}" class="{{ 'on' if request.endpoint == 'public.process' }}">{{ t('nav_process') }}</a>{% endif %}
       <a href="{{ url_for('public.blog') }}" class="{{ 'on' if request.endpoint in ('public.blog', 'public.blog_post') }}">{{ t('nav_blog') }}</a>
+      <a href="{{ url_for('public.faq') }}" class="{{ 'on' if request.endpoint == 'public.faq' }}">{{ t('nav_faq') }}</a>
       <a href="{{ url_for('public.website_check') }}" class="{{ 'on' if request.endpoint == 'public.website_check' }}">{{ t('nav_check') }}</a>
       <a href="{{ url_for('public.index') }}#contact" class="btn btn-sm btn-primary">{{ t('nav_contact') }}</a>
     </nav>

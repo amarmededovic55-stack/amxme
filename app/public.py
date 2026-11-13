@@ -184,11 +184,11 @@ def enabled(model, **filters):
 
 
 def structured_data(faqs=None, services=None):
-    """ASDHEM | schema.org JSON-LD (Organization + WebSite, + FAQPage on the homepage) for Google / AI search."""
+    """ASDHEM | schema.org JSON-LD (Organization + WebSite, + FAQPage on the FAQ page) for Google / AI search."""
     c = get_content()
     site = current_app.config["SITE_URL"]
     lang = current_lang()
-    page_url = site + url_for("public.index")
+    page_url = site + url_for("public.faq")
     org = {
         "@type": "Organization", "@id": f"{site}/#organization",
         "name": c.company_name or "AMXME Web Solutions", "url": f"{site}/",
@@ -245,16 +245,22 @@ def index():
     return render_template("index.html", **ctx)
 
 
-def home_context():
-    """Everything the homepage template needs (also used by the admin live preview)."""
+def faq_data():
+    """ASDHEM | enabled FAQs (localized) + their categories with counts."""
     lang = current_lang()
-    services = localize(enabled(Service))
-    projects = localize(enabled(Project))
     faqs = localize(enabled(Faq))
     faq_cats = {}
     for f in faqs:
         f.cat = (f.category or "").strip() or ("General" if lang == "en" else {"de": "Allgemein", "hr": "Općenito"}[lang])
         faq_cats[f.cat] = faq_cats.get(f.cat, 0) + 1
+    return faqs, list(faq_cats.items())
+
+
+def home_context():
+    """Everything the homepage template needs (also used by the admin live preview)."""
+    services = localize(enabled(Service))
+    projects = localize(enabled(Project))
+    has_faq = db.session.execute(db.select(Faq.id).filter_by(enabled=True).limit(1)).first() is not None
     return dict(
         services=services,
         why=localize(enabled(Feature, group="why")),
@@ -265,9 +271,8 @@ def home_context():
         projects=projects,
         categories=sorted({p.category for p in projects if p.category}),
         preview_left=0,
-        faqs=faqs,
-        faq_cats=list(faq_cats.items()),
-        ld=structured_data(faqs, services),
+        has_faq=has_faq,
+        ld=structured_data(None, services),
         canonical_path=url_for("public.index"),
     )
 
@@ -331,6 +336,34 @@ def blog_post(slug):
     if p.image:
         ld["image"] = site + p.image
     return render_template("post.html", p=lp, more=more, ld=ld, canonical_path=url_for("public.blog_post", slug=slug))
+
+
+# ====================================================================== ASDHEM | "How we work" page
+@bp.route("/process", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/process")
+def process():
+    if not _site_open():
+        return redirect(url_for("public.index"))
+    from .templating import steps
+    proc = steps(get_content().process_steps)
+    if not proc:
+        abort(404)
+    record_visit()
+    return render_template("process.html", proc=proc, canonical_path=url_for("public.process"))
+
+
+# ====================================================================== ASDHEM | FAQ page
+@bp.route("/faq", defaults={"lang": DEFAULT_LANG})
+@bp.route(f"/{LANG_RULE}/faq")
+def faq():
+    if not _site_open():
+        return redirect(url_for("public.index"))
+    faqs, faq_cats = faq_data()
+    if not faqs:
+        abort(404)
+    record_visit()
+    return render_template("faq.html", faqs=faqs, faq_cats=faq_cats, ld=structured_data(faqs),
+                           canonical_path=url_for("public.faq"))
 
 
 # ====================================================================== ASDHEM | public status page
@@ -524,6 +557,10 @@ def sitemap():
              ("public.website_check", {})]
     if latest_posts(1):
         pages.append(("public.blog", {}))
+    if enabled(Faq):
+        pages.append(("public.faq", {}))
+    if (get_content().process_steps or "").strip():
+        pages.append(("public.process", {}))
     pages += [("public.blog_post", {"slug": p.slug}) for p in latest_posts()]
     pages += [("public.service_page", {"slug": x.slug}) for x in enabled(Service) if x.slug and (x.body or "").strip()]
     urls = []

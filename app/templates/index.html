@@ -13,11 +13,12 @@
     <a href="#top" class="nav-brand" aria-label="{{ c.company_name }} – {{ t('home') }}">{{ logo() }}</a>
     <nav class="nav-links" id="navLinks" aria-label="Main">
       <a href="#services">{{ t('nav_services') }}</a>
+      {% if c.process_steps %}<a href="{{ url_for('public.process') }}">{{ t('nav_process') }}</a>{% endif %}
       <a href="#hosting">{{ t('nav_hosting') }}</a>
       {% if projects %}<a href="#portfolio">{{ t('nav_work') }}</a>{% endif %}
       <a href="#about">{{ t('nav_about') }}</a>
       <a href="#check">{{ t('nav_check_short') }}</a>
-      {% if faqs %}<a href="#faq">{{ t('nav_faq') }}</a>{% endif %}
+      {% if has_faq %}<a href="{{ url_for('public.faq') }}">{{ t('nav_faq') }}</a>{% endif %}
       <a href="{{ url_for('portal.login') }}" class="nav-login" title="{{ t('nav_portal') }}">{{ icon('user') }}<span class="nav-login-txt">{{ t('nav_portal') }}</span></a>
       <a href="#contact" class="btn btn-sm btn-primary nav-cta">{{ t('nav_contact') }}</a>
     </nav>
@@ -167,29 +168,6 @@
       </article>
       {% endfor %}
     </div>
-  </div>
-</section>
-{% endif %}
-
-<!-- ============================== PROCESS (ASDHEM) ============================== -->
-{% set proc = c.process_steps | steps %}
-{% if proc %}
-<section class="section section--soft" id="process">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">{{ c.process_eyebrow }}</span>
-      <h2>{{ c.process_title }}</h2>
-      {% if c.process_intro %}<p>{{ c.process_intro }}</p>{% endif %}
-    </div>
-    <ol class="steps" style="--n: {{ proc | length }}">
-      {% for title, text in proc %}
-      <li class="step reveal" style="--i:{{ loop.index0 }}">
-        <span class="step-num" aria-hidden="true">{{ '%02d' % loop.index }}</span>
-        <h3>{{ title }}</h3>
-        {% if text %}<p>{{ text }}</p>{% endif %}
-      </li>
-      {% endfor %}
-    </ol>
   </div>
 </section>
 {% endif %}
@@ -401,70 +379,6 @@
   </div>
 </section>
 
-<!-- ============================== FAQ (ASDHEM) ============================== -->
-{% if faqs %}
-<section class="section section--soft" id="faq">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">{{ c.faq_eyebrow }}</span>
-      <h2>{{ c.faq_title }}</h2>
-      {% if c.faq_intro %}<p>{{ c.faq_intro }}</p>{% endif %}
-    </div>
-
-    <div class="faq">
-      <aside class="faq-side">
-        <div class="faq-tools">
-          <label class="faq-search">
-            {{ icon('search') }}
-            <span class="sr-only">{{ t('faq_search') }}</span>
-            <input type="search" id="faqSearch" placeholder="{{ t('faq_search_ph') }}" autocomplete="off" maxlength="80">
-          </label>
-          {% if faq_cats | length > 1 %}
-          <div class="faq-cats" role="tablist" aria-label="{{ t('faq_cats') }}">
-            <button type="button" class="faq-cat is-active" data-cat="*" role="tab" aria-selected="true">{{ t('filter_all') }} <span>{{ faqs | length }}</span></button>
-            {% for cat, n in faq_cats %}
-            <button type="button" class="faq-cat" data-cat="{{ cat }}" role="tab" aria-selected="false">{{ cat }} <span>{{ n }}</span></button>
-            {% endfor %}
-          </div>
-          {% endif %}
-        </div>
-
-        <div class="faq-help reveal">
-          <span class="faq-help-ic">{{ icon('help-circle') }}</span>
-        <h3>{{ c.faq_help_title }}</h3>
-        {% if c.faq_help_text %}<p>{{ c.faq_help_text }}</p>{% endif %}
-        <a href="#contact" class="btn btn-white btn-block">{{ t('send_message') }} {{ icon('send') }}</a>
-        {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="faq-help-mail">{{ icon('mail') }} {{ c.contact_email }}</a>{% endif %}
-      </div>
-      </aside>
-      <div class="faq-main">
-        <div class="faq-list" id="faqList">
-          {% for f in faqs %}
-          <details class="faq-item reveal" id="faq-{{ f.id }}" data-cat="{{ f.cat }}" style="--i: {{ loop.index0 % 4 }}">
-            <summary>
-              <span class="faq-q">{{ f.title }}</span>
-              <span class="faq-chev" aria-hidden="true">{{ icon('chevron-down') }}</span>
-            </summary>
-            <div class="faq-a">
-              {% for p in f.text | paragraphs %}<p>{{ p }}</p>{% endfor %}
-              <a href="#faq-{{ f.id }}" class="faq-link" data-copy-link>{{ icon('link') }}<span>{{ t('faq_copy') }}</span></a>
-            </div>
-          </details>
-          {% endfor %}
-        </div>
-
-        <div class="faq-empty" id="faqEmpty" hidden>
-          {% set parts = t('faq_none').split('{q}') %}
-          <p><b>{{ parts[0] }}<span id="faqTerm"></span>{{ parts[1] }}</b> {{ t('faq_none_text') }}</p>
-          <a href="#contact" class="btn btn-primary" id="faqAsk">{{ t('faq_ask') }} {{ icon('arrow-right') }}</a>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-{% endif %}
-
 <!-- ============================== BLOG TEASER (ASDHEM) ============================== -->
 {% if posts %}
 <section class="section" id="blog">
@@ -572,10 +486,10 @@
         <li><a href="#top">{{ t('home') }}</a></li>
         <li><a href="#services">{{ t('nav_services') }}</a></li>
         <li><a href="#hosting">{{ t('nav_hosting') }}</a></li>
-        {% if c.process_steps %}<li><a href="#process">{{ t('nav_process') }}</a></li>{% endif %}
+        {% if c.process_steps %}<li><a href="{{ url_for('public.process') }}">{{ t('nav_process') }}</a></li>{% endif %}
         {% if projects %}<li><a href="#portfolio">{{ t('nav_work') }}</a></li>{% endif %}
         <li><a href="#about">{{ t('about_us') }}</a></li>
-        {% if faqs %}<li><a href="#faq">{{ t('nav_faq') }}</a></li>{% endif %}
+        {% if has_faq %}<li><a href="{{ url_for('public.faq') }}">{{ t('nav_faq') }}</a></li>{% endif %}
         <li><a href="#contact">{{ t('contact') }}</a></li>
       </ul>
     </div>

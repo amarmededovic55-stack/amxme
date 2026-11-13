@@ -79,7 +79,7 @@
 <section class="p-card">
   <h2>{{ icon('help-circle') }} {{ t('p_help') }}</h2>
   <div class="p-help">
-    <a href="{{ url_for('public.index') }}#faq">{{ icon('help-circle') }} {{ t('p_help_faq') }}</a>
+    <a href="{{ url_for('public.faq') }}">{{ icon('help-circle') }} {{ t('p_help_faq') }}</a>
     <a href="{{ url_for('public.blog') }}">{{ icon('file-text') }} {{ t('p_help_blog') }}</a>
     <a href="{{ url_for('public.status') }}">{{ icon('activity') }} {{ t('p_help_status') }}</a>
     <a href="mailto:{{ c.contact_email }}">{{ icon('mail') }} {{ c.contact_email }}</a>

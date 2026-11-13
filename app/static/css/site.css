@@ -1280,7 +1280,7 @@ html { overflow-x: clip; }
 .cloud-veil { position: absolute; inset: 0; z-index: 6; pointer-events: none; overflow: hidden; }
 .cloud-veil i { position: absolute; border-radius: 50%; opacity: .97;
   background: radial-gradient(closest-side, #fff 0%, rgba(250,248,255,.96) 38%, rgba(237,233,254,.7) 62%, rgba(237,233,254,0) 100%);
-  transition: transform 1.7s cubic-bezier(.22,.8,.24,1), opacity 1.5s ease; transition-delay: var(--d, 0ms); will-change: transform, opacity; }
+  transition: transform 1.7s cubic-bezier(.22,.8,.24,1), opacity 1.5s ease; transition-delay: var(--d, 0ms); }
 .section--soft > .cloud-veil i { background: radial-gradient(closest-side, #fff 0%, rgba(245,242,255,.96) 40%, rgba(230,224,255,.65) 64%, rgba(230,224,255,0) 100%); }
 .section--dark > .cloud-veil i { background: radial-gradient(closest-side, rgba(167,139,250,.55) 0%, rgba(91,33,182,.55) 42%, rgba(30,20,80,.5) 66%, rgba(30,20,80,0) 100%); }
 .cloud-go > .cloud-veil i { opacity: 0; transform: translate(calc(var(--dx) * 55%), -18%) scale(1.7); }
@@ -1291,3 +1291,22 @@ html { overflow-x: clip; }
 [data-theme="dark"] .cloud-veil i { background: radial-gradient(closest-side, rgba(60,48,130,.95) 0%, rgba(38,30,92,.9) 40%, rgba(21,18,51,.6) 66%, rgba(21,18,51,0) 100%); }
 [data-theme="dark"] .section--dark > .cloud-veil i { background: radial-gradient(closest-side, rgba(124,58,237,.5) 0%, rgba(46,16,101,.55) 45%, rgba(13,10,36,0) 100%); }
 @media (max-width: 980px), (prefers-reduced-motion: reduce) { .cloud-veil { display: none; } .cloudy .reveal { filter: none; } }
+/* ASDHEM | v7: repeatable clouds – hidden (no paint cost) once parted, reset instantly while off screen */
+.cloud-go > .cloud-veil { visibility: hidden; transition: visibility 0s 2s; }
+.cloud-reset > .cloud-veil, .cloud-reset > .cloud-veil i, .cloud-reset .reveal { transition: none !important; }
+/* FAQ on its own page */
+.faq-page { padding: 8px 0 clamp(60px, 8vw, 110px); }
+.sub-hero .eyebrow { justify-content: center; }
+.process-page { padding: 24px 0 clamp(60px, 8vw, 110px); }
+.process-cta { margin-top: clamp(36px, 5vw, 56px); }
+/* ASDHEM | 8 menu items: keep the desktop menu on one line */
+@media (min-width: 981px) { .nav-links a, .nav-brand { white-space: nowrap; } .nav-links { flex-wrap: nowrap; } }
+@media (min-width: 981px) and (max-width: 1240px) {
+  .nav-links { gap: 0; }
+  .nav-links a:not(.btn) { padding: 8px 8px; font-size: 14px; }
+  .nav-links a:not(.btn)::after { left: 8px; right: 8px; }
+}
+@media (min-width: 981px) and (max-width: 1120px) {
+  .nav-links a:not(.btn) { padding: 8px 6px; font-size: 13.5px; }
+  .nav-brand .logo-text { display: none; }
+}
