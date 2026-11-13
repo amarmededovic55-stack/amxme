@@ -8,7 +8,7 @@ def F(key, label, type="text", default="", help=""):
 
 SECTIONS = [
     {
-        "slug": "hero", "title": "Homepage – Hero", "icon": "home",
+        "slug": "hero", "title": "Početna stranica", "icon": "home",
         "intro": "The first thing visitors see at the top of the homepage.",
         "fields": [
             F("hero_promo", "Promotional badge", default="Websites · Forums · Hosting · Domains",
