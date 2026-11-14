@@ -378,7 +378,7 @@
     <div class="work-list">
       {% for p in projects %}
       <article class="work">
-        {% if p.image %}<div class="work-media">{{ browser(p.image, t('screenshot_of') ~ ' ' ~ p.title, p.url | replace('https://', '') | replace('http://', '') | trim('/')) }}</div>{% endif %}
+        {% if p.image %}<div class="work-media">{{ browser(p.image, t('screenshot_of') ~ ' ' ~ p.title, p.url | replace('https://', '') | replace('http://', '') | trim('/'), on_open=True) }}</div>{% endif %}
         <div class="work-body">
           {% if p.category %}<p class="eyebrow">{{ p.category }}</p>{% endif %}
           <h3>{{ p.title }}</h3>

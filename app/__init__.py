@@ -127,6 +127,7 @@ def create_app():
         "frame-ancestors 'self'",
         "base-uri 'self'",
         "object-src 'none'",
+        "upgrade-insecure-requests",
     ])
 
     @app.after_request
@@ -135,8 +136,11 @@ def create_app():
         resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
         resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         resp.headers.setdefault("Content-Security-Policy", csp)
-        resp.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()")
+        resp.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=(), "
+                                "accelerometer=(), gyroscope=(), magnetometer=(), browsing-topics=()")
         resp.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+        resp.headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")   # ASDHEM | other sites may not embed our responses
+        resp.headers.setdefault("X-Permitted-Cross-Domain-Policies", "none")
         if request.is_secure:
             resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
         if request.path.startswith("/admin"):

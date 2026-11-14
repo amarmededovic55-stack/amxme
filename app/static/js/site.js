@@ -97,6 +97,7 @@
     let opener = null;
     const openPf = () => {
       if (pf.open) return;
+      $$("img[data-src]", pf).forEach((im) => { im.src = im.dataset.src; delete im.dataset.src; });
       if (typeof pf.showModal === "function") pf.showModal(); else pf.setAttribute("open", "");
       document.body.classList.add("dialog-open");
       pf.scrollTop = 0;
@@ -111,6 +112,12 @@
     $$("[data-close-portfolio]", pf).forEach((b) => b.addEventListener("click", closePf));
     pf.addEventListener("click", (e) => { if (e.target === pf) closePf(); });   // click on the dimmed backdrop
     if (location.hash === "#projekti") openPf();
+  }
+
+  /* ASDHEM | perf: pause the hero animation while it is off screen */
+  const hv = $(".hv");
+  if (hv && "IntersectionObserver" in window) {
+    new IntersectionObserver(([en]) => hv.classList.toggle("is-paused", !en.isIntersecting)).observe(hv);
   }
 
   /* website check: show progress on the button */

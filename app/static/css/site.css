@@ -21,6 +21,10 @@
  */
 /* Signed: ASDHEM | AMXME Web Solutions */
 
+/* self-hosted font (OFL): Plus Jakarta Sans, latin + latin-ext – no third-party requests */
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400 800; font-display: swap; src: url(../fonts/jakarta-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400 800; font-display: swap; src: url(../fonts/jakarta-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
 /* ============================================================ 1 tokens */
 :root {
   --bg: #090B18;
@@ -212,7 +216,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .browser-bar { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
 .browser-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); }
 .browser-bar span { margin-left: 12px; flex: 1; max-width: 260px; padding: 3px 12px; border-radius: var(--r-sm); background: var(--bg); font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.browser img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; }
+.browser img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; background: var(--surface-2); }
 
 .adv { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: clamp(48px, 6vw, 80px); border-top: 1px solid var(--line); }
 .adv li { display: flex; align-items: center; gap: var(--s3); padding: var(--s5) var(--s5) 0 0; font-weight: 600; font-size: 15px; line-height: 1.4; }
@@ -754,7 +758,9 @@ input[type="file"] { padding: 10px; border: 1px dashed var(--line-2); border-rad
 .mon-screen .ms-cards i { height: 3em; }
 .ide-code .cursor { display: inline-block; width: .5em; height: 1em; margin-left: .1em; vertical-align: -.15em; background: #c4b5fd; animation: caret 1s steps(2) infinite; }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-.hv-monitor, .hv-laptop, .hv-phone, .hv-cloud, .hv-chip { animation-name: float; }
+.hv-monitor, .hv-laptop, .hv-phone, .hv-cloud, .hv-chip { animation-name: float; will-change: transform; }
+/* ASDHEM | perf: no animation work while the picture is not on screen */
+.hv.is-paused, .hv.is-paused * { animation-play-state: paused !important; }
 @keyframes breathe { 0%, 100% { opacity: .85; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
 @keyframes blink { 0% { opacity: 1; } 100% { opacity: .35; } }
 @keyframes nudgeUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }

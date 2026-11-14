@@ -170,9 +170,10 @@
 {%- endmacro %}
 
 {# ASDHEM | browser window frame around a real screenshot #}
-{% macro browser(src, alt, host='', eager=False, w=1440, h=900) -%}
+{% macro browser(src, alt, host='', eager=False, w=1440, h=900, on_open=False) -%}
 <figure class="browser">
   <div class="browser-bar" aria-hidden="true"><i></i><i></i><i></i>{% if host %}<span>{{ host }}</span>{% endif %}</div>
-  <img src="{{ src }}" alt="{{ alt }}" width="{{ w }}" height="{{ h }}" {{ 'fetchpriority="high"' if eager else 'loading="lazy"' }} decoding="async">
+  {# on_open: downloaded only when the portfolio window is opened (saves data on mobile) #}
+  <img {{ 'data-src' if on_open else 'src' }}="{{ src }}" alt="{{ alt }}" width="{{ w }}" height="{{ h }}" {{ 'fetchpriority="high"' if eager else 'loading="lazy"' }} decoding="async">
 </figure>
 {%- endmacro %}

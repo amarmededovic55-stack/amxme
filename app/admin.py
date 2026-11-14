@@ -29,6 +29,7 @@ bp = Blueprint("admin", __name__)
 
 MAX_FAILED_LOGINS = 8            # per IP
 MAX_FAILED_PER_USER = 20         # per username, from all IPs (distributed guessing)
+MAX_FAILED_PER_USER_DAY = 60     # ASDHEM | per username in 24 h – slows down slow, distributed password guessing
 MAX_FAILED_2FA_PER_USER = 10     # 2FA codes per account, from all IPs
 LOCKOUT = timedelta(minutes=15)
 IDLE_TIMEOUT = 2 * 60 * 60       # seconds without activity before the admin is signed out
@@ -147,8 +148,14 @@ def login():
             Activity.kind == "auth_fail", Activity.action == _fail_msg(username),
             Activity.created_at > utcnow() - LOCKOUT
         ).count()
+        user_fails_day = db.session.query(Activity).filter(
+            Activity.kind == "auth_fail", Activity.action == _fail_msg(username),
+            Activity.created_at > utcnow() - timedelta(days=1)
+        ).count()
         if fails >= MAX_FAILED_LOGINS or user_fails >= MAX_FAILED_PER_USER:
             error = "Too many failed attempts. Please wait 15 minutes and try again."
+        elif user_fails_day >= MAX_FAILED_PER_USER_DAY:
+            error = "Too many failed attempts for this account today. Please try again tomorrow."
         else:
             user = db.session.execute(db.select(AdminUser).filter_by(username=username)).scalar()
             ok = check_password_hash(user.password_hash if user else _DUMMY_HASH, password)
@@ -167,8 +174,27 @@ def login():
                 return redirect(nxt)
             log(_fail_msg(username), "auth_fail", "")
             db.session.commit()
+            if user and (user_fails + 1 == MAX_FAILED_PER_USER or user_fails_day + 1 == MAX_FAILED_PER_USER_DAY):
+                _alert_locked(user.username, ip, user_fails_day + 1)
             error = "Invalid username or password."
     return render_template("admin/login.html", error=error)
+
+
+def _alert_locked(username, ip, count):
+    """ASDHEM | email the owner when an admin account gets locked by failed sign-ins (possible attack)."""
+    from .mailer import send_mail
+    from .templating import get_content
+    to = get_content().notify_email
+    if not (to and smtp_configured()):
+        return
+    try:
+        send_mail(to, f"Security alert: admin account '{username}' locked",
+                  f"The admin account '{username}' on {current_app.config['SITE_URL']} was locked after "
+                  f"{count} failed sign-in attempts in the last 24 hours (last attempt from IP {ip}).\n\n"
+                  "If this was not you, someone may be guessing the password. Use a long password and "
+                  "turn on two-factor authentication under Admin → Account.")
+    except Exception:  # an alert must never break the login page
+        current_app.logger.exception("lock alert email failed")
 
 
 def _fail_msg(username):
