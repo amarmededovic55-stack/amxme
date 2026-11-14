@@ -236,7 +236,15 @@ def init_app(app):
             g.footer_services = localize(rows)
         return g.footer_services
 
+    def has_portfolio():
+        """ASDHEM | portfolio pop-up switched on and at least one enabled project."""
+        if "has_portfolio" not in g:
+            from .models import Project
+            on = get_content().portfolio_enabled == "1"
+            g.has_portfolio = on and db.session.execute(db.select(Project.id).filter_by(enabled=True).limit(1)).first() is not None
+        return g.has_portfolio
+
     @app.context_processor
     def inject():
         return {"c": get_content(), "year": datetime.now().year, "lang": current_lang(),
-                "lang_url": lang_url, "i18n_js": js_strings, "footer_services": footer_services}
+                "lang_url": lang_url, "i18n_js": js_strings, "footer_services": footer_services, "has_portfolio": has_portfolio}

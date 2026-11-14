@@ -20,6 +20,50 @@
 </span>
 {%- endmacro %}
 
+{# ASDHEM | hero illustration: a tiny rendered website inside the device mockups #}
+{% macro mini_site(uid, compact=False) -%}
+<div class="ms{{ ' ms--compact' if compact }}">
+  <div class="ms-nav">
+    <span class="ms-logo"></span>
+    {% if not compact %}<span class="ms-links">{% for w in t('ms_nav').split('|') %}<i>{{ w }}</i>{% endfor %}</span>{% else %}<span class="ms-burger"><i></i><i></i></span>{% endif %}
+  </div>
+  <div class="ms-hero">
+    <svg class="ms-mtn" viewBox="0 0 300 160" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="msky{{ uid }}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b0f86"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+        <linearGradient id="mm1{{ uid }}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ede9fe"/><stop offset=".35" stop-color="#8b5cf6"/><stop offset="1" stop-color="#2e1065"/></linearGradient>
+        <linearGradient id="mm2{{ uid }}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6d28d9"/><stop offset="1" stop-color="#1e0b4b"/></linearGradient>
+      </defs>
+      <rect width="300" height="160" fill="url(#msky{{ uid }})"/>
+      <circle cx="232" cy="38" r="14" fill="#f5f3ff" opacity=".55"/>
+      <path d="M0 120 70 52l30 26 52-58 64 70 38-30 46 50v50H0z" fill="url(#mm1{{ uid }})"/>
+      <path d="M0 140 60 100l50 24 60-40 70 46 60-30v60H0z" fill="url(#mm2{{ uid }})"/>
+    </svg>
+    <div class="ms-copy">
+      <b>{{ t('ms_title') | safe }}</b>
+      <span>{{ t('ms_sub') }}</span>
+      <em>{{ t('ms_cta') }}</em>
+    </div>
+  </div>
+  {% if not compact %}
+  <div class="ms-cards"><i></i><i></i><i></i></div>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+
+{% macro rack(units=9) -%}
+<div class="rack-body">
+  {% for u in range(units) %}
+  <div class="ru">
+    <span class="ru-vent"></span>
+    <span class="ru-leds"><i style="--d:{{ (u * 37) % 17 / 10 }}s"></i><i style="--d:{{ (u * 53) % 13 / 10 }}s"></i><i class="b" style="--d:{{ (u * 29) % 11 / 10 }}s"></i></span>
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+
 {# ASDHEM | country flags as inline SVG (emoji flags do not show on Windows) #}
 {% macro flag(code, uid='') -%}
 {% if code == 'de' -%}
@@ -65,6 +109,7 @@
         <li><a href="{{ base }}#services">{{ t('nav_services') }}</a></li>
         <li><a href="{{ base }}#hosting">{{ t('nav_hosting') }}</a></li>
         {% if c.process_steps %}<li><a href="{{ base }}#process">{{ t('nav_process') }}</a></li>{% endif %}
+        {% if has_portfolio() %}<li><a href="{{ base }}#projekti" data-open-portfolio>{{ t('nav_work') }}</a></li>{% endif %}
         <li><a href="{{ base }}#about">{{ t('nav_about') }}</a></li>
         <li><a href="{{ url_for('public.faq') }}" class="{{ 'is-current' if request.endpoint == 'public.faq' }}">{{ t('nav_faq') }}</a></li>
         <li><a href="{{ url_for('public.blog') }}" class="{{ 'is-current' if request.endpoint in ('public.blog', 'public.blog_post') }}">{{ t('nav_blog') }}</a></li>
@@ -100,6 +145,7 @@
       <h2 class="ftr-h">{{ t('f_company') }}</h2>
       <ul>
         <li><a href="{{ base }}#about">{{ t('about_us') }}</a></li>
+        {% if has_portfolio() %}<li><a href="{{ base }}#projekti" data-open-portfolio>{{ t('nav_work') }}</a></li>{% endif %}
         {% if c.process_steps %}<li><a href="{{ base }}#process">{{ t('nav_process') }}</a></li>{% endif %}
         <li><a href="{{ url_for('public.faq') }}">{{ t('nav_faq') }}</a></li>
         <li><a href="{{ url_for('public.blog') }}">{{ t('nav_blog') }}</a></li>

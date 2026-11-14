@@ -43,6 +43,8 @@ SECTIONS = [
             F("why_title", "Why us – heading", default="Why Choose AMXME?"),
             F("why_intro", "Why us – intro", "textarea",
               default="We combine careful engineering with dependable infrastructure and real, human support."),
+            F("portfolio_enabled", "Portfolio – show projects", "bool", default="1",
+              help="On = “Projects” appears in the menu and opens a pop-up window with your projects (Admin → Projects). Off = hidden everywhere."),
             F("portfolio_eyebrow", "Portfolio – label", default="Our work"),
             F("portfolio_title", "Portfolio – heading", default="Projects We're Proud Of"),
             F("portfolio_intro", "Portfolio – intro", "textarea",

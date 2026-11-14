@@ -91,6 +91,28 @@
     reveals.forEach((el) => el.classList.add("is-in"));
   }
 
+  /* ASDHEM | portfolio pop-up window ("Projects" in the menu, or /#projekti) */
+  const pf = $("#projekti");
+  if (pf && pf.tagName === "DIALOG") {
+    let opener = null;
+    const openPf = () => {
+      if (pf.open) return;
+      if (typeof pf.showModal === "function") pf.showModal(); else pf.setAttribute("open", "");
+      document.body.classList.add("dialog-open");
+      pf.scrollTop = 0;
+    };
+    const closePf = () => { if (typeof pf.close === "function") pf.close(); else pf.removeAttribute("open"); };
+    pf.addEventListener("close", () => {
+      document.body.classList.remove("dialog-open");
+      if (location.hash === "#projekti") history.replaceState(null, "", location.pathname + location.search);
+      if (opener) opener.focus({ preventScroll: true });
+    });
+    $$("[data-open-portfolio]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); opener = a; openPf(); }));
+    $$("[data-close-portfolio]", pf).forEach((b) => b.addEventListener("click", closePf));
+    pf.addEventListener("click", (e) => { if (e.target === pf) closePf(); });   // click on the dimmed backdrop
+    if (location.hash === "#projekti") openPf();
+  }
+
   /* website check: show progress on the button */
   const chk = $("#checkForm");
   if (chk) chk.addEventListener("submit", () => {

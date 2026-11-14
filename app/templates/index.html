@@ -10,7 +10,7 @@
     hero → advantages → services → process → hosting → work → about → portal → check → blog → contact
 #}
 {% extends "base.html" %}
-{% from "_macros.html" import site_header, site_footer, browser with context %}
+{% from "_macros.html" import site_header, site_footer, browser, mini_site, rack with context %}
 {% block body_class %}home{% endblock %}
 {% block body %}
 {% if preview_left %}
@@ -21,7 +21,6 @@
 
 {{ site_header(home=True) }}
 
-{% set showcase = projects | selectattr('image') | list | first %}
 <main id="main">
 
 <!-- ============================== HERO ============================== -->
@@ -35,16 +34,80 @@
         {% if c.hero_btn2_text %}<a href="{{ c.hero_btn2_link | safe_url('#services') }}" class="btn btn-secondary btn-lg">{{ c.hero_btn2_text }}</a>{% endif %}
       </div>
     </div>
-    <div class="hero-visual">
-      {% if showcase %}
-      {{ browser(showcase.image, t('screenshot_of') ~ ' ' ~ showcase.title, showcase.url | replace('https://', '') | replace('http://', '') | trim('/'), eager=True) }}
-      <p class="hero-caption">{{ t('recent_project') }}: <b>{{ showcase.title }}</b>{% if showcase.tech_list %} · {{ showcase.tech_list | join(', ') }}{% endif %}{% if showcase.url %} · <a href="{{ showcase.url | safe_url }}" target="_blank" rel="noopener">{{ t('view_project') }}</a>{% endif %}</p>
-      {% else %}
-      <figure class="browser browser--empty" aria-hidden="true">
-        <div class="browser-bar"><i></i><i></i><i></i></div>
-        <div class="skeleton"><i class="w60"></i><i class="w40"></i><i class="w80"></i><i class="w70"></i></div>
-      </figure>
-      {% endif %}
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hv">
+        <div class="hv-glow"></div>
+        <div class="hv-floor"></div>
+
+        <!-- server racks -->
+        <div class="hv-rack hv-rack--back">{{ rack(7) }}</div>
+        <div class="hv-rack hv-rack--front">{{ rack(10) }}</div>
+
+        <!-- cloud -->
+        <div class="hv-cloud">
+          <svg viewBox="0 0 220 150">
+            <defs>
+              <linearGradient id="cloudFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f3eeff"/><stop offset="1" stop-color="#d8c8ff"/>
+              </linearGradient>
+              <linearGradient id="arrowFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#5b21b6"/>
+              </linearGradient>
+            </defs>
+            <path d="M58 128h112a40 40 0 0 0 6-79.5A54 54 0 0 0 72 40a44 44 0 0 0-14 88z" fill="url(#cloudFill)" stroke="#c4b5fd" stroke-width="2"/>
+            <g class="cl-up"><path d="M96 104V62m0 0-13 13m13-13 13 13" fill="none" stroke="url(#arrowFill)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <g class="cl-down"><path d="M126 60v42m0 0-13-13m13 13 13-13" fill="none" stroke="url(#arrowFill)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g>
+          </svg>
+          <span class="hv-beam b1"></span><span class="hv-beam b2"></span><span class="hv-beam b3"></span>
+        </div>
+
+        <!-- desktop monitor -->
+        <div class="hv-monitor">
+          <div class="mon-screen">{{ mini_site('d') }}</div>
+          <div class="mon-chin"></div>
+          <div class="mon-neck"></div>
+          <div class="mon-foot"></div>
+        </div>
+
+        <!-- laptop with dev interface -->
+        <div class="hv-laptop">
+          <div class="lap-lid">
+            <div class="lap-screen">
+              <div class="ide">
+                <div class="ide-bar"><i></i><i></i><i></i><span>index.html — amxme</span></div>
+                <div class="ide-body">
+                  <div class="ide-side">
+                    <span class="f open">src</span><span class="f">components</span><span class="f act">index.html</span><span class="f">styles.css</span><span class="f">app.js</span><span class="f">server.conf</span>
+                  </div>
+                  <div class="ide-code">
+<pre><span class="ln">1</span><span class="t">&lt;section</span> <span class="a">class</span>=<span class="s">"hero"</span><span class="t">&gt;</span>
+<span class="ln">2</span>  <span class="t">&lt;h1&gt;</span>Your Business Online<span class="t">&lt;/h1&gt;</span>
+<span class="ln">3</span>  <span class="t">&lt;p&gt;</span>Fast. Secure. Reliable.<span class="t">&lt;/p&gt;</span>
+<span class="ln">4</span>  <span class="t">&lt;a</span> <span class="a">href</span>=<span class="s">"#start"</span><span class="t">&gt;</span>Get Started<span class="t">&lt;/a&gt;</span>
+<span class="ln">5</span><span class="t">&lt;/section&gt;</span>
+<span class="ln">6</span>
+<span class="ln">7</span><span class="k">const</span> <span class="v">site</span> = <span class="f">deploy</span>({
+<span class="ln">8</span>  <span class="a">ssl</span>: <span class="k">true</span>, <span class="a">cache</span>: <span class="s">'edge'</span>,
+<span class="ln">9</span>  <span class="a">backups</span>: <span class="s">'daily'</span>
+<span class="ln">10</span>});<span class="cursor"></span></pre>
+                  </div>
+                  <div class="ide-preview">{{ mini_site('l', True) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lap-base"><span></span></div>
+        </div>
+
+        <!-- smartphone -->
+        <div class="hv-phone">
+          <div class="ph-frame"><div class="ph-notch"></div><div class="ph-screen">{{ mini_site('p', True) }}</div></div>
+        </div>
+
+        <!-- floating chips -->
+        <div class="hv-chip chip-ssl">{{ icon('lock') }}<span>{{ t('chip_ssl') }}</span></div>
+        <div class="hv-chip chip-speed">{{ icon('zap') }}<span>{{ t('chip_fast') }}</span></div>
+      </div>
     </div>
   </div>
 
@@ -132,34 +195,6 @@
   </div>
   {% endif %}
 </section>
-
-<!-- ============================== WORK ============================== -->
-{# the first project with a screenshot is already shown in the hero – list only the others #}
-{% set more_work = projects | reject('sameas', showcase) | list %}
-{% if more_work %}
-<section class="section section--alt" id="portfolio" aria-labelledby="work-h">
-  <div class="wrap">
-    <header class="sec-head">
-      <p class="eyebrow">{{ c.portfolio_eyebrow }}</p>
-      <h2 id="work-h">{{ c.portfolio_title }}</h2>
-    </header>
-    <div class="work-list">
-      {% for p in more_work %}
-      <article class="work reveal">
-        {% if p.image %}<div class="work-media">{{ browser(p.image, t('screenshot_of') ~ ' ' ~ p.title, p.url | replace('https://', '') | replace('http://', '') | trim('/')) }}</div>{% endif %}
-        <div class="work-body">
-          {% if p.category %}<p class="eyebrow">{{ p.category }}</p>{% endif %}
-          <h3>{{ p.title }}</h3>
-          {% if p.description %}<p>{{ p.description }}</p>{% endif %}
-          {% if p.tech_list %}<ul class="tags">{% for tech in p.tech_list %}<li>{{ tech }}</li>{% endfor %}</ul>{% endif %}
-          {% if p.url %}<a href="{{ p.url | safe_url }}" class="link-arrow" target="_blank" rel="noopener">{{ t('view_project') }} {{ icon('external') }}</a>{% endif %}
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
 
 <!-- ============================== ABOUT + WHY ============================== -->
 <section class="section" id="about" aria-labelledby="about-h">
@@ -327,6 +362,36 @@
   </div>
 </section>
 </main>
+
+<!-- ============================== PORTFOLIO (pop-up window, switch: Admin → Section Headings) ============================== -->
+{% if c.portfolio_enabled == '1' and projects %}
+<dialog class="pf-modal" id="projekti" aria-labelledby="pf-h">
+  <div class="pf-modal-in">
+    <header class="pf-modal-head">
+      <div>
+        <p class="eyebrow">{{ c.portfolio_eyebrow }}</p>
+        <h2 id="pf-h">{{ c.portfolio_title }}</h2>
+        {% if c.portfolio_intro %}<p class="sec-lead">{{ c.portfolio_intro }}</p>{% endif %}
+      </div>
+      <button type="button" class="icon-btn pf-close" data-close-portfolio aria-label="{{ t('close') }}">{{ icon('x') }}</button>
+    </header>
+    <div class="work-list">
+      {% for p in projects %}
+      <article class="work">
+        {% if p.image %}<div class="work-media">{{ browser(p.image, t('screenshot_of') ~ ' ' ~ p.title, p.url | replace('https://', '') | replace('http://', '') | trim('/')) }}</div>{% endif %}
+        <div class="work-body">
+          {% if p.category %}<p class="eyebrow">{{ p.category }}</p>{% endif %}
+          <h3>{{ p.title }}</h3>
+          {% if p.description %}<p>{{ p.description }}</p>{% endif %}
+          {% if p.tech_list %}<ul class="tags">{% for tech in p.tech_list %}<li>{{ tech }}</li>{% endfor %}</ul>{% endif %}
+          {% if p.url %}<a href="{{ p.url | safe_url }}" class="link-arrow" target="_blank" rel="noopener">{{ t('view_project') }} {{ icon('external') }}</a>{% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</dialog>
+{% endif %}
 
 {{ site_footer(home=True) }}
 {% endblock %}

@@ -29,6 +29,14 @@ UI = {
     "home": {"en": "Home", "de": "Startseite", "hr": "Početna"},
     "language": {"en": "Language", "de": "Sprache", "hr": "Jezik"},
     "choose_lang": {"en": "Choose language", "de": "Sprache wählen", "hr": "Odaberite jezik"},
+    # ASDHEM | hero illustration (devices)
+    "chip_ssl": {"en": "SSL Secured", "de": "SSL-gesichert", "hr": "SSL zaštita"},
+    "chip_fast": {"en": "Optimized", "de": "Optimiert", "hr": "Optimizirano"},
+    "ms_title": {"en": "Your Business<br>Online", "de": "Ihr Business<br>online", "hr": "Vaš posao<br>online"},
+    "ms_sub": {"en": "Fast. Secure. Reliable.", "de": "Schnell. Sicher. Zuverlässig.", "hr": "Brzo. Sigurno. Pouzdano."},
+    "ms_cta": {"en": "Get Started →", "de": "Jetzt starten →", "hr": "Započnite →"},
+    "ms_nav": {"en": "Home|Services|About|Contact", "de": "Start|Leistungen|Über uns|Kontakt", "hr": "Početna|Usluge|O nama|Kontakt"},
+    "close": {"en": "Close", "de": "Schließen", "hr": "Zatvori"},
     # ASDHEM | v10 redesign
     "cta_quote": {"en": "Request a quote", "de": "Angebot anfordern", "hr": "Zatražite ponudu"},
     "skip": {"en": "Skip to content", "de": "Zum Inhalt springen", "hr": "Preskoči na sadržaj"},
