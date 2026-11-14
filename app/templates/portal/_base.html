@@ -1,28 +1,35 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
+{# ASDHEM | client portal layout – an application, visually separate from the marketing site #}
 {% extends "base.html" %}
-{% from "_macros.html" import logo with context %}
+{% from "_macros.html" import logo, lang_menu, theme_toggle with context %}
 {% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block body_class %}portal-app{% endblock %}
 {% block body %}
-<header class="sub-top">
-  <div class="wrap sub-top-in">
-    <a href="{{ url_for('portal.home') if g.client else url_for('public.index') }}">{{ logo() }}</a>
-    <nav class="sub-nav portal-nav">
-      <span class="portal-tag">{{ icon('user') }} {{ t('p_title') }}</span>
+<a class="skip" href="#main">{{ t('skip') }}</a>
+<header class="pbar">
+  <div class="wrap pbar-in">
+    <a href="{{ url_for('portal.home') if g.client else url_for('public.index') }}" class="pbar-brand">{{ logo() }}<span class="pbar-tag">{{ t('p_title') }}</span></a>
+    <nav class="pbar-nav" aria-label="{{ t('p_title') }}">
       {% if g.client %}
-      <a href="{{ url_for('portal.home') }}">{{ t('p_overview') }}</a>
-      <a href="{{ url_for('portal.profile') }}">{{ t('p_profile').split(' ')[0] }}</a>
-      <a href="{{ url_for('portal.security') }}">{{ t('p_security') }}</a>
-      <form method="post" action="{{ url_for('portal.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-ghost">{{ t('p_logout') }}</button></form>
+      <a href="{{ url_for('portal.home') }}" class="{{ 'is-on' if request.endpoint == 'portal.home' }}">{{ icon('home') }}<span>{{ t('p_overview') }}</span></a>
+      <a href="{{ url_for('portal.profile') }}" class="{{ 'is-on' if request.endpoint == 'portal.profile' }}">{{ icon('user') }}<span>{{ t('p_profile').split(' ')[0] }}</span></a>
+      <a href="{{ url_for('portal.security') }}" class="{{ 'is-on' if request.endpoint in ('portal.security', 'portal.password') }}">{{ icon('shield-check') }}<span>{{ t('p_security') }}</span></a>
+      {% endif %}
+      <span class="pbar-tools">{{ lang_menu('p') }}{{ theme_toggle() }}</span>
+      {% if g.client %}
+      <form method="post" action="{{ url_for('portal.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-secondary btn-sm">{{ icon('logout') }}<span>{{ t('p_logout') }}</span></button></form>
+      {% else %}
+      <a href="{{ url_for('public.index') }}" class="pbar-back">{{ t('back_site') }}</a>
       {% endif %}
     </nav>
   </div>
 </header>
-<main class="sub portal">
+<main id="main" class="portal">
   <div class="wrap">
-    {% with msgs = get_flashed_messages(with_categories=true) %}{% for cat, m in msgs %}<div class="alert alert-{{ cat }}">{{ m }}</div>{% endfor %}{% endwith %}
+    {% with msgs = get_flashed_messages(with_categories=true) %}{% for cat, m in msgs %}<div class="alert alert-{{ cat }}" role="status">{{ m }}</div>{% endfor %}{% endwith %}
     {% block page %}{% endblock %}
   </div>
 </main>
-<footer class="legal-bottom"><div class="wrap legal-bottom-in"><span>© {{ year }} {{ c.copyright }}</span>
-<nav><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav></div></footer>
+<footer class="pfoot"><div class="wrap pfoot-in"><span>© {{ year }} {{ c.copyright }}</span>
+<nav aria-label="Legal"><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav></div></footer>
 {% endblock %}

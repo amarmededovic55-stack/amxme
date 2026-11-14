@@ -2,24 +2,22 @@
 {% extends "_page.html" %}
 {% block title %}{{ t('blog_title') }} – {{ c.company_name }}{% endblock %}
 {% block page %}
-<section class="sub-hero">
-  <div class="wrap"><h1>{{ t('blog_title') }}</h1><p class="lead">{{ t('blog_intro') }}</p></div>
-</section>
-<div class="wrap">
+<header class="page-head">
+  <div class="wrap"><p class="eyebrow">{{ t('nav_blog') }}</p><h1>{{ t('blog_title') }}</h1><p class="sec-lead">{{ t('blog_intro') }}</p></div>
+</header>
+<div class="wrap page-body">
   {% if posts %}
-  <div class="post-grid">
+  <div class="post-list">
     {% for p in posts %}
-    <a href="{{ url_for('public.blog_post', slug=p.slug) }}" class="post-card">
-      <div class="post-img">{% if p.image %}<img src="{{ p.image }}" alt="" loading="lazy">{% else %}<span>{{ icon('file-text') }}</span>{% endif %}</div>
-      <div class="post-body">
-        <time datetime="{{ p.created_at.date() }}">{{ p.created_at.strftime('%d.%m.%Y') }}</time>
-        <h2>{{ p.title }}</h2>
-        {% if p.excerpt %}<p>{{ p.excerpt }}</p>{% endif %}
-        <span class="link-more">{{ t('read_more') }} {{ icon('arrow-right') }}</span>
-      </div>
+    <a href="{{ url_for('public.blog_post', slug=p.slug) }}" class="post-item">
+      {% if p.image %}<img src="{{ p.image }}" alt="" loading="lazy" class="post-thumb">{% endif %}
+      <time datetime="{{ p.created_at.date() }}">{{ p.created_at.strftime('%d.%m.%Y') }}</time>
+      <h2>{{ p.title }}</h2>
+      {% if p.excerpt %}<p>{{ p.excerpt }}</p>{% endif %}
+      <span class="link-arrow">{{ t('read_more') }} {{ icon('arrow-right') }}</span>
     </a>
     {% endfor %}
   </div>
-  {% else %}<p class="empty-note">{{ t('no_posts') }}</p>{% endif %}
+  {% else %}<p class="muted">{{ t('no_posts') }}</p>{% endif %}
 </div>
 {% endblock %}

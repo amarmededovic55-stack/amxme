@@ -1,30 +1,31 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
 {% extends "_page.html" %}
 {% block title %}{{ s.title }} – {{ c.company_name }}{% endblock %}
+{% block description %}{{ s.description or c.meta_description }}{% endblock %}
 {% block page %}
-<section class="sub-hero">
+<header class="page-head">
   <div class="wrap">
-    <span class="sub-ic">{{ icon(s.icon) }}</span>
+    <p class="eyebrow">{{ t('nav_services') }}</p>
     <h1>{{ s.title }}</h1>
-    {% if s.description %}<p class="lead">{{ s.description }}</p>{% endif %}
+    {% if s.description %}<p class="sec-lead">{{ s.description }}</p>{% endif %}
   </div>
-</section>
-<div class="wrap sub-grid">
+</header>
+<div class="wrap page-body page-grid">
   <article class="prose">
     {{ s.body | richtext }}
-    {% if s.item_list %}<ul class="ticks ticks--lg">{% for it in s.item_list %}<li>{{ icon('check') }}{{ it }}</li>{% endfor %}</ul>{% endif %}
+    {% if s.item_list %}<ul class="ticks">{% for it in s.item_list %}<li>{{ icon('check') }}{{ it }}</li>{% endfor %}</ul>{% endif %}
   </article>
-  <aside class="sub-side">
-    <div class="side-cta">
-      <h3>{{ t('service_cta') }}</h3>
-      <a href="{{ url_for('public.index') }}#contact" class="btn btn-white btn-block" data-service-link="{{ s.title }}">{{ t('nav_contact') }} {{ icon('arrow-right') }}</a>
-      {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="faq-help-mail">{{ icon('mail') }} {{ c.contact_email }}</a>{% endif %}
+  <aside class="page-side">
+    <div class="cta-box cta-box--stack">
+      <p>{{ t('service_cta') }}</p>
+      <a href="{{ url_for('public.index') }}#contact" class="btn btn-primary btn-block">{{ t('cta_quote') }} {{ icon('arrow-right') }}</a>
+      {% if c.contact_email %}<a href="mailto:{{ c.contact_email }}" class="link-quiet">{{ c.contact_email }}</a>{% endif %}
     </div>
     {% if others %}
-    <div class="side-box">
-      <h4>{{ t('other_services') }}</h4>
+    <nav class="side-list" aria-labelledby="other-h">
+      <h2 id="other-h">{{ t('other_services') }}</h2>
       <ul>{% for o in others %}<li><a href="{{ url_for('public.service_page', slug=o.slug) if o.slug and o.body else url_for('public.index') ~ '#services' }}">{{ icon(o.icon) }}{{ o.title }}</a></li>{% endfor %}</ul>
-    </div>
+    </nav>
     {% endif %}
   </aside>
 </div>

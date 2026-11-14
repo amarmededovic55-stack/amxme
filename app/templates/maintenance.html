@@ -1,67 +1,32 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
+{# ASDHEM | "under construction" page – what visitors see while the site is not public #}
 {% extends "base.html" %}
-{% from "_macros.html" import logo, rack with context %}
+{% from "_macros.html" import logo, lang_menu, theme_toggle with context %}
+{% block body_class %}solo-page{% endblock %}
 {% block body %}
-<main class="mt">
-  <div class="mt-bg" aria-hidden="true">
-    <div class="mt-orb a"></div><div class="mt-orb b"></div><div class="mt-grid"></div>
+<header class="solo-top">
+  <div class="wrap solo-top-in">
+    {{ logo() }}
+    <div class="solo-tools">{{ lang_menu('m') }}{{ theme_toggle() }}</div>
   </div>
-
-  <header class="mt-top wrap">{{ logo(light=True) }}</header>
-
-  <section class="wrap mt-in">
-    <div class="mt-copy">
-      {% if c.maintenance_badge %}<span class="mt-badge"><span class="pill-dot"></span>{{ c.maintenance_badge }}</span>{% endif %}
-      <h1>{{ c.maintenance_title | highlight(c.maintenance_highlight) }}</h1>
-      {% if c.maintenance_text %}<p class="mt-text">{{ c.maintenance_text }}</p>{% endif %}
-
-      <div class="mt-progress" aria-hidden="true"><span></span></div>
-
-      <a class="mt-mail" href="mailto:{{ c.contact_email }}">
-        <span class="mail-ic">{{ icon('mail') }}</span>
-        <span><small>{{ t('contact_us_small') }}</small><b>{{ c.contact_email }}</b></span>
-        {{ icon('arrow-right') }}
-      </a>
-
-      <div class="mt-links">
-        <a href="{{ url_for('public.website_check') }}" class="mt-link">{{ icon('search') }} {{ t('nav_check') }}</a>
-        <a href="{{ url_for('portal.login') }}" class="mt-link">{{ icon('user') }} {{ t('nav_portal') }}</a>
-        <a href="{{ url_for('public.status') }}" class="mt-link">{{ icon('activity') }} {{ t('nav_status') }}</a>
-      </div>
-
-      {% set tags = c.maintenance_tags | lines %}
-      {% if tags %}
-      <ul class="mt-tags">
-        {% set tag_icons = ['server', 'cpu', 'globe', 'lock', 'code', 'messages', 'cloud', 'shield-check', 'database', 'wrench'] %}
-        {% for t in tags %}<li>{{ icon(tag_icons[loop.index0 % tag_icons | length]) }}{{ t }}</li>{% endfor %}
-      </ul>
-      {% endif %}
-    </div>
-
-    <div class="mt-visual" aria-hidden="true">
-      <div class="mt-stage">
-        <div class="mt-glow"></div>
-        <div class="hv-rack mt-rack r1">{{ rack(9) }}</div>
-        <div class="hv-rack mt-rack r2">{{ rack(11) }}</div>
-        <div class="hv-rack mt-rack r3">{{ rack(8) }}</div>
-        <div class="mt-cloud">
-          <svg viewBox="0 0 220 150">
-            <defs>
-              <linearGradient id="mtCloud" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f3eeff"/><stop offset="1" stop-color="#d8c8ff"/></linearGradient>
-              <linearGradient id="mtArrow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#5b21b6"/></linearGradient>
-            </defs>
-            <path d="M58 128h112a40 40 0 0 0 6-79.5A54 54 0 0 0 72 40a44 44 0 0 0-14 88z" fill="url(#mtCloud)" stroke="#c4b5fd" stroke-width="2"/>
-            <g class="cl-up"><path d="M96 104V62m0 0-13 13m13-13 13 13" fill="none" stroke="url(#mtArrow)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g>
-            <g class="cl-down"><path d="M126 60v42m0 0-13-13m13 13 13-13" fill="none" stroke="url(#mtArrow)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g>
-          </svg>
-          <span class="hv-beam b1"></span><span class="hv-beam b2"></span><span class="hv-beam b3"></span>
-        </div>
-        <div class="hv-chip mt-chip c1">{{ icon('lock') }}<span>{{ t('chip_ssl') }}</span></div>
-        <div class="hv-chip mt-chip c2">{{ icon('server') }}<span>{{ t('chip_online') }}</span></div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="mt-foot wrap">© {{ year }} {{ c.copyright }}<nav class="mt-legal" aria-label="Legal"><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav></footer>
+</header>
+<main id="main" class="wrap maint">
+  {% if c.maintenance_badge %}<p class="eyebrow">{{ c.maintenance_badge }}</p>{% endif %}
+  <h1>{{ c.maintenance_title | highlight(c.maintenance_highlight) }}</h1>
+  {% if c.maintenance_text %}<p class="sec-lead">{{ c.maintenance_text }}</p>{% endif %}
+  <div class="maint-actions">
+    <a class="btn btn-primary btn-lg" href="mailto:{{ c.contact_email }}">{{ icon('mail') }} {{ c.contact_email }}</a>
+  </div>
+  {% set tags = c.maintenance_tags | lines %}
+  {% if tags %}<ul class="tags">{% for tg in tags %}<li>{{ tg }}</li>{% endfor %}</ul>{% endif %}
+  <nav class="maint-links" aria-label="{{ t('quick_links') }}">
+    <a href="{{ url_for('public.website_check') }}">{{ icon('search') }} {{ t('nav_check') }}</a>
+    <a href="{{ url_for('portal.login') }}">{{ icon('user') }} {{ t('nav_portal') }}</a>
+    <a href="{{ url_for('public.status') }}">{{ icon('activity') }} {{ t('nav_status') }}</a>
+  </nav>
 </main>
+<footer class="solo-foot wrap">
+  <span>© {{ year }} {{ c.copyright }}</span>
+  <nav aria-label="Legal"><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav>
+</footer>
 {% endblock %}

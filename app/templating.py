@@ -228,7 +228,15 @@ def init_app(app):
             return url_for(ep, **args)
         return url_for("public.index", lang=code)
 
+    def footer_services():
+        """ASDHEM | enabled services in the page language, for the footer (cached per request)."""
+        if "footer_services" not in g:
+            from .models import Service
+            rows = db.session.execute(db.select(Service).filter_by(enabled=True).order_by(Service.position, Service.id)).scalars().all()
+            g.footer_services = localize(rows)
+        return g.footer_services
+
     @app.context_processor
     def inject():
         return {"c": get_content(), "year": datetime.now().year, "lang": current_lang(),
-                "lang_url": lang_url, "i18n_js": js_strings}
+                "lang_url": lang_url, "i18n_js": js_strings, "footer_services": footer_services}

@@ -20,17 +20,11 @@ SECTIONS = [
         "slug": "hero", "title": "Početna stranica", "icon": "home",
         "intro": "The first thing visitors see at the top of the homepage.",
         "fields": [
-            F("hero_promo", "Promotional badge", default="Web Design · Hosting · Maintenance",
-              help="Small pill shown above the heading. Leave empty to hide."),
-            F("hero_tagline", "Script tagline", default="Your Website. Our Expertise."),
             F("hero_title", "Main heading", default="Web Development & Hosting Services"),
             F("hero_highlight", "Highlighted words", default="Hosting",
               help="Part of the main heading shown in the purple gradient."),
-            F("hero_motto", "Motto", default="Build. Host. Grow."),
             F("hero_subtitle", "Subtitle / description", "textarea",
               default="From the first design to reliable hosting and ongoing care – we build your website and keep it fast, secure and up to date."),
-            F("hero_checks", "Checklist (one per line)", "lines",
-              default="Modern, responsive design\nFree SSL on every website\nRegular backups & updates\nPersonal offers on request"),
             F("hero_btn1_text", "Primary button text", default="Explore Our Services"),
             F("hero_btn1_link", "Primary button link", default="#services"),
             F("hero_btn2_text", "Secondary button text", default="Contact Us"),
@@ -64,11 +58,6 @@ SECTIONS = [
             F("contact_title", "Contact – heading", default="Let's Build Something Great"),
             F("contact_intro", "Contact – intro", "textarea",
               default="Tell us about your project. We will get back to you with ideas, a plan and a non-binding offer."),
-            F("cta_title", "Call-to-action band – heading", default="Ready to take your business online?"),
-            F("cta_text", "Call-to-action band – text", "textarea",
-              default="Whether you need a new website, a fresh design for your existing one or a reliable home for your project – we're here to help."),
-            F("cta_btn_text", "Call-to-action band – button", default="Start Your Project"),
-            F("cta_btn_link", "Call-to-action band – button link", default="#contact"),
         ],
     },
     {
@@ -134,10 +123,6 @@ SECTIONS = [
             F("about_text", "Description", "textarea",
               default="AMXME Web Solutions designs, builds and hosts websites for businesses, entrepreneurs and individuals.\n\nWe create modern, responsive websites, host them on secure servers in the EU and take care of updates, backups and technical support afterwards – so you have one reliable partner for everything online, from the first design to years after launch.",
               help="Separate paragraphs with an empty line."),
-            F("about_points", "Key points (one per line)", "lines",
-              default="Web design & development\nHosting with SSL and backups\nOngoing maintenance and support\nClear communication, offers on request"),
-            F("about_image", "Image", "image", default="",
-              help="Optional. Without an image, a designed brand card is shown."),
             F("company_name", "Company name", default="AMXME Web Solutions", i18n=False),
         ],
     },
@@ -258,6 +243,121 @@ SECTIONS = [
 ]
 
 SECTION_MAP = {s["slug"]: s for s in SECTIONS}
+# ASDHEM | v10 redesign – shorter, clearer default texts (EN). Admin edits still win over these.
+REDESIGN_EN = {
+    "hero_title": "Professional websites. Reliable hosting.",
+    "hero_highlight": "Reliable hosting.",
+    "hero_subtitle": "We build, host and maintain websites for businesses, entrepreneurs and individuals. Everything you need for a professional online presence – in one place.",
+    "hero_btn1_text": "Request a quote",
+    "hero_btn1_link": "#contact",
+    "hero_btn2_text": "Our services",
+    "hero_btn2_link": "#services",
+    "services_eyebrow": "Services",
+    "services_title": "What we do for you",
+    "services_intro": "From the first draft to ongoing care – one team for your entire website.",
+    "hosting_eyebrow": "Web hosting",
+    "hosting_title": "Hosting you don't have to think about",
+    "hosting_text": "Your website runs on carefully maintained servers in the EU. We take care of certificates, updates and backups – and you have one contact for everything.",
+    "hosting_btn_text": "Ask about hosting",
+    "process_eyebrow": "How we work",
+    "process_title": "From first message to live website",
+    "about_eyebrow": "About us",
+    "about_title": "Your partner for everything online",
+    "about_text": "AMXME Web Solutions designs, builds and hosts websites for businesses, entrepreneurs and individuals – and stays responsible for them after launch: updates, backups and support included.",
+    "why_eyebrow": "Why AMXME",
+    "portal_eyebrow": "For clients",
+    "portal_title": "Client portal",
+    "portal_intro": "Every client gets a personal login – services, website status, invoices and support requests in one place.",
+    "portal_points": "Your services | Hosting, maintenance and domains with renewal dates.\n"
+                     "Website status | Availability and SSL validity of your website.\n"
+                     "Invoices | All invoices as PDF, ready to download.\n"
+                     "Support requests | Report a problem or request a change, with attachments.\n"
+                     "Notices | Planned maintenance and news, announced in advance.\n"
+                     "Secure sign-in | Encrypted, with optional two-factor authentication.",
+    "portal_btn": "Client login",
+    "check_title": "How good is your website?",
+    "check_intro": "A free report on security, speed and Google basics – in seconds, without registration.",
+    "contact_eyebrow": "Contact",
+    "contact_title": "Let's talk about your project",
+    "contact_intro": "Tell us briefly what you need. You will receive a personal, non-binding offer.",
+}
+REDESIGN_I18N = {
+    "de": {
+        "hero_title": "Professionelle Websites. Zuverlässiges Hosting.",
+        "hero_highlight": "Zuverlässiges Hosting.",
+        "hero_subtitle": "Wir entwickeln, hosten und betreuen Websites für Unternehmen, Selbstständige und Privatpersonen. Alles, was Sie für einen professionellen Online-Auftritt brauchen – aus einer Hand.",
+        "hero_btn1_text": "Angebot anfordern",
+        "hero_btn2_text": "Unsere Leistungen",
+        "services_eyebrow": "Leistungen",
+        "services_title": "Was wir für Sie tun",
+        "services_intro": "Vom ersten Entwurf bis zur laufenden Betreuung – ein Team für Ihre gesamte Website.",
+        "hosting_eyebrow": "Webhosting",
+        "hosting_title": "Hosting, um das Sie sich nicht kümmern müssen",
+        "hosting_text": "Ihre Website läuft auf sorgfältig gewarteten Servern in der EU. Wir kümmern uns um Zertifikate, Updates und Backups – und Sie haben einen Ansprechpartner für alles.",
+        "hosting_btn_text": "Hosting anfragen",
+        "process_eyebrow": "Ablauf",
+        "process_title": "Von der ersten Nachricht zur fertigen Website",
+        "about_eyebrow": "Über uns",
+        "about_title": "Ihr Partner für alles rund ums Web",
+        "about_text": "AMXME Web Solutions gestaltet, entwickelt und hostet Websites für Unternehmen, Selbstständige und Privatpersonen – und bleibt auch nach dem Start verantwortlich: Updates, Backups und Support inklusive.",
+        "why_eyebrow": "Warum AMXME",
+        "portal_eyebrow": "Für Kunden",
+        "portal_title": "Kundenportal",
+        "portal_intro": "Jeder Kunde erhält einen persönlichen Zugang – Leistungen, Website-Status, Rechnungen und Support-Anfragen an einem Ort.",
+        "portal_points": "Ihre Leistungen | Hosting, Wartung und Domains mit Verlängerungsdatum.\n"
+                         "Website-Status | Erreichbarkeit und SSL-Gültigkeit Ihrer Website.\n"
+                         "Rechnungen | Alle Rechnungen als PDF zum Download.\n"
+                         "Support-Anfragen | Problem melden oder Änderung anfragen, mit Anhängen.\n"
+                         "Hinweise | Geplante Wartungen und Neuigkeiten, rechtzeitig angekündigt.\n"
+                         "Sicherer Login | Verschlüsselt, mit optionaler Zwei-Faktor-Authentifizierung.",
+        "portal_btn": "Zum Kundenlogin",
+        "check_title": "Wie gut ist Ihre Website?",
+        "check_intro": "Kostenloser Bericht zu Sicherheit, Geschwindigkeit und Google-Grundlagen – in Sekunden, ohne Anmeldung.",
+        "contact_eyebrow": "Kontakt",
+        "contact_title": "Sprechen wir über Ihr Projekt",
+        "contact_intro": "Beschreiben Sie kurz, was Sie brauchen. Sie erhalten ein persönliches, unverbindliches Angebot.",
+    },
+    "hr": {
+        "hero_title": "Profesionalne web stranice. Pouzdan hosting.",
+        "hero_highlight": "Pouzdan hosting.",
+        "hero_subtitle": "Izrađujemo, hostamo i održavamo web stranice za tvrtke, poduzetnike i pojedince. Sve što vam treba za profesionalnu online prisutnost – na jednom mjestu.",
+        "hero_btn1_text": "Zatražite ponudu",
+        "hero_btn2_text": "Naše usluge",
+        "services_eyebrow": "Usluge",
+        "services_title": "Što radimo za vas",
+        "services_intro": "Od prvog nacrta do redovitog održavanja – jedan tim za cijelu vašu web stranicu.",
+        "hosting_eyebrow": "Web hosting",
+        "hosting_title": "Hosting o kojem ne morate brinuti",
+        "hosting_text": "Vaša stranica radi na pažljivo održavanim poslužiteljima u EU. Mi brinemo o certifikatima, ažuriranjima i sigurnosnim kopijama – a vi imate jednu kontakt osobu za sve.",
+        "hosting_btn_text": "Upit za hosting",
+        "process_eyebrow": "Kako radimo",
+        "process_title": "Od prve poruke do gotove web stranice",
+        "about_eyebrow": "O nama",
+        "about_title": "Vaš partner za sve online",
+        "about_text": "AMXME Web Solutions dizajnira, izrađuje i hosta web stranice za tvrtke, poduzetnike i pojedince – i ostaje odgovoran za njih i nakon pokretanja: ažuriranja, sigurnosne kopije i podrška su uključeni.",
+        "why_eyebrow": "Zašto AMXME",
+        "portal_eyebrow": "Za klijente",
+        "portal_title": "Korisnički portal",
+        "portal_intro": "Svaki klijent dobiva osobnu prijavu – usluge, status stranice, računi i zahtjevi za podršku na jednom mjestu.",
+        "portal_points": "Vaše usluge | Hosting, održavanje i domene s datumima obnove.\n"
+                         "Status stranice | Dostupnost i valjanost SSL certifikata vaše stranice.\n"
+                         "Računi | Svi računi u PDF-u, spremni za preuzimanje.\n"
+                         "Zahtjevi za podršku | Prijavite problem ili zatražite izmjenu, uz privitke.\n"
+                         "Obavijesti | Planirana održavanja i novosti, najavljeni unaprijed.\n"
+                         "Sigurna prijava | Šifrirano, uz opcionalnu dvofaktorsku autentifikaciju.",
+        "portal_btn": "Prijava u portal",
+        "check_title": "Koliko je dobra vaša web stranica?",
+        "check_intro": "Besplatno izvješće o sigurnosti, brzini i osnovama za Google – za nekoliko sekundi, bez registracije.",
+        "contact_eyebrow": "Kontakt",
+        "contact_title": "Razgovarajmo o vašem projektu",
+        "contact_intro": "Ukratko opišite što vam treba. Dobit ćete osobnu, neobvezujuću ponudu.",
+    },
+}
+for _s in SECTIONS:
+    for _f in _s["fields"]:
+        if _f["key"] in REDESIGN_EN:
+            _f["default"] = REDESIGN_EN[_f["key"]]
+
 DEFAULTS = {f["key"]: f["default"] for s in SECTIONS for f in s["fields"]}
 FIELD_SECTION = {f["key"]: s["slug"] for s in SECTIONS for f in s["fields"]}
 TRANSLATABLE = {f["key"] for s in SECTIONS for f in s["fields"] if f["i18n"]}
@@ -266,13 +366,9 @@ TRANSLATABLE = {f["key"] for s in SECTIONS for f in s["fields"] if f["i18n"]}
 # ASDHEM | translations of the default texts (used until a translation is typed in the admin)
 DEFAULTS_I18N = {
     "de": {
-        "hero_promo": "Webdesign · Hosting · Wartung",
-        "hero_tagline": "Ihre Website. Unsere Expertise.",
         "hero_title": "Webentwicklung & Hosting-Services",
         "hero_highlight": "Hosting",
-        "hero_motto": "Gestalten. Hosten. Wachsen.",
         "hero_subtitle": "Vom ersten Entwurf bis zum zuverlässigen Hosting und laufender Betreuung – wir bauen Ihre Website und halten sie schnell, sicher und aktuell.",
-        "hero_checks": "Modernes, responsives Design\nKostenloses SSL für jede Website\nRegelmäßige Backups & Updates\nIndividuelle Angebote auf Anfrage",
         "hero_btn1_text": "Unsere Leistungen",
         "hero_btn2_text": "Kontakt aufnehmen",
         "services_eyebrow": "Was wir tun",
@@ -292,9 +388,6 @@ DEFAULTS_I18N = {
         "contact_eyebrow": "Kontakt",
         "contact_title": "Lassen Sie uns etwas Großartiges bauen",
         "contact_intro": "Erzählen Sie uns von Ihrem Projekt. Sie erhalten von uns Ideen, einen Plan und ein unverbindliches Angebot.",
-        "cta_title": "Bereit, mit Ihrem Business online zu gehen?",
-        "cta_text": "Ob neue Website, frisches Design für Ihre bestehende Seite oder ein zuverlässiges Zuhause für Ihr Projekt – wir helfen Ihnen gerne.",
-        "cta_btn_text": "Projekt starten",
         "process_eyebrow": "So arbeiten wir",
         "process_title": "Von der ersten Nachricht zur fertigen Website",
         "process_intro": "Ein klarer, einfacher Ablauf – Sie wissen immer, was als Nächstes passiert, und nichts startet ohne Ihr OK.",
@@ -324,7 +417,6 @@ DEFAULTS_I18N = {
         "about_eyebrow": "Über uns",
         "about_title": "Ihr Partner für alles rund ums Web",
         "about_text": "AMXME Web Solutions gestaltet, entwickelt und hostet Websites für Unternehmen, Selbstständige und Privatpersonen.\n\nWir erstellen moderne, responsive Websites, hosten sie auf sicheren Servern in der EU und kümmern uns danach um Updates, Backups und technischen Support – so haben Sie einen verlässlichen Partner für alles Digitale, vom ersten Entwurf bis Jahre nach dem Start.",
-        "about_points": "Webdesign & Entwicklung\nHosting mit SSL und Backups\nLaufende Wartung und Support\nKlare Kommunikation, Angebote auf Anfrage",
         "contact_note": "Wir melden uns so schnell wie möglich.",
         "form_success": "Vielen Dank! Ihre Nachricht wurde gesendet. Wir melden uns in Kürze.",
         "footer_text": "Webdesign, Hosting und Website-Wartung für Unternehmen, Selbstständige und Privatpersonen.",
@@ -343,13 +435,9 @@ DEFAULTS_I18N = {
         "brand_sub": "Web Solutions",
     },
     "hr": {
-        "hero_promo": "Web dizajn · Hosting · Održavanje",
-        "hero_tagline": "Vaša web stranica. Naše znanje.",
         "hero_title": "Izrada web stranica i hosting usluge",
         "hero_highlight": "hosting",
-        "hero_motto": "Izgradi. Hostaj. Rasti.",
         "hero_subtitle": "Od prvog dizajna do pouzdanog hostinga i redovitog održavanja – izrađujemo vašu web stranicu i brinemo da bude brza, sigurna i ažurna.",
-        "hero_checks": "Moderan, responzivan dizajn\nBesplatan SSL za svaku stranicu\nRedovite sigurnosne kopije i ažuriranja\nOsobne ponude na upit",
         "hero_btn1_text": "Pogledajte usluge",
         "hero_btn2_text": "Kontaktirajte nas",
         "services_eyebrow": "Što radimo",
@@ -369,9 +457,6 @@ DEFAULTS_I18N = {
         "contact_eyebrow": "Javite se",
         "contact_title": "Napravimo nešto odlično",
         "contact_intro": "Opišite nam svoj projekt. Javit ćemo vam se s idejama, planom i neobvezujućom ponudom.",
-        "cta_title": "Spremni za online iskorak?",
-        "cta_text": "Trebate li novu web stranicu, svjež dizajn postojeće ili pouzdan dom za svoj projekt – tu smo da pomognemo.",
-        "cta_btn_text": "Započnite projekt",
         "process_eyebrow": "Kako radimo",
         "process_title": "Od prve poruke do gotove web stranice",
         "process_intro": "Jasan i jednostavan postupak – uvijek znate što slijedi i ništa ne počinje bez vašeg odobrenja.",
@@ -401,7 +486,6 @@ DEFAULTS_I18N = {
         "about_eyebrow": "O nama",
         "about_title": "Vaš partner za sve online",
         "about_text": "AMXME Web Solutions dizajnira, izrađuje i hosta web stranice za tvrtke, poduzetnike i pojedince.\n\nIzrađujemo moderne, responzivne web stranice, hostamo ih na sigurnim poslužiteljima u EU i nakon toga brinemo o ažuriranjima, sigurnosnim kopijama i tehničkoj podršci – tako imate jednog pouzdanog partnera za sve online, od prvog dizajna do godinama nakon pokretanja.",
-        "about_points": "Web dizajn i izrada\nHosting sa SSL-om i sigurnosnim kopijama\nRedovito održavanje i podrška\nJasna komunikacija, ponude na upit",
         "contact_note": "Javit ćemo vam se što prije.",
         "form_success": "Hvala! Vaša poruka je poslana. Javit ćemo vam se uskoro.",
         "footer_text": "Web dizajn, hosting i održavanje web stranica za tvrtke, poduzetnike i pojedince.",
@@ -420,6 +504,9 @@ DEFAULTS_I18N = {
         "brand_sub": "Web Solutions",
     },
 }
+
+for _lang, _vals in REDESIGN_I18N.items():
+    DEFAULTS_I18N[_lang].update(_vals)
 
 
 # ---------------------------------------------------------------- seed data (fresh installs)
