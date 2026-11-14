@@ -1,32 +1,117 @@
 {# Signed: ASDHEM | AMXME Web Solutions -#}
-{# ASDHEM | "under construction" page – what visitors see while the site is not public #}
+{# ASDHEM | v13 "coming soon" page – what visitors see while the site is not public.
+   Header (sticky) · two-column hero with device visual · three quick-link cards · footer #}
 {% extends "base.html" %}
 {% from "_macros.html" import logo, lang_menu, theme_toggle with context %}
-{% block body_class %}solo-page{% endblock %}
+{% block body_class %}cs-page{% endblock %}
 {% block body %}
-<header class="solo-top">
-  <div class="wrap solo-top-in">
-    {{ logo() }}
-    <div class="solo-tools">{{ lang_menu('m') }}{{ theme_toggle() }}</div>
+<a class="skip" href="#main">{{ t('skip') }}</a>
+
+<header class="hdr cs-hdr">
+  <div class="wrap cs-hdr-in">
+    <a href="{{ lang_url(lang) }}" class="cs-brand" aria-label="{{ c.company_name }}">{{ logo() }}</a>
+    <nav class="cs-nav" aria-label="{{ t('quick_links') }}">
+      <a href="{{ url_for('public.website_check') }}">{{ t('nav_check_short') }}</a>
+      <a href="{{ url_for('portal.login') }}">{{ t('nav_portal') }}</a>
+      <a href="{{ url_for('public.status') }}">{{ t('nav_status') }}</a>
+      <a href="mailto:{{ c.contact_email }}">{{ t('contact') }}</a>
+    </nav>
+    <div class="cs-tools">{{ lang_menu('m') }}{{ theme_toggle() }}</div>
   </div>
 </header>
-<main id="main" class="wrap maint">
-  {% if c.maintenance_badge %}<p class="eyebrow">{{ c.maintenance_badge }}</p>{% endif %}
-  <h1>{{ c.maintenance_title | highlight(c.maintenance_highlight) }}</h1>
-  {% if c.maintenance_text %}<p class="sec-lead">{{ c.maintenance_text }}</p>{% endif %}
-  <div class="maint-actions">
-    <a class="btn btn-primary btn-lg" href="mailto:{{ c.contact_email }}">{{ icon('mail') }} {{ c.contact_email }}</a>
-  </div>
-  {% set tags = c.maintenance_tags | lines %}
-  {% if tags %}<ul class="tags">{% for tg in tags %}<li>{{ tg }}</li>{% endfor %}</ul>{% endif %}
-  <nav class="maint-links" aria-label="{{ t('quick_links') }}">
-    <a href="{{ url_for('public.website_check') }}">{{ icon('search') }} {{ t('nav_check') }}</a>
-    <a href="{{ url_for('portal.login') }}">{{ icon('user') }} {{ t('nav_portal') }}</a>
-    <a href="{{ url_for('public.status') }}">{{ icon('activity') }} {{ t('nav_status') }}</a>
-  </nav>
+
+<main id="main">
+  <section class="cs-hero">
+    <div class="wrap cs-hero-in">
+      <div class="cs-copy">
+        {% if c.maintenance_badge %}<p class="cs-eyebrow"><span class="cs-dot" aria-hidden="true"></span>{{ c.maintenance_badge }}</p>{% endif %}
+        <h1 class="cs-title">{{ c.maintenance_title | highlight(c.maintenance_highlight) }}</h1>
+        {% if c.maintenance_text %}<p class="cs-lead">{{ c.maintenance_text }}</p>{% endif %}
+        <div class="cs-cta">
+          <a class="cs-mail" href="mailto:{{ c.contact_email }}">
+            <span class="cs-mail-ic" aria-hidden="true">{{ icon('mail') }}</span>
+            <span class="cs-mail-txt"><small>{{ t('cs_mail_label') }}</small><b>{{ c.contact_email }}</b></span>
+            <span class="cs-mail-go" aria-hidden="true">{{ icon('arrow-right') }}</span>
+          </a>
+        </div>
+        {% set tags = c.maintenance_tags | lines %}
+        {% if tags %}<ul class="cs-tags">{% for tg in tags %}<li>{{ icon('check') }}{{ tg }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      {# decorative product shot: a desktop monitor showing an AMXME-built website #}
+      <div class="cs-visual" aria-hidden="true">
+        <div class="cs-monitor">
+          <div class="cs-screen">
+            <div class="cs-browser">
+              <div class="cs-bar"><i></i><i></i><i></i><span>{{ icon('lock') }}amxme.info</span></div>
+              <div class="cs-site">
+                <div class="cs-site-nav"><b></b><span><i></i><i></i><i></i><i></i></span><em></em></div>
+                <div class="cs-site-hero">
+                  <div class="cs-site-copy"><i class="w1"></i><i class="w2"></i><i class="w3"></i><em></em></div>
+                  <div class="cs-site-art"><i></i><i></i><i></i></div>
+                </div>
+                <div class="cs-site-cards"><i></i><i></i><i></i></div>
+              </div>
+            </div>
+          </div>
+          <div class="cs-neck"></div>
+          <div class="cs-foot"></div>
+        </div>
+        <div class="cs-chip cs-chip--ssl">{{ icon('lock') }}{{ t('chip_ssl') }}</div>
+        <div class="cs-chip cs-chip--eu">{{ icon('server') }}{{ t('cs_eu') }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cs-links" aria-label="{{ t('quick_links') }}">
+    <div class="wrap cs-cards">
+      <a class="cs-card" href="{{ url_for('public.website_check') }}">
+        <span class="cs-card-ic">{{ icon('search') }}</span>
+        <span class="cs-card-body"><b>{{ t('nav_check') }}</b><span>{{ t('cs_check_d') }}</span></span>
+        <span class="cs-card-go">{{ icon('arrow-right') }}</span>
+      </a>
+      <a class="cs-card" href="{{ url_for('portal.login') }}">
+        <span class="cs-card-ic">{{ icon('user') }}</span>
+        <span class="cs-card-body"><b>{{ t('nav_portal') }}</b><span>{{ t('cs_portal_d') }}</span></span>
+        <span class="cs-card-go">{{ icon('arrow-right') }}</span>
+      </a>
+      <a class="cs-card" href="{{ url_for('public.status') }}">
+        <span class="cs-card-ic">{{ icon('activity') }}</span>
+        <span class="cs-card-body"><b>{{ t('nav_status') }}</b><span>{{ t('cs_status_d') }}</span></span>
+        <span class="cs-card-go">{{ icon('arrow-right') }}</span>
+      </a>
+    </div>
+  </section>
 </main>
-<footer class="solo-foot wrap">
-  <span>© {{ year }} {{ c.copyright }}</span>
-  <nav aria-label="Legal"><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></nav>
+
+<footer class="cs-ftr">
+  <div class="wrap cs-ftr-grid">
+    <div class="cs-ftr-brand">
+      {{ logo() }}
+      {% if c.footer_text %}<p>{{ c.footer_text }}</p>{% endif %}
+    </div>
+    <div>
+      <h2 class="cs-ftr-h">{{ t('contact') }}</h2>
+      <ul><li><a href="mailto:{{ c.contact_email }}">{{ icon('mail') }}{{ c.contact_email }}</a></li></ul>
+    </div>
+    <div>
+      <h2 class="cs-ftr-h">{{ t('f_clients') }}</h2>
+      <ul>
+        <li><a href="{{ url_for('public.website_check') }}">{{ t('nav_check') }}</a></li>
+        <li><a href="{{ url_for('portal.login') }}">{{ t('nav_portal') }}</a></li>
+        <li><a href="{{ url_for('public.status') }}">{{ t('nav_status') }}</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="cs-ftr-h">{{ t('cs_legal') }}</h2>
+      <ul>
+        <li><a href="{{ url_for('public.imprint') }}">{{ t('imprint') }}</a></li>
+        <li><a href="{{ url_for('public.privacy') }}">{{ t('privacy') }}</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap cs-ftr-bottom">
+    <span>© {{ year }} {{ c.copyright }}</span>
+  </div>
 </footer>
 {% endblock %}
